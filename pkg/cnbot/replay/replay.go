@@ -10,9 +10,9 @@ import (
 
 const API_CALL_SEND_MESSAGE = "https://api.telegram.org/bot226015286:AAHzO9VmmKi-_uwZkmbA0DVn03DOpdYYsg4/sendMessage"
 
-func Reply(chatId int64) {
+func Reply(chatId int64, http_client_factory httpcall.ClientFactory) {
 	log.Printf("Prepare reply for chat_id = %d", chatId)
-	apiClient, err := httpcall.NewTAPIClient()  // TODO надо ли создавать клиента в каждой горутине, и как быть с тестами?
+	apiClient, err := http_client_factory.NewTAPIClient()
 	if err != nil {
 		log.Panic(err) // TODO
 	}
