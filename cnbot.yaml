@@ -1,0 +1,15 @@
+network:
+  proxy: socks5://localhost:8050
+  polling_inteerval: 60  # common
+  loglevel: 1
+bots:
+  main:
+    token: XXX
+    controlif: localhost:8099
+    script: ./script.sh
+    allowed_users:
+      - user_a
+      - user_b
+    allowed_userids:
+      - 123
+      - 456
