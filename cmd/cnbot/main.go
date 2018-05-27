@@ -11,6 +11,7 @@ import (
 	"time"
 	"bytes"
 	"io/ioutil"
+	"encoding/json"
 )
 
 type handler struct {
@@ -67,6 +68,24 @@ func (f ClientFactory) NewClient(apiMethod string) Client {
 
 // ----------------------------------
 
+
+type UpdateMessage struct {
+	Text string `json:"text"`
+	Chat struct {
+		Id int `json:"id"`
+	} `json:"chat"`
+}
+
+type UpdateResult struct {
+	UpdateID int `json:"update_id"`
+	Message UpdateMessage `json:"message"`
+}
+
+type UpdateResponse struct {
+	Ok bool `json:"ok"`
+	Result []UpdateResult `json:"result"`
+}
+
 // TODO NEXT STEPS
 // 1. Change /getMe to /getUpdates (polling loop in background)
 // 2. Spawn processes
@@ -75,12 +94,49 @@ func (f ClientFactory) NewClient(apiMethod string) Client {
 //    - move proxy, timeout, token[?]
 //    - methods .PostJson, .PostMultipart
 func StartPollingLoop(client Client, pollingInterfal int, q chan<- int) {
-	buf, err := client.PostJSON([]byte("{}"))
-	if err != nil {
-		fmt.Println("ERROR", err)
-		return
+	lastUpdateId := 0
+	for {
+		req := map[string]int{"timeout": pollingInterfal}
+		if lastUpdateId > 0 {
+			req["offset"] = lastUpdateId + 1
+		}
+		buf, err := json.Marshal(req)
+		if err != nil {
+			panic(err)  // how can it be?
+		}
+		fmt.Println("Req", string(buf))
+		buf, err = client.PostJSON(buf)
+		if err != nil {
+			fmt.Println("ERROR", err)
+			time.Sleep(10 * time.Second)  // TODO make it configurable
+			continue
+		}
+		j := UpdateResponse{}
+		err = json.Unmarshal(buf, &j)
+		if err != nil {
+			fmt.Println("ERROR", err)
+			time.Sleep(10 * time.Second)  // TODO make it configurable
+			continue
+		}
+		fmt.Println(j)
+		fmt.Println(string(buf))
+		if !j.Ok {
+			fmt.Println("ERROR in response: " + string(buf))
+			time.Sleep(10 * time.Second)  // TODO make it configurable
+			continue
+		}
+		for _, m := range j.Result {
+			if m.UpdateID > lastUpdateId {
+				lastUpdateId = m.UpdateID
+			}
+			text := m.Message.Text
+			if text == "" {
+				continue  // left all messages without text (stickers etc)
+			}
+			chatId := m.Message.Chat.Id
+			fmt.Printf("==> [%d]TEXT: %s\n", chatId, text)
+		}
 	}
-	fmt.Println(string(buf))
 }
 
 func StartProcessor(q <-chan int, r chan<- bool) {}
@@ -95,7 +151,7 @@ func StartBot(cfg config.BotConfiguration) {
 	}
 	client_message_queue := make(chan int, 1000)
 	server_message_queue := make(chan bool, 1000)
-	StartPollingLoop(clientFactory.NewClient("getMe"), cfg.PollingInterval, client_message_queue)
+	StartPollingLoop(clientFactory.NewClient("getUpdates"), cfg.PollingInterval, client_message_queue)
 	StartProcessor(client_message_queue, server_message_queue)  // предзапустить
 	StartServer(server_message_queue)
 	StartResponder(server_message_queue)
