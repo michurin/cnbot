@@ -1,0 +1,10 @@
+[main]
+token = "226015286:AAHzO9VmmKi-_uwZkmbA0DVn03DOpdYYsg4"  # <-- check it!
+port = 9999
+command = "./slave-script.sh"
+cwd = "examples"
+env_pass = ["HOME", "PATH"]
+env_force = ["LANG=C"]
+timeout = 10
+concurrent = 2
+whitelist = [153812628]  # <-- check it!
