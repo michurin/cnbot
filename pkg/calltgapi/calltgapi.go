@@ -3,6 +3,7 @@ package calltgapi
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 
@@ -15,9 +16,16 @@ func url(token string, method string) string {
 
 func PostBytes(log *log.Logger, token string, method string, data []byte, mime string, resp interface{}) error {
 	//log.Debugf("Raw send: %v", data)
-	response, err := http.Post(url(token, method), mime, bytes.NewReader(data))
+	response, err := http.Post(
+		url(token, method),
+		mime,
+		bytes.NewReader(data),
+	)
 	if err != nil {
 		return err
+	}
+	if response.StatusCode != 200 {
+		return errors.New(response.Status)
 	}
 	defer response.Body.Close()
 	body, err := ioutil.ReadAll(response.Body)
@@ -26,6 +34,13 @@ func PostBytes(log *log.Logger, token string, method string, data []byte, mime s
 	}
 	//log.Debugf("Raw recv: %v", body)
 	err = json.Unmarshal(body, resp)
+	if err != nil {
+		log.Errorf(
+			"Can not parse response [code=%d] [body=%s]",
+			response.StatusCode,
+			body,
+		)
+	}
 	return err
 }
 

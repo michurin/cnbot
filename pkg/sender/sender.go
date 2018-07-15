@@ -19,8 +19,11 @@ func Sender(log *log.Logger, token string, toSendQueue <-chan OutgoingData) {
 		if err != nil {
 			log.Error(err)
 		}
-		if !resp["ok"].(bool) {
+		resp_ok, ok := resp["ok"].(bool)
+		if !ok {
 			log.Errorf("Resp error: %v", resp)
+		} else if !resp_ok {
+			log.Errorf("Resp not ok: %v", resp)
 		}
 	}
 }

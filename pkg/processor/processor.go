@@ -22,13 +22,13 @@ func execute(
 	cwd string,
 	env []string,
 	timeout int64,
-	message string,
+	args []string,
 	fromId int64,
 ) []byte {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 	var outData []byte
-	cmd := exec.Command(command, message)
+	cmd := exec.Command(command, args...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true} // setpgid(2) between fork(2) and execve(2)
 	cmd.Env = append(env, "BOT_CHAT_ID="+strconv.FormatInt(fromId, 10))
 	cmd.Dir = cwd
@@ -102,7 +102,15 @@ func Processor(
 	for {
 		message := <-inQueue
 		if intInSlice(message.From.Id, whitelist) {
-			outData := execute(log, command, cwd, env, timeout, message.Text, message.From.Id)
+			outData := execute(
+				log,
+				command,
+				cwd,
+				env,
+				timeout,
+				strings.Fields(message.Text), // TODO: make it configurable?
+				message.From.Id,
+			)
 			q := prepareoutgoing.PrepareOutgoing(log, outData, message.From.Id, nil)
 			if q.MessageType != "" {
 				outQueue <- q
