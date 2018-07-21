@@ -46,6 +46,11 @@ case "$cmd" in
         curl -qsX POST -o /dev/null --data-binary @- "$url?parse_mode=markdown"
         echo .
         ;;
+    x_err)
+        echo '[stdout]'
+        (>&2 echo "[stderr]")
+        exit 1
+        ;;
     x_help)
         (
         echo '*Simplest examples:*'
@@ -59,6 +64,7 @@ case "$cmd" in
         echo '`pwd` - pwd'
         echo '`env` - env'
         echo '`mem` - memory usage'
+        echo '`err` - emulate error exit'
         echo '`help` - this message'
         echo '*Advanced examples:*'
         echo '`rrose` - image with cuption'
