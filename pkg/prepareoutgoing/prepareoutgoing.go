@@ -10,10 +10,18 @@ import (
 	"github.com/michurin/cnbot/pkg/sender"
 )
 
-func classifyData(data []byte) (isEmpty bool, leftIt bool, isImage bool, imageType string) {
+func classifyData(data []byte) (
+	isEmpty bool,
+	leftIt bool,
+	rawJSON bool,
+	isImage bool,
+	imageType string,
+) {
 	// TODO: naive implementation. Details: https://en.wikipedia.org/wiki/List_of_file_signatures
 	if len(data) == 0 { // data is always trimed
 		isEmpty = true
+	} else if bytes.HasPrefix(data, []byte{'{'}) { // TODO: check tail?
+		rawJSON = true
 	} else if bytes.HasPrefix(data, []byte{'.'}) { // TODO: check tail?
 		leftIt = true
 	} else if bytes.HasPrefix(data, []byte{0xFF, 0xD8, 0xFF}) { // TODO: naive
@@ -30,13 +38,20 @@ func classifyData(data []byte) (isEmpty bool, leftIt bool, isImage bool, imageTy
 }
 
 func PrepareOutgoing(log *log.Logger, outData []byte, chatId int64, tips map[string]string) sender.OutgoingData {
-	isEmpty, leftIt, isImage, imageType := classifyData(outData)
+	isEmpty, leftIt, rawJSON, isImage, imageType := classifyData(outData)
 	if leftIt {
 		log.Info("Left message")
 		return sender.OutgoingData{} // empty MessageType means left message
 	}
 	if isEmpty {
 		outData = []byte("(no data)")
+	}
+	if rawJSON {
+		return sender.OutgoingData{
+			MessageType: "sendMessage",
+			Type:        "application/json",
+			Body:        outData,
+		}
 	}
 	if isImage {
 		log.Infof("TRY TO SEND IMAGE TYPE %v", imageType)

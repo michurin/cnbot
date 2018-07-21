@@ -1,7 +1,8 @@
 #!/bin/sh
 
 cmd="x_$(echo "$1" | tr '[:upper:][:space:]' '[:lower:]_' | sed 's-___*-_-g; s-^_--; s-_$--')"
-url="http://localhost:$BOT_SERVER_PORT/$BOT_CHAT_ID"
+user=$BOT_USER_ID
+url="http://localhost:$BOT_SERVER_PORT/$user"
 
 # TODO: check curl, convert, at
 
@@ -101,6 +102,33 @@ case "$cmd" in
         echo 'Delayed Command:'
         echo "$delayed_command"
         echo 'Wait one minute for result'
+        ;;
+    x_json)
+        cat <<JSON
+{
+    "chat_id": "$user",
+    "text": "Demo of inline keyboard",
+    "reply_markup": {"inline_keyboard": [
+        [
+            {"text": "Open google.com", "url": "http://google.com/"},
+            {"text": "Open youtube.com", "url": "http://youtube.com/"}
+        ], [
+            {"text": "Say A", "callback_data": "A"},
+            {"text": "Say B", "callback_data": "B"},
+            {"text": "Say C", "callback_data": "C"}
+        ]
+    ]}
+}
+JSON
+        ;;
+    x_callback_data:a)
+        echo 'A!'
+        ;;
+    x_callback_data:b)
+        echo 'B!'
+        ;;
+    x_callback_data:c)
+        echo 'C!'
         ;;
     *)
         for i in "$@"

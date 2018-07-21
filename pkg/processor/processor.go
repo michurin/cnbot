@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -26,9 +27,35 @@ func BuildEnv(env []string, envPass []string, envForce []string) []string {
 	return append(append(res, "BOT_PID="+strconv.Itoa(os.Getpid())), envForce...)
 }
 
+func messageToArgs(p receiver.TUpdateResult) (bool, []string, error) {
+	if p.Message != nil {
+		if p.Message.Text != nil {
+			return false, strings.Fields(*p.Message.Text), nil
+		}
+	}
+	if p.CallbackQuery != nil {
+		if p.CallbackQuery.Data != nil {
+			return true, []string{"callback_data:" + *p.CallbackQuery.Data}, nil
+		}
+	}
+	return false, nil, errors.New("Can not find message body")
+}
+
+func messageToFrom(p receiver.TUpdateResult) (receiver.TUpdateFrom, error) {
+	if p.Message != nil {
+		if p.Message.From != nil {
+			return *p.Message.From, nil
+		}
+	} else if p.CallbackQuery != nil {
+		return p.CallbackQuery.From, nil
+		// chat_id not available here :-(
+	}
+	return receiver.TUpdateFrom{}, errors.New("Can not find <from> info")
+}
+
 func Processor(
 	log *log.Logger,
-	inQueue <-chan receiver.TUpdateMessage,
+	inQueue <-chan receiver.TUpdateResult,
 	outQueue chan<- sender.OutgoingData,
 	whitelist []int64,
 	command string,
@@ -36,31 +63,55 @@ func Processor(
 	env []string,
 	timeout int64,
 ) {
-	for message := range inQueue {
-		if intInSlice(message.From.Id, whitelist) {
+	for part := range inQueue {
+		from, err := messageToFrom(part)
+		if err != nil {
+			log.Warnf("%s: %+v", err, part)
+			continue
+		}
+		if intInSlice(from.Id, whitelist) {
+			isCallBack, args, err := messageToArgs(part) // TODO: make it configurable?
+			if err != nil {
+				log.Warnf("%s: %+v", err, part)
+				continue
+			}
+			if isCallBack {
+				// TODO move all of that to prepareoutgoing!!!
+				outQueue <- sender.OutgoingData{
+					MessageType: "answerCallbackQuery",
+					Type:        "application/json",
+					Body:        []byte(`{"callback_query_id":"` + part.CallbackQuery.Id + `"}`),
+				}
+			}
 			outData := execute(
 				log,
 				command,
 				cwd,
 				append(
 					env,
-					"BOT_USER_NAME="+message.From.Username,
-					"BOT_USER_ID="+strconv.FormatInt(message.From.Id, 10),
-					"BOT_CHAT_ID="+strconv.FormatInt(message.Chat.Id, 10),
+					"BOT_USER_NAME="+from.Username,
+					"BOT_USER_ID="+strconv.FormatInt(from.Id, 10),
+					// TODO: restore bot_chat_id?
 				),
 				timeout,
-				strings.Fields(message.Text), // TODO: make it configurable?
+				args,
 			)
-			q := prepareoutgoing.PrepareOutgoing(log, outData, message.From.Id, nil)
+			q := prepareoutgoing.PrepareOutgoing(log, outData, from.Id, nil)
 			if q.MessageType != "" {
 				outQueue <- q
 			}
 		} else {
-			log.Infof("WARNING: from_id=%d is not allowed. Add to whitelist", message.From.Id)
+			log.Warnf(
+				"WARNING: from_id=%d is not allowed. Add to whitelist",
+				from.Id,
+			)
 			outQueue <- prepareoutgoing.PrepareOutgoing(
 				log,
-				[]byte(fmt.Sprintf("Sorry. Your ID (%d) is not allowd.", message.From.Id)),
-				message.From.Id,
+				[]byte(fmt.Sprintf(
+					"Sorry. Your ID (%d) is not allowd.",
+					from.Id,
+				)),
+				from.Id,
 				nil,
 			)
 			continue

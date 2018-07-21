@@ -19,8 +19,8 @@ func Run(version, buildRev, buildDate string) {
 	for k, s := range config {
 		log.Infof("Going up bot: %s", k)
 		log.Debugf("Bot %s config: %+v", k, s)
-		incomingQueue := make(chan receiver.TUpdateMessage, 1000) // TODO: to config
-		outgoingQueue := make(chan sender.OutgoingData, 100)      // TODO: ?
+		incomingQueue := make(chan receiver.TUpdateResult, 1000) // TODO: to config
+		outgoingQueue := make(chan sender.OutgoingData, 100)     // TODO: ?
 		go receiver.RunPollingLoop(
 			log.WithArea(k+":poller"),
 			s.PollingInterval,
