@@ -11,11 +11,29 @@ type Logger struct {
 }
 
 func New() *Logger {
-	stream := os.Stderr
+	var formatter logrus.Formatter
+	var stream *os.File
+	var level logrus.Level
+	if _, ok := os.LookupEnv("BOT_LOG_STDOUT"); ok {
+		stream = os.Stdout
+	} else {
+		stream = os.Stderr
+	}
+	if _, ok := os.LookupEnv("BOT_LOG_JSON"); ok {
+		formatter = new(logrus.JSONFormatter)
+	} else {
+		formatter = &Formatter{checkIfTerminal(stream)}
+	}
+	if _, ok := os.LookupEnv("BOT_LOG_NODEBUG"); ok {
+		level = logrus.InfoLevel
+	} else {
+		level = logrus.DebugLevel
+	}
 	return &Logger{logrus.NewEntry(&logrus.Logger{
 		Out:       stream,
-		Formatter: &Formatter{checkIfTerminal(stream)},
-		Level:     logrus.DebugLevel,
+		Formatter: formatter,
+		Hooks:     make(logrus.LevelHooks),
+		Level:     level,
 	})}
 }
 
