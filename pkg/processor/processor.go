@@ -23,7 +23,6 @@ func execute(
 	env []string,
 	timeout int64,
 	args []string,
-	fromId int64,
 ) []byte {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
@@ -114,7 +113,6 @@ func Processor(
 				),
 				timeout,
 				strings.Fields(message.Text), // TODO: make it configurable?
-				message.From.Id,
 			)
 			q := prepareoutgoing.PrepareOutgoing(log, outData, message.From.Id, nil)
 			if q.MessageType != "" {
