@@ -8,15 +8,16 @@ import (
 )
 
 type botConfig struct {
-	Token      string   `toml:"token"`
-	Command    string   `toml:"command"`
-	Cwd        string   `toml:"cwd"`
-	WhiteList  []int64  `toml:"whitelist"`
-	EnvPass    []string `toml:"env_pass"`
-	EnvForce   []string `toml:"env_force"`
-	Timeout    int64    `toml:"timeout"`
-	Concurrent int      `toml:"concurrent"`
-	Port       int64    `toml:"port"`
+	Command         string   `toml:"command"`
+	Concurrent      int      `toml:"concurrent"`
+	Cwd             string   `toml:"cwd"`
+	EnvForce        []string `toml:"env_force"`
+	EnvPass         []string `toml:"env_pass"`
+	PollingInterval int      `toml:"polling_interval"`
+	Port            int64    `toml:"port"`
+	Timeout         int64    `toml:"timeout"`
+	Token           string   `toml:"token"`
+	WhiteList       []int64  `toml:"whitelist"`
 }
 
 func ReadConfig(log *log.Logger) map[string]botConfig {
@@ -44,8 +45,8 @@ func ReadConfig(log *log.Logger) map[string]botConfig {
 			log.Fatalf("You have to specify command for bot %s", k)
 		}
 		if item.Cwd == "" {
-			log.Warnf("Use cwd='.' for bot %s", k)
 			item.Cwd = "."
+			log.Warnf("Use cwd='%s' for bot %s", item.Cwd, k)
 		}
 		if len(item.WhiteList) == 0 {
 			log.Fatalf("Whitelist for bot %s is empty", k)
@@ -70,6 +71,18 @@ func ReadConfig(log *log.Logger) map[string]botConfig {
 		}
 		if item.Port < 1 {
 			log.Fatalf("Invalid port for bot %s", k)
+		}
+		if item.PollingInterval == 0 {
+			item.PollingInterval = 50
+			log.Warnf("Force default polling interval %d", item.PollingInterval)
+		}
+		if item.PollingInterval < 10 {
+			item.PollingInterval = 10
+			log.Warnf("Force polling interval %d", item.PollingInterval)
+		}
+		if item.PollingInterval > 60 {
+			item.PollingInterval = 60
+			log.Warnf("Force polling interval %d", item.PollingInterval)
 		}
 		cfg[k] = item
 	}

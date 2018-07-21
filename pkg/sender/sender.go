@@ -15,7 +15,15 @@ func Sender(log *log.Logger, token string, toSendQueue <-chan OutgoingData) {
 	for {
 		message := <-toSendQueue
 		resp := map[string]interface{}{}
-		err := calltgapi.PostBytes(log, token, message.MessageType, message.Body, message.Type, &resp)
+		err := calltgapi.PostBytes(
+			log,
+			10, // TODO: send operation timeout, have to be configurable
+			token,
+			message.MessageType,
+			message.Body,
+			message.Type,
+			&resp,
+		)
 		if err != nil {
 			log.Error(err)
 		}

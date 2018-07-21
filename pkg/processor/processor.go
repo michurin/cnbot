@@ -30,13 +30,13 @@ func execute(
 	var outData []byte
 	cmd := exec.Command(command, args...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true} // setpgid(2) between fork(2) and execve(2)
-	cmd.Env = append(env, "BOT_CHAT_ID="+strconv.FormatInt(fromId, 10))
+	cmd.Env = env
 	cmd.Dir = cwd
 	stdout.Reset()
 	stderr.Reset()
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	afterFuncTimer := time.AfterFunc(time.Second*time.Duration(timeout), func() { // TODO defer clean timer
+	afterFuncTimer := time.AfterFunc(time.Second*time.Duration(timeout), func() {
 		// https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
 		if cmd.Process != nil { // nil if script not started (not exists)
 			syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL) // -PID is the same as -PGID
@@ -99,14 +99,18 @@ func Processor(
 	env []string,
 	timeout int64,
 ) {
-	for {
-		message := <-inQueue
+	for message := range inQueue {
 		if intInSlice(message.From.Id, whitelist) {
 			outData := execute(
 				log,
 				command,
 				cwd,
-				env,
+				append(
+					env,
+					"BOT_USER_NAME="+message.From.Username,
+					"BOT_USER_ID="+strconv.FormatInt(message.From.Id, 10),
+					"BOT_CHAT_ID="+strconv.FormatInt(message.Chat.Id, 10),
+				),
 				timeout,
 				strings.Fields(message.Text), // TODO: make it configurable?
 				message.From.Id,

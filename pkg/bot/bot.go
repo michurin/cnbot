@@ -20,7 +20,12 @@ func Run() {
 		log.Infof("Going up bot %s", k)
 		incomingQueue := make(chan receiver.TUpdateMessage, 1000) // TODO: to config
 		outgoingQueue := make(chan sender.OutgoingData, 100)      // TODO: ?
-		go receiver.RunPollingLoop(log.WithArea(k+":poller"), s.Token, incomingQueue)
+		go receiver.RunPollingLoop(
+			log.WithArea(k+":poller"),
+			s.PollingInterval,
+			s.Token,
+			incomingQueue,
+		)
 		for p := 0; p < s.Concurrent; p++ {
 			go processor.Processor(
 				log.WithArea(k+":proc"),

@@ -43,24 +43,39 @@ type TUpdates struct {
 type TUpdatesRequest struct {
 	Offset         *int64   `json:"offset,omitempty"`
 	Limit          *int64   `json:"limit,omitempty"`
-	Timeout        *int64   `json:"timeout,omitempty"`
+	Timeout        *int     `json:"timeout,omitempty"`
 	AllowedUpdates []string `json:"allowed_updates,omitempty"`
 }
 
-func RunPollingLoop(log *log.Logger, token string, messages chan<- TUpdateMessage) {
+func RunPollingLoop(
+	log *log.Logger,
+	apiTimeout int,
+	token string,
+	messages chan<- TUpdateMessage,
+) {
 	var offset int64
 	var offsetPtr *int64 // have to be nil on first iteration
-	var apiTimeout int64 = 50
 	var updates *TUpdates
 	for {
 		updates = &TUpdates{}
-		err := calltgapi.PostStruct(log, token, "getUpdates", TUpdatesRequest{Offset: offsetPtr, Timeout: &apiTimeout}, updates)
+		err := calltgapi.PostBytes(
+			log,
+			apiTimeout+10,
+			token,
+			"getUpdates",
+			mustMarshal(
+				log,
+				TUpdatesRequest{Offset: offsetPtr, Timeout: &apiTimeout},
+			),
+			"application/json",
+			updates,
+		)
 		if err != nil {
 			log.Error(err)
 			errorSleep(log, 10)
 			continue
 		}
-		log.Info(updates)
+		log.Debugf("Update %#v", updates)
 		if !updates.Ok {
 			log.Error("ERROR: Update is not Ok")
 			errorSleep(log, 20)
@@ -76,6 +91,6 @@ func RunPollingLoop(log *log.Logger, token string, messages chan<- TUpdateMessag
 			log.Info(part.Message)
 			messages <- part.Message
 		}
-		log.Infof("offset = %d", offset)
+		log.Debugf("offset = %d", offset)
 	}
 }
