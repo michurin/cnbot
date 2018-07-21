@@ -43,12 +43,13 @@ func execute(
 		}
 	})
 	defer afterFuncTimer.Stop() // cosmetics, all timers share the same gorutine
-	log.Info("Run...")
+	log.Infof("Run %+v", cmd)
 	err := cmd.Run()
-	log.Info("Done.")
 	if err == nil {
+		log.Info("Done.")
 		outData = stdout.Bytes()
 	} else {
+		log.Warnf("Done with error %v", err)
 		outData = []byte("Subprocess error") // Default message
 		switch v := err.(type) {
 		case *exec.ExitError:

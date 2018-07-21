@@ -17,7 +17,8 @@ func Run() {
 	log.Info("Run")
 	config := cfg.ReadConfig(log.WithArea("config"))
 	for k, s := range config {
-		log.Infof("Going up bot %s", k)
+		log.Infof("Going up bot: %s", k)
+		log.Debugf("Bot %s config: %+v", k, s)
 		incomingQueue := make(chan receiver.TUpdateMessage, 1000) // TODO: to config
 		outgoingQueue := make(chan sender.OutgoingData, 100)      // TODO: ?
 		go receiver.RunPollingLoop(
