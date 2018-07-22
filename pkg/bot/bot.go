@@ -46,6 +46,9 @@ func Run(version, buildRev, buildDate string) {
 						"BOT_BUILD_DATE="+buildDate,
 					)),
 				s.ReplayToUser,
+				*s.ArgsTrim,
+				*s.ArgsLowerCase,
+				*s.ArgsSplit,
 				s.Timeout,
 			)
 		}

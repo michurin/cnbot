@@ -8,6 +8,9 @@ import (
 )
 
 type botConfig struct {
+	ArgsTrim        *bool    `toml:"args_trim"`
+	ArgsLowerCase   *bool    `toml:"args_lower_case"`
+	ArgsSplit       *bool    `toml:"args_split"`
 	Command         string   `toml:"command"`
 	Concurrent      int      `toml:"concurrent"`
 	Cwd             string   `toml:"cwd"`
@@ -84,6 +87,16 @@ func ReadConfig(log *log.Logger) map[string]botConfig {
 		if item.PollingInterval > 60 {
 			item.PollingInterval = 60
 			log.Warnf("Force polling interval %d", item.PollingInterval)
+		}
+		t := true
+		if item.ArgsTrim == nil {
+			item.ArgsTrim = &t
+		}
+		if item.ArgsLowerCase == nil {
+			item.ArgsLowerCase = &t
+		}
+		if item.ArgsSplit == nil {
+			item.ArgsSplit = &t
 		}
 		cfg[k] = item
 	}

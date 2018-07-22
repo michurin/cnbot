@@ -1,4 +1,7 @@
 [main]
+  args_trim = true
+  args_lower_case = true
+  args_split = true
   command = "./slave-script.sh"
   concurrent = 2
   cwd = "examples"

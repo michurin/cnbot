@@ -27,10 +27,25 @@ func BuildEnv(env []string, envPass []string, envForce []string) []string {
 	return append(append(res, "BOT_PID="+strconv.Itoa(os.Getpid())), envForce...)
 }
 
-func messageToArgs(p receiver.TUpdateResult) (bool, []string, error) {
+func messageToArgs(
+	p receiver.TUpdateResult,
+	trim bool,
+	lowerCaseArgs bool,
+	splitArgs bool,
+) (bool, []string, error) {
 	if p.Message != nil {
 		if p.Message.Text != nil {
-			return false, strings.Fields(*p.Message.Text), nil
+			s := *p.Message.Text
+			if trim {
+				s = strings.TrimSpace(s)
+			}
+			if lowerCaseArgs {
+				s = strings.ToLower(s)
+			}
+			if splitArgs {
+				return false, strings.Fields(s), nil
+			}
+			return false, []string{s}, nil
 		}
 	}
 	if p.CallbackQuery != nil {
@@ -69,6 +84,9 @@ func Processor(
 	cwd string,
 	env []string,
 	replayToUser bool,
+	trim bool,
+	lowerCaseArgs bool,
+	splitArgs bool,
 	timeout int64,
 ) {
 	for part := range inQueue {
@@ -88,7 +106,12 @@ func Processor(
 			targetId = from.Id
 		}
 		if intInSlice(targetId, whitelist) {
-			isCallBack, args, err := messageToArgs(part) // TODO: make it configurable?
+			isCallBack, args, err := messageToArgs(
+				part,
+				trim,
+				lowerCaseArgs,
+				splitArgs,
+			)
 			if err != nil {
 				log.Warnf("%s: %+v", err, part)
 				continue
