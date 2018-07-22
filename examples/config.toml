@@ -6,6 +6,7 @@
   env_pass = ["HOME","PATH"]
   polling_interval = 50
   port = 9999
+  replay_to_user = true
   timeout = 10
   token = "226015286:AAHzO9VmmKi-_uwZkmbA0DVn03DOpdYYsg4"
-  whitelist = [153812628]
+  whitelist = [153812628, 529050880]

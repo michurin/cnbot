@@ -1,7 +1,11 @@
 #!/bin/sh
 
-cmd="x_$(echo "$1" | tr '[:upper:][:space:]' '[:lower:]_' | sed 's-___*-_-g; s-^_--; s-_$--')"
-user=$BOT_USER_ID
+cmd="x_$(
+    echo "$1" |
+    tr '[:upper:][:space:]' '[:lower:]_' |
+    sed 's-/--;s-___*-_-g; s-^_--; s-_$--'
+)"
+user=$BOT_TARGET_ID
 url="http://localhost:$BOT_SERVER_PORT/$user"
 
 # TODO: check curl, convert, at
@@ -39,7 +43,7 @@ case "$cmd" in
         ;;
     x_mem)
         (
-        echo '*Memory usage of PID=$BOT_PID*'
+        echo '*Memory usage of PID='"$BOT_PID"'*'
         echo '```'
         cat "/proc/$BOT_PID/status" | grep '^Vm' | expand
         echo '```'
@@ -110,8 +114,8 @@ case "$cmd" in
     "text": "Demo of inline keyboard",
     "reply_markup": {"inline_keyboard": [
         [
-            {"text": "Open google.com", "url": "http://google.com/"},
-            {"text": "Open youtube.com", "url": "http://youtube.com/"}
+            {"text": "google", "url": "http://google.com/"},
+            {"text": "youtube", "url": "http://youtube.com/"}
         ], [
             {"text": "Say A", "callback_data": "A"},
             {"text": "Say B", "callback_data": "B"},

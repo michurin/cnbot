@@ -15,6 +15,7 @@ type botConfig struct {
 	EnvPass         []string `toml:"env_pass"`
 	PollingInterval int      `toml:"polling_interval"`
 	Port            int64    `toml:"port"`
+	ReplayToUser    bool     `toml:"replay_to_user"`
 	Timeout         int64    `toml:"timeout"`
 	Token           string   `toml:"token"`
 	WhiteList       []int64  `toml:"whitelist"`

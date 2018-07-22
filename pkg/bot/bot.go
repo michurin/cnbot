@@ -29,7 +29,7 @@ func Run(version, buildRev, buildDate string) {
 		)
 		for p := 0; p < s.Concurrent; p++ {
 			go processor.Processor(
-				log.WithArea(k+":proc"),
+				log.WithArea(k+":proc:"+strconv.Itoa(p)),
 				incomingQueue,
 				outgoingQueue,
 				s.WhiteList,
@@ -45,6 +45,7 @@ func Run(version, buildRev, buildDate string) {
 						"BOT_BUILD_REV="+buildRev,
 						"BOT_BUILD_DATE="+buildDate,
 					)),
+				s.ReplayToUser,
 				s.Timeout,
 			)
 		}

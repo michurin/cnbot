@@ -48,9 +48,16 @@ func messageToFrom(p receiver.TUpdateResult) (receiver.TUpdateFrom, error) {
 		}
 	} else if p.CallbackQuery != nil {
 		return p.CallbackQuery.From, nil
-		// chat_id not available here :-(
 	}
 	return receiver.TUpdateFrom{}, errors.New("Can not find <from> info")
+}
+
+func getChat(p receiver.TUpdateResult) (receiver.TUpdateChat, error) {
+	if p.Message != nil {
+		return p.Message.Chat, nil
+	}
+	// chat_id not present in callback_query messages
+	return receiver.TUpdateChat{}, errors.New("Can not find <chat> info")
 }
 
 func Processor(
@@ -61,6 +68,7 @@ func Processor(
 	command string,
 	cwd string,
 	env []string,
+	replayToUser bool,
 	timeout int64,
 ) {
 	for part := range inQueue {
@@ -69,7 +77,17 @@ func Processor(
 			log.Warnf("%s: %+v", err, part)
 			continue
 		}
-		if intInSlice(from.Id, whitelist) {
+		chat, err := getChat(part)
+		chatId := chat.Id
+		if err != nil {
+			log.Infof("Force chat_id=user_id: %s", err)
+			chatId = from.Id
+		}
+		targetId := chatId
+		if replayToUser {
+			targetId = from.Id
+		}
+		if intInSlice(targetId, whitelist) {
 			isCallBack, args, err := messageToArgs(part) // TODO: make it configurable?
 			if err != nil {
 				log.Warnf("%s: %+v", err, part)
@@ -91,27 +109,33 @@ func Processor(
 					env,
 					"BOT_USER_NAME="+from.Username,
 					"BOT_USER_ID="+strconv.FormatInt(from.Id, 10),
-					// TODO: restore bot_chat_id?
+					"BOT_CHAT_ID="+strconv.FormatInt(chatId, 10),
+					"BOT_TARGET_ID="+strconv.FormatInt(targetId, 10),
 				),
 				timeout,
 				args,
 			)
-			q := prepareoutgoing.PrepareOutgoing(log, outData, from.Id, nil)
+			q := prepareoutgoing.PrepareOutgoing(
+				log,
+				outData,
+				targetId,
+				nil,
+			)
 			if q.MessageType != "" {
 				outQueue <- q
 			}
 		} else {
 			log.Warnf(
 				"WARNING: from_id=%d is not allowed. Add to whitelist",
-				from.Id,
+				targetId,
 			)
 			outQueue <- prepareoutgoing.PrepareOutgoing(
 				log,
 				[]byte(fmt.Sprintf(
-					"Sorry. Your ID (%d) is not allowd.",
-					from.Id,
+					"Sorry. Your effective ID %d not allowd.",
+					targetId,
 				)),
-				from.Id,
+				targetId,
 				nil,
 			)
 			continue
