@@ -12,9 +12,9 @@ import (
 	"github.com/michurin/cnbot/pkg/sender"
 )
 
-func Run() {
+func Run(version, buildRev, buildDate string) {
 	log := log.New()
-	log.Info("Run")
+	log.Infof("Run ver=%s rev=%s date=%s", version, buildRev, buildDate)
 	config := cfg.ReadConfig(log.WithArea("config"))
 	for k, s := range config {
 		log.Infof("Going up bot: %s", k)
@@ -35,7 +35,16 @@ func Run() {
 				s.WhiteList,
 				s.Command,
 				s.Cwd,
-				processor.BuildEnv(os.Environ(), s.EnvPass, append(s.EnvForce, "BOT_SERVER_PORT="+strconv.FormatInt(s.Port, 10))),
+				processor.BuildEnv(
+					os.Environ(),
+					s.EnvPass,
+					append(
+						s.EnvForce,
+						"BOT_SERVER_PORT="+strconv.FormatInt(s.Port, 10),
+						"BOT_VERSION="+version,
+						"BOT_BUILD_REV="+buildRev,
+						"BOT_BUILD_DATE="+buildDate,
+					)),
 				s.Timeout,
 			)
 		}
