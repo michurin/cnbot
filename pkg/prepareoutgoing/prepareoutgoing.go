@@ -101,3 +101,16 @@ func PrepareOutgoing(log *log.Logger, outData []byte, chatId int64, tips map[str
 		}
 	}
 }
+
+func CallbackAnswerOutgoing(callbackQueryId string) sender.OutgoingData {
+	payload := map[string]string{
+		"callback_query_id": callbackQueryId,
+	}
+	body, err := json.Marshal(payload)
+	_ = err // TODO!!!
+	return sender.OutgoingData{
+		MessageType: "answerCallbackQuery",
+		Type:        "application/json",
+		Body:        body,
+	}
+}

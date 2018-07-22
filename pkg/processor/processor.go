@@ -94,12 +94,7 @@ func Processor(
 				continue
 			}
 			if isCallBack {
-				// TODO move all of that to prepareoutgoing!!!
-				outQueue <- sender.OutgoingData{
-					MessageType: "answerCallbackQuery",
-					Type:        "application/json",
-					Body:        []byte(`{"callback_query_id":"` + part.CallbackQuery.Id + `"}`),
-				}
+				outQueue <- prepareoutgoing.CallbackAnswerOutgoing(part.CallbackQuery.Id)
 			}
 			outData := execute(
 				log,

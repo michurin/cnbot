@@ -96,7 +96,7 @@ func RunPollingLoop(
 			if offset <= part.UpdateId {
 				offset = part.UpdateId + 1
 			}
-			log.Info(part.Message)
+			log.Infof("Message part: %+v", part)
 			parts <- part
 		}
 		log.Debugf("offset = %d", offset)
