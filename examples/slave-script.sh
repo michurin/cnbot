@@ -56,6 +56,15 @@ case "$cmd" in
         (>&2 echo "[stderr]")
         exit 1
         ;;
+    x_err_long)
+        for i in `seq 4000`
+        do
+           echo $i
+        done
+        ;;
+    x_err_invalid)
+        printf '\xff\xff'
+        ;;
     x_help)
         (
         echo '*Simplest examples:*'
@@ -70,6 +79,8 @@ case "$cmd" in
         echo '`env` - env'
         echo '`mem` - memory usage'
         echo '`err` - emulate error exit'
+        echo '`err_long` - emulate too long result string error'
+        echo '`err_invalid` - emulate invalid UTF8 string error'
         echo '`help` - this message'
         echo '*Advanced examples:*'
         echo '`rrose` - image with cuption'
