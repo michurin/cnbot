@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	RX_JSON = regexp.MustCompile(`^[[:space:]]*{[[:space:]]*"`)
+	RX_JSON = regexp.MustCompile(`(?s:^[[:space:]]*{[[:space:]]*".*}[[:space:]]*$)`)
 	RX_DOT  = regexp.MustCompile(`^[[:space:]]*\.[[:space:]]*$`)
 	// Details: https://en.wikipedia.org/wiki/List_of_file_signatures
 	FP_GIF   = []byte{0x47, 0x49, 0x46, 0x38}
