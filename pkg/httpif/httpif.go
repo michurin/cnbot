@@ -49,9 +49,9 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HttpIf(log *log.Logger, port int64, oq chan sender.OutgoingData) {
+func HttpIf(log *log.Logger, port int, oq chan sender.OutgoingData) {
 	s := &http.Server{
-		Addr:           ":" + strconv.FormatInt(port, 10),
+		Addr:           ":" + strconv.Itoa(port),
 		Handler:        handler{oq, log},
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,

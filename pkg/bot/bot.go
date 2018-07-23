@@ -40,7 +40,7 @@ func Run(version, buildRev, buildDate string) {
 					s.EnvPass,
 					append(
 						s.EnvForce,
-						"BOT_SERVER_PORT="+strconv.FormatInt(s.Port, 10),
+						"BOT_SERVER_PORT="+strconv.Itoa(s.Port),
 						"BOT_VERSION="+version,
 						"BOT_BUILD_REV="+buildRev,
 						"BOT_BUILD_DATE="+buildDate,
