@@ -17,6 +17,7 @@ func PrepareOutgoing(
 	outData []byte,
 	chatId int64,
 	tips map[string]string,
+	responseChan chan []byte,
 ) (sender.OutgoingData, error) {
 	isEmpty, leftIt, rawJSON, isImage, imageType, err := classifyData(outData)
 	if err != nil {
@@ -33,6 +34,7 @@ func PrepareOutgoing(
 			MessageType: "sendMessage",
 			Type:        "application/json",
 			Body:        body,
+			Response:    responseChan,
 		}, nil
 	}
 	if leftIt {
@@ -46,6 +48,7 @@ func PrepareOutgoing(
 			MessageType: "sendMessage",
 			Type:        "application/json",
 			Body:        outData,
+			Response:    responseChan,
 		}, nil
 	}
 	if isImage {
@@ -74,6 +77,7 @@ func PrepareOutgoing(
 			MessageType: "sendPhoto",
 			Type:        w.FormDataContentType(),
 			Body:        b.Bytes(),
+			Response:    responseChan,
 		}, nil
 	} else {
 		payload := map[string]interface{}{
@@ -94,6 +98,7 @@ func PrepareOutgoing(
 			MessageType: "sendMessage",
 			Type:        "application/json",
 			Body:        body,
+			Response:    responseChan,
 		}, nil
 	}
 }

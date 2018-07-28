@@ -12,6 +12,7 @@ type OutgoingData struct {
 	MessageType string
 	Type        string
 	Body        []byte
+	Response    chan []byte
 }
 
 func Sender(log *log.Logger, token string, toSendQueue <-chan OutgoingData) {
@@ -28,6 +29,10 @@ func Sender(log *log.Logger, token string, toSendQueue <-chan OutgoingData) {
 		)
 		if err != nil {
 			log.Error(err)
+		}
+		if message.Response != nil {
+			message.Response <- body
+			close(message.Response)
 		}
 		log.Infof("Response: %s", string(body)) // TODO: process it
 	}
