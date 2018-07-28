@@ -2,10 +2,10 @@ package calltgapi
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io/ioutil"
 	"net/http"
-	"time"
 
 	"github.com/michurin/cnbot/pkg/log"
 )
@@ -15,22 +15,21 @@ func url(token string, method string) string {
 }
 
 func PostBytes(
+	ctx context.Context,
 	log *log.Logger,
-	timeout_sec int,
 	token string,
 	method string,
 	data []byte,
 	mime string,
 ) ([]byte, error) {
 	//log.Debugf("Raw send: %v", data)
-	timeout := time.Duration(timeout_sec) * time.Second
-	response, err := (&http.Client{
-		Timeout: timeout,
-	}).Post(
-		url(token, method),
-		mime,
-		bytes.NewReader(data),
-	)
+	req, err := http.NewRequest(http.MethodPost, url(token, method), bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", mime)
+	req.Header.Set("User-Agent", "CNBot (https://github.com/michurin/cnbot/)") // TODO to config, version?
+	response, err := http.DefaultClient.Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, err
 	}
