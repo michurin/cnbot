@@ -10,7 +10,14 @@ import (
 	"github.com/michurin/cnbot/pkg/sender"
 )
 
-func PrepareOutgoing(log *log.Logger, outData []byte, chatId int64, tips map[string]string) sender.OutgoingData {
+var emptyOutgoingData = sender.OutgoingData{}
+
+func PrepareOutgoing(
+	log *log.Logger,
+	outData []byte,
+	chatId int64,
+	tips map[string]string,
+) (sender.OutgoingData, error) {
 	isEmpty, leftIt, rawJSON, isImage, imageType, err := classifyData(outData)
 	if err != nil {
 		log.Errorf("Classification error: %s", err.Error())
@@ -19,16 +26,17 @@ func PrepareOutgoing(log *log.Logger, outData []byte, chatId int64, tips map[str
 			"text":    err.Error(),
 		}
 		body, err := json.Marshal(payload)
-		_ = err // TODO!!!
+		if err != nil {
+			return emptyOutgoingData, err
+		}
 		return sender.OutgoingData{
 			MessageType: "sendMessage",
 			Type:        "application/json",
 			Body:        body,
-		}
+		}, nil
 	}
 	if leftIt {
-		log.Info("Left message")
-		return sender.OutgoingData{} // empty MessageType means left message
+		return emptyOutgoingData, nil // empty MessageType means left message
 	}
 	if isEmpty {
 		outData = []byte("(no data)")
@@ -38,28 +46,27 @@ func PrepareOutgoing(log *log.Logger, outData []byte, chatId int64, tips map[str
 			MessageType: "sendMessage",
 			Type:        "application/json",
 			Body:        outData,
-		}
+		}, nil
 	}
 	if isImage {
-		log.Infof("TRY TO SEND IMAGE TYPE %v", imageType)
 		var b bytes.Buffer
 		w := multipart.NewWriter(&b)
 		err := w.WriteField("chat_id", strconv.FormatInt(chatId, 10))
 		if err != nil {
-			panic(err) // TODO
+			return emptyOutgoingData, err
 		}
 		for _, k := range [...]string{"parse_mode", "disable_notification", "caption"} {
 			v, ok := tips[k]
 			if ok {
 				err := w.WriteField(k, v)
 				if err != nil {
-					panic(err) // TODO
+					return emptyOutgoingData, err
 				}
 			}
 		}
 		fw, err := w.CreateFormFile("photo", "image."+imageType) // TODO: [1] imageType used as extension :-(, [2] Content-Type: application/octet-stream :-(
 		if err != nil {
-			panic(err) // TODO
+			return emptyOutgoingData, err
 		}
 		fw.Write(outData)
 		w.Close()
@@ -67,7 +74,7 @@ func PrepareOutgoing(log *log.Logger, outData []byte, chatId int64, tips map[str
 			MessageType: "sendPhoto",
 			Type:        w.FormDataContentType(),
 			Body:        b.Bytes(),
-		}
+		}, nil
 	} else {
 		payload := map[string]interface{}{
 			"chat_id": chatId,
@@ -80,24 +87,28 @@ func PrepareOutgoing(log *log.Logger, outData []byte, chatId int64, tips map[str
 			}
 		}
 		body, err := json.Marshal(payload)
-		_ = err // TODO!!!
+		if err != nil {
+			return emptyOutgoingData, err
+		}
 		return sender.OutgoingData{
 			MessageType: "sendMessage",
 			Type:        "application/json",
 			Body:        body,
-		}
+		}, nil
 	}
 }
 
-func CallbackAnswerOutgoing(callbackQueryId string) sender.OutgoingData {
+func CallbackAnswerOutgoing(callbackQueryId string) (sender.OutgoingData, error) {
 	payload := map[string]string{
 		"callback_query_id": callbackQueryId,
 	}
 	body, err := json.Marshal(payload)
-	_ = err // TODO!!!
+	if err != nil {
+		return emptyOutgoingData, err
+	}
 	return sender.OutgoingData{
 		MessageType: "answerCallbackQuery",
 		Type:        "application/json",
 		Body:        body,
-	}
+	}, nil
 }

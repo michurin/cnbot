@@ -32,18 +32,22 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	chatIdString := r.URL.Path
 	chatId, err := strconv.ParseInt(chatIdString[1:], 10, 32)
 	if err != nil {
-		http.Error(w, err.Error(), 400)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	h.log.Info(chatId)
 	body, err := ioutil.ReadAll(r.Body) // The ServeHTTP Handler does not need to close Body.
 	if err != nil {
-		http.Error(w, err.Error(), 400)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	k := r.URL.Query()
 	w.Write([]byte(fmt.Sprintf("Ok %#v\n%#v\n%#v\n%#v\n\n", r.Method, string(body), r.URL, k))) // TODO: http replay
-	q := prepareoutgoing.PrepareOutgoing(h.log, body, chatId, valueToMap(k))
+	q, err := prepareoutgoing.PrepareOutgoing(h.log, body, chatId, valueToMap(k))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	if q.MessageType != "" {
 		h.outQueue <- q
 	}
@@ -55,7 +59,7 @@ func HttpIf(log *log.Logger, port int, oq chan sender.OutgoingData) {
 		Handler:        handler{oq, log},
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20,
+		MaxHeaderBytes: 1 << 12,
 	}
 	log.Fatal(s.ListenAndServe())
 }

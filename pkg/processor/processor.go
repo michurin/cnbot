@@ -117,7 +117,12 @@ func Processor(
 				continue
 			}
 			if isCallBack {
-				outQueue <- prepareoutgoing.CallbackAnswerOutgoing(part.CallbackQuery.Id)
+				q, err := prepareoutgoing.CallbackAnswerOutgoing(part.CallbackQuery.Id)
+				if err != nil {
+					log.Error("Can not prepare CallbackAnswerOutgoing: %s", err.Error())
+					continue
+				}
+				outQueue <- q
 			}
 			outData := execute(
 				log,
@@ -133,12 +138,16 @@ func Processor(
 				timeout,
 				args,
 			)
-			q := prepareoutgoing.PrepareOutgoing(
+			q, err := prepareoutgoing.PrepareOutgoing(
 				log,
 				outData,
 				targetId,
 				nil,
 			)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
 			if q.MessageType != "" {
 				outQueue <- q
 			}
@@ -147,7 +156,7 @@ func Processor(
 				"WARNING: from_id=%d is not allowed. Add to whitelist",
 				targetId,
 			)
-			outQueue <- prepareoutgoing.PrepareOutgoing(
+			q, err := prepareoutgoing.PrepareOutgoing(
 				log,
 				[]byte(fmt.Sprintf(
 					"Sorry. Your effective ID %d not allowd.",
@@ -156,7 +165,11 @@ func Processor(
 				targetId,
 				nil,
 			)
-			continue
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+			outQueue <- q
 		}
 	}
 }
