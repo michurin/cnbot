@@ -1,11 +1,15 @@
 [main]
-  command = "./slave-script.sh"
+  args_trim = true       # msg=" A a " -> args=["A a"]
+  args_lower_case = true # msg=" A a " -> args=[" a a "]
+  args_split = true      # msg=" A a " -> args=["A", "a"]
+  command = "./slave-script.sh" # abspath or relative `cwd`
   concurrent = 2
-  cwd = "examples"
+  cwd = "."              # abspath or relative confiration file dir
   env_force = ["LANG=C"]
   env_pass = ["HOME","PATH"]
   polling_interval = 50
   port = 9999
-  timeout = 10
+  replay_to_user = true # true - replay to user, false - replay to whole chat
+  timeout = 10          # timeout for child processes
   token = "226015286:AAHzO9VmmKi-_uwZkmbA0DVn03DOpdYYsg4"
-  whitelist = [153812628]
+  whitelist = [153812628, 529050880]

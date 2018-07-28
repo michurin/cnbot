@@ -10,33 +10,35 @@ import (
 	"github.com/michurin/cnbot/pkg/sender"
 )
 
-func classifyData(data []byte) (isEmpty bool, leftIt bool, isImage bool, imageType string) {
-	// TODO: naive implementation. Details: https://en.wikipedia.org/wiki/List_of_file_signatures
-	if len(data) == 0 { // data is always trimed
-		isEmpty = true
-	} else if bytes.HasPrefix(data, []byte{'.'}) { // TODO: check tail?
-		leftIt = true
-	} else if bytes.HasPrefix(data, []byte{0xFF, 0xD8, 0xFF}) { // TODO: naive
-		isImage = true
-		imageType = "jpeg"
-	} else if bytes.HasPrefix(data, []byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A}) {
-		isImage = true
-		imageType = "png"
-	} else if bytes.HasPrefix(data, []byte{0x47, 0x49, 0x46, 0x38}) {
-		isImage = true
-		imageType = "gif"
-	}
-	return
-}
-
 func PrepareOutgoing(log *log.Logger, outData []byte, chatId int64, tips map[string]string) sender.OutgoingData {
-	isEmpty, leftIt, isImage, imageType := classifyData(outData)
+	isEmpty, leftIt, rawJSON, isImage, imageType, err := classifyData(outData)
+	if err != nil {
+		log.Errorf("Classification error: %s", err.Error())
+		payload := map[string]interface{}{
+			"chat_id": chatId,
+			"text":    err.Error(),
+		}
+		body, err := json.Marshal(payload)
+		_ = err // TODO!!!
+		return sender.OutgoingData{
+			MessageType: "sendMessage",
+			Type:        "application/json",
+			Body:        body,
+		}
+	}
 	if leftIt {
 		log.Info("Left message")
 		return sender.OutgoingData{} // empty MessageType means left message
 	}
 	if isEmpty {
 		outData = []byte("(no data)")
+	}
+	if rawJSON {
+		return sender.OutgoingData{
+			MessageType: "sendMessage",
+			Type:        "application/json",
+			Body:        outData,
+		}
 	}
 	if isImage {
 		log.Infof("TRY TO SEND IMAGE TYPE %v", imageType)
@@ -84,5 +86,18 @@ func PrepareOutgoing(log *log.Logger, outData []byte, chatId int64, tips map[str
 			Type:        "application/json",
 			Body:        body,
 		}
+	}
+}
+
+func CallbackAnswerOutgoing(callbackQueryId string) sender.OutgoingData {
+	payload := map[string]string{
+		"callback_query_id": callbackQueryId,
+	}
+	body, err := json.Marshal(payload)
+	_ = err // TODO!!!
+	return sender.OutgoingData{
+		MessageType: "answerCallbackQuery",
+		Type:        "application/json",
+		Body:        body,
 	}
 }

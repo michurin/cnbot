@@ -19,8 +19,8 @@ func Run(version, buildRev, buildDate string) {
 	for k, s := range config {
 		log.Infof("Going up bot: %s", k)
 		log.Debugf("Bot %s config: %+v", k, s)
-		incomingQueue := make(chan receiver.TUpdateMessage, 1000) // TODO: to config
-		outgoingQueue := make(chan sender.OutgoingData, 100)      // TODO: ?
+		incomingQueue := make(chan receiver.TUpdateResult, 1000) // TODO: to config
+		outgoingQueue := make(chan sender.OutgoingData, 100)     // TODO: ?
 		go receiver.RunPollingLoop(
 			log.WithArea(k+":poller"),
 			s.PollingInterval,
@@ -29,7 +29,7 @@ func Run(version, buildRev, buildDate string) {
 		)
 		for p := 0; p < s.Concurrent; p++ {
 			go processor.Processor(
-				log.WithArea(k+":proc"),
+				log.WithArea(k+":proc:"+strconv.Itoa(p)),
 				incomingQueue,
 				outgoingQueue,
 				s.WhiteList,
@@ -40,11 +40,15 @@ func Run(version, buildRev, buildDate string) {
 					s.EnvPass,
 					append(
 						s.EnvForce,
-						"BOT_SERVER_PORT="+strconv.FormatInt(s.Port, 10),
+						"BOT_SERVER_PORT="+strconv.Itoa(s.Port),
 						"BOT_VERSION="+version,
 						"BOT_BUILD_REV="+buildRev,
 						"BOT_BUILD_DATE="+buildDate,
 					)),
+				s.ReplayToUser,
+				*s.ArgsTrim,
+				*s.ArgsLowerCase,
+				*s.ArgsSplit,
 				s.Timeout,
 			)
 		}

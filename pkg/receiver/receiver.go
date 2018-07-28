@@ -26,17 +26,25 @@ type TUpdateFrom struct {
 	Username     string `json:"username"`
 }
 
-type TUpdateMessage struct { // TODO: only this struct have to be public, isn't it?
-	MessageId int64       `json:"message_id"`
-	Date      int64       `json:"date"`
-	Text      string      `json:"text"`
-	Chat      TUpdateChat `json:"chat"`
-	From      TUpdateFrom `json:"from"`
+type TUpdateMessage struct {
+	MessageId int64        `json:"message_id"`
+	Date      int64        `json:"date"`
+	Text      *string      `json:"text"`
+	Chat      TUpdateChat  `json:"chat"`
+	From      *TUpdateFrom `json:"from"`
+}
+
+type TUpdateCallbackQuery struct {
+	Id      string          `json:"id"`
+	From    TUpdateFrom     `json:"from"`
+	Message *TUpdateMessage `json:"message"`
+	Data    *string         `json:"data"`
 }
 
 type TUpdateResult struct {
-	UpdateId int64          `json:"update_id"`
-	Message  TUpdateMessage `json:"message"`
+	UpdateId      int64                 `json:"update_id"`
+	Message       *TUpdateMessage       `json:"message"`
+	CallbackQuery *TUpdateCallbackQuery `json:"callback_query"`
 }
 
 type TUpdates struct {
@@ -55,7 +63,7 @@ func RunPollingLoop(
 	log *log.Logger,
 	apiTimeout int,
 	token string,
-	messages chan<- TUpdateMessage,
+	parts chan<- TUpdateResult,
 ) {
 	var offset int64
 	var offsetPtr *int64 // have to be nil on first iteration
@@ -99,8 +107,8 @@ func RunPollingLoop(
 			if offset <= part.UpdateId {
 				offset = part.UpdateId + 1
 			}
-			log.Info(part.Message)
-			messages <- part.Message
+			log.Infof("Message part: %+v", part)
+			parts <- part
 		}
 		log.Debugf("offset = %d", offset)
 	}

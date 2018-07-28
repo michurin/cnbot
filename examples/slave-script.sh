@@ -1,7 +1,12 @@
 #!/bin/sh
 
-cmd="x_$(echo "$1" | tr '[:upper:][:space:]' '[:lower:]_' | sed 's-___*-_-g; s-^_--; s-_$--')"
-url="http://localhost:$BOT_SERVER_PORT/$BOT_CHAT_ID"
+cmd="x_$(
+    echo "$1" |
+    tr '[:upper:][:space:]' '[:lower:]_' |
+    sed 's-/--;s-___*-_-g; s-^_--; s-_$--'
+)"
+user=$BOT_TARGET_ID
+url="http://localhost:$BOT_SERVER_PORT/$user"
 
 # TODO: check curl, convert, at
 
@@ -38,7 +43,7 @@ case "$cmd" in
         ;;
     x_mem)
         (
-        echo '*Memory usage of PID=$BOT_PID*'
+        echo '*Memory usage of PID='"$BOT_PID"'*'
         echo '```'
         cat "/proc/$BOT_PID/status" | grep '^Vm' | expand
         echo '```'
@@ -50,6 +55,15 @@ case "$cmd" in
         echo '[stdout]'
         (>&2 echo "[stderr]")
         exit 1
+        ;;
+    x_err_long)
+        for i in `seq 4000`
+        do
+           echo $i
+        done
+        ;;
+    x_err_invalid)
+        printf '\xff\xff'
         ;;
     x_help)
         (
@@ -65,6 +79,8 @@ case "$cmd" in
         echo '`env` - env'
         echo '`mem` - memory usage'
         echo '`err` - emulate error exit'
+        echo '`err_long` - emulate too long result string error'
+        echo '`err_invalid` - emulate invalid UTF8 string error'
         echo '`help` - this message'
         echo '*Advanced examples:*'
         echo '`rrose` - image with cuption'
@@ -101,6 +117,33 @@ case "$cmd" in
         echo 'Delayed Command:'
         echo "$delayed_command"
         echo 'Wait one minute for result'
+        ;;
+    x_json)
+        cat <<JSON
+{
+    "chat_id": "$user",
+    "text": "Demo of inline keyboard",
+    "reply_markup": {"inline_keyboard": [
+        [
+            {"text": "google", "url": "http://google.com/"},
+            {"text": "youtube", "url": "http://youtube.com/"}
+        ], [
+            {"text": "Say A", "callback_data": "A"},
+            {"text": "Say B", "callback_data": "B"},
+            {"text": "Say C", "callback_data": "C"}
+        ]
+    ]}
+}
+JSON
+        ;;
+    x_callback_data:a)
+        echo 'A!'
+        ;;
+    x_callback_data:b)
+        echo 'B!'
+        ;;
+    x_callback_data:c)
+        echo 'C!'
         ;;
     *)
         for i in "$@"
