@@ -2,7 +2,6 @@ package calltgapi
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -22,8 +21,7 @@ func PostBytes(
 	method string,
 	data []byte,
 	mime string,
-	resp interface{},
-) error {
+) ([]byte, error) {
 	//log.Debugf("Raw send: %v", data)
 	timeout := time.Duration(timeout_sec) * time.Second
 	response, err := (&http.Client{
@@ -34,24 +32,16 @@ func PostBytes(
 		bytes.NewReader(data),
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if response.StatusCode != 200 {
-		return errors.New(response.Status)
+	if response.StatusCode != http.StatusOK {
+		return nil, errors.New(response.Status)
 	}
 	defer response.Body.Close()
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	//log.Debugf("Raw recv: %v", body)
-	err = json.Unmarshal(body, resp)
-	if err != nil {
-		log.Errorf(
-			"Can not parse response [code=%d] [body=%s]",
-			response.StatusCode,
-			body,
-		)
-	}
-	return err
+	return body, nil
 }

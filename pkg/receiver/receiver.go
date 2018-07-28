@@ -1,6 +1,8 @@
 package receiver
 
 import (
+	"encoding/json"
+
 	"github.com/michurin/cnbot/pkg/calltgapi"
 	"github.com/michurin/cnbot/pkg/log"
 )
@@ -57,8 +59,7 @@ func RunPollingLoop(
 	var offsetPtr *int64 // have to be nil on first iteration
 	var updates *TUpdates
 	for {
-		updates = &TUpdates{}
-		err := calltgapi.PostBytes(
+		body, err := calltgapi.PostBytes(
 			log,
 			apiTimeout+10,
 			token,
@@ -68,8 +69,14 @@ func RunPollingLoop(
 				TUpdatesRequest{Offset: offsetPtr, Timeout: &apiTimeout},
 			),
 			"application/json",
-			updates,
 		)
+		if err != nil {
+			log.Error(err)
+			errorSleep(log, 10)
+			continue
+		}
+		updates = &TUpdates{}
+		err = json.Unmarshal(body, updates)
 		if err != nil {
 			log.Error(err)
 			errorSleep(log, 10)
