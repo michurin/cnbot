@@ -34,7 +34,7 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	h.log.Info(chatId)
+	h.log.Infof("HTTP req for target %d", chatId)
 	body, err := ioutil.ReadAll(r.Body) // The ServeHTTP Handler does not need to close Body.
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -52,7 +52,12 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.outQueue <- q
 		replay_data = <-resp
 	}
-	w.Write(replay_data)
+	messageId, err := replyToMessageId(replay_data)
+	if err != nil {
+		w.Write([]byte("ERROR: " + err.Error()))
+	} else {
+		w.Write([]byte(strconv.FormatInt(messageId, 10)))
+	}
 }
 
 func HttpIf(log *log.Logger, port int, oq chan sender.OutgoingData) {
