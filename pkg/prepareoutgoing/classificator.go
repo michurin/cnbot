@@ -8,8 +8,21 @@ import (
 )
 
 var (
-	RX_JSON = regexp.MustCompile(`(?s:^[[:space:]]*{[[:space:]]*".*}[[:space:]]*$)`)
-	RX_DOT  = regexp.MustCompile(`^[[:space:]]*\.[[:space:]]*$`)
+	RX_JSON = regexp.MustCompile(
+		`(?s:^` + // go fmt padding :-/
+			`[[:space:]]*` +
+			`(` +
+			`sendMessage` +
+			`|` +
+			`deleteMessage` +
+			`|` +
+			`editMessageText` +
+			`)` +
+			`[[:space:]]*` +
+			`({[[:space:]]*".*})` +
+			`[[:space:]]*$)`,
+	)
+	RX_DOT = regexp.MustCompile(`^[[:space:]]*\.[[:space:]]*$`)
 	// Details: https://en.wikipedia.org/wiki/List_of_file_signatures
 	FP_GIF   = []byte{0x47, 0x49, 0x46, 0x38}
 	FP_PNG   = []byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A}
@@ -21,7 +34,9 @@ var (
 func classifyData(data []byte) (
 	isEmpty bool,
 	leftIt bool,
-	rawJSON bool,
+	isRaw bool,
+	rawMethod string,
+	rawPayload []byte,
 	isImage bool,
 	imageType string,
 	err error,
@@ -44,8 +59,10 @@ func classifyData(data []byte) (
 			if utf8.Valid(data) {
 				if RX_DOT.Match(data) {
 					leftIt = true
-				} else if RX_JSON.Match(data) {
-					rawJSON = true
+				} else if r := RX_JSON.FindSubmatch(data); r != nil {
+					isRaw = true
+					rawMethod = string(r[1])
+					rawPayload = r[2]
 				} else if utf8.RuneCount(data) > 4000 {
 					err = errors.New("Message too long")
 				}

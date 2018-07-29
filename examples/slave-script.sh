@@ -68,25 +68,29 @@ case "$cmd" in
     x_help)
         (
         echo '*Simplest examples:*'
-        echo '`ok` - just say "ok"'
-        echo '`nothig` - say nothing'
-        echo '`empty` - empty message (no output)'
-        echo '`rose` - send image'
-        echo '`long` - emulate long running task; you can test, how concurrency works'
+        echo '`ok` — just say "ok"'
+        echo '`nothig` — say nothing'
+        echo '`empty` — empty message (no output)'
+        echo '`rose` — send image'
+        echo '`long` — emulate long running task; you can test, how concurrency works'
         echo '*Information:*'
-        echo '`date` - date'
-        echo '`pwd` - pwd'
-        echo '`env` - env'
-        echo '`mem` - memory usage'
-        echo '`err` - emulate error exit'
-        echo '`err_long` - emulate too long result string error'
-        echo '`err_invalid` - emulate invalid UTF8 string error'
-        echo '`help` - this message'
+        echo '`date` — date'
+        echo '`pwd` — pwd'
+        echo '`env` — env'
+        echo '`mem` — memory usage'
+        echo '`err` — emulate error exit'
+        echo '`err_long` — emulate too long result string error'
+        echo '`err_invalid` — emulate invalid UTF8 string error'
+        echo '`help` — this message'
         echo '*Advanced examples:*'
-        echo '`rrose` - image with cuption'
-        echo '`note` - wait 3 seconds and push ordinary message'
-        echo '`nnote` - wait 3 seconds and push message without notification'
-        echo '`delayed` - delayed action'
+        echo '`rrose` — image with cuption'
+        echo '`note` — wait 3 seconds and push ordinary message'
+        echo '`nnote` — wait 3 seconds and push message without notification'
+        echo '`delayed` — delayed action'
+        echo '*Experimental (raw messages)*'
+        echo '`json` — raw json example'
+        echo '`del` — delete message'
+        echo '`edit` — how bot can edit its messages'
         ) |
         curl -qsX POST -o /dev/null --data-binary @- "$url?parse_mode=markdown"
         echo .
@@ -120,6 +124,7 @@ case "$cmd" in
         ;;
     x_json)
         cat <<JSON
+sendMessage
 {
     "chat_id": "$user",
     "text": "Demo of inline keyboard",
@@ -144,6 +149,25 @@ JSON
         ;;
     x_callback_data:c)
         echo 'C!'
+        ;;
+    x_del)
+        message_id=`echo 'Message will be deleted!' | curl -qsX POST --data-binary @- "$url"`
+        sleep 2
+        echo 'deleteMessage{"chat_id":'"$user"',"message_id":'"$message_id"'}' |
+        curl -qsX POST -o /dev/null --data-binary @- "$url"
+        echo .
+        ;;
+    x_edit)
+        message_id=`echo 'Message will be edited!' | curl -qsX POST --data-binary @- "$url"`
+        for text in 'Edited!' 'Updated text' 'Final text'
+        do
+            sleep 2
+            method=editMessageText
+            payload='{"chat_id":'"$user"',"message_id":'"$message_id"',"text":"'"$text"'"}'
+            echo "$method$payload" |
+            curl -qsX POST -o /dev/null --data-binary @- "$url"
+        done
+        echo .
         ;;
     *)
         for i in "$@"
