@@ -1,7 +1,6 @@
 package sender
 
 import (
-	"context"
 	"time"
 
 	"github.com/michurin/cnbot/pkg/calltgapi"
@@ -18,9 +17,8 @@ type OutgoingData struct {
 func Sender(log *log.Logger, token string, toSendQueue <-chan OutgoingData) {
 	timeout := time.Duration(10) * time.Second // TODO: send operation timeout, have to be configurable
 	for message := range toSendQueue {
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
 		body, err := calltgapi.PostBytes(
-			ctx,
+			timeout,
 			log,
 			token,
 			message.MessageType,

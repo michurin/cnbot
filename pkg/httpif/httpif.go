@@ -47,12 +47,12 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	replay_data := []byte("nodata")
+	replayData := []byte("nodata")
 	if q.MessageType != "" {
 		h.outQueue <- q
-		replay_data = <-resp
+		replayData = <-resp
 	}
-	messageId, err := replyToMessageId(replay_data)
+	messageId, err := replyToMessageId(replayData)
 	if err != nil {
 		w.Write([]byte("ERROR: " + err.Error()))
 	} else {

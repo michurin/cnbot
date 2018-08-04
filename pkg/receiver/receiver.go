@@ -1,7 +1,6 @@
 package receiver
 
 import (
-	"context"
 	"encoding/json"
 	"time"
 
@@ -70,9 +69,8 @@ func RunPollingLoop(
 	var updates *TUpdates
 	timeout := time.Duration(apiTimeout+10) * time.Second // TODO: +10 to config
 	for {
-		ctx, _ := context.WithTimeout(context.Background(), timeout)
 		body, err := calltgapi.PostBytes(
-			ctx,
+			timeout,
 			log,
 			token,
 			"getUpdates",
