@@ -5,7 +5,7 @@ cmd="x_$(
     tr '[:upper:][:space:]' '[:lower:]_' |
     sed 's-/--;s-___*-_-g; s-^_--; s-_$--'
 )"
-user=$BOT_TARGET_ID
+user="$BOT_TARGET_ID"
 url="http://localhost:$BOT_SERVER_PORT/$user"
 
 # TODO: check curl, convert, at
@@ -21,7 +21,7 @@ case "$cmd" in
         echo ''
         ;;
     x_rose)
-        convert rose: png:-
+        convert rose: -resize 200x png:-
         ;;
     x_long)
         steps=3
@@ -88,7 +88,7 @@ case "$cmd" in
         echo '`nnote` — wait 3 seconds and push message without notification'
         echo '`delayed` — delayed action'
         echo '*Experimental (raw messages)*'
-        echo '`json` — raw json example'
+        echo '`keyboard` — inline keyboard'
         echo '`del` — delete message'
         echo '`edit` — how bot can edit its messages'
         ) |
@@ -96,7 +96,7 @@ case "$cmd" in
         echo .
         ;;
     x_rrose)
-        convert rose: png:- |
+        convert rose: -resize 200x png:- |
         curl -qsX POST -o /dev/null --data-binary @- "$url?parse_mode=markdown&caption=Caption+text"
         echo .
         ;;
@@ -122,7 +122,7 @@ case "$cmd" in
         echo "$delayed_command"
         echo 'Wait one minute for result'
         ;;
-    x_json)
+    x_keyboard)
         cat <<JSON
 sendMessage
 {
