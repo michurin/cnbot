@@ -13,8 +13,11 @@ dep ensure
 go run cmd/bot/main.go -C examples/config.toml
 ```
 
-Build
------
+Build for deploy and cross compilation
+--------------------------------------
+
+There three variables you can set in build time
+to mark the version of binary: `Version`, `BuildRev` and `BuildDate`.
 
 Example with cross compilation:
 
@@ -24,6 +27,10 @@ GOOS=linux GOARCH=386 go build -ldflags "-X main.Version=1 -X main.BuildRev=`git
 
 Full list of supported architectures you can find in
 [Go sources](https://github.com/golang/go/blob/master/src/go/build/syslist.go).
+
+On some platforms you may want to add
+`--ldflags '-linkmode external -extldflags "-static"'`
+to force build static binary.
 
 Run
 ---
