@@ -6,7 +6,6 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
-	"time"
 
 	"github.com/michurin/cnbot/pkg/log"
 )
@@ -16,7 +15,7 @@ func url(token string, method string) string {
 }
 
 func PostBytes(
-	timeout time.Duration,
+	ctx context.Context,
 	log *log.Logger,
 	token string,
 	method string,
@@ -24,8 +23,6 @@ func PostBytes(
 	mime string,
 ) ([]byte, error) {
 	//log.Debugf("Raw send: %v", data)
-	ctx, cancel := context.WithTimeout(context.Background(), timeout) // in future we can use parent context here
-	defer cancel()
 	req, err := http.NewRequest(http.MethodPost, url(token, method), bytes.NewReader(data))
 	if err != nil {
 		return nil, err
