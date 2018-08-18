@@ -91,6 +91,8 @@ case "$cmd" in
         echo '`keyboard` — inline keyboard'
         echo '`del` — delete message'
         echo '`edit` — how bot can edit its messages'
+        echo '*Misc. Just for fun*'
+        echo '`cn` — random Chuck Norris joke from http://www.icndb.com'
         ) |
         curl -qsX POST -o /dev/null --data-binary @- "$url?parse_mode=markdown"
         echo .
@@ -168,6 +170,10 @@ JSON
             curl -qsX POST -o /dev/null --data-binary @- "$url"
         done
         echo .
+        ;;
+    x_cn)
+        curl -s http://api.icndb.com/jokes/random |
+        python -c 'import sys, json; t=json.load(sys.stdin); print(t["value"]["joke"])'
         ;;
     *)
         for i in "$@"
