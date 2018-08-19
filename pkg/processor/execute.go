@@ -22,7 +22,7 @@ func execute(
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 	var outData []byte
-	cmd := exec.Command(command, args...)
+	cmd := exec.Command(command, args...)                 // CommandContext still do not use GPID, so we control timeout manually
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true} // setpgid(2) between fork(2) and execve(2)
 	cmd.Env = env
 	cmd.Dir = cwd

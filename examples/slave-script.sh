@@ -5,7 +5,7 @@ cmd="x_$(
     tr '[:upper:][:space:]' '[:lower:]_' |
     sed 's-/--;s-___*-_-g; s-^_--; s-_$--'
 )"
-user=$BOT_TARGET_ID
+user="$BOT_TARGET_ID"
 url="http://localhost:$BOT_SERVER_PORT/$user"
 
 # TODO: check curl, convert, at
@@ -21,7 +21,7 @@ case "$cmd" in
         echo ''
         ;;
     x_rose)
-        convert rose: png:-
+        convert rose: -resize 200x png:-
         ;;
     x_long)
         steps=3
@@ -68,31 +68,37 @@ case "$cmd" in
     x_help)
         (
         echo '*Simplest examples:*'
-        echo '`ok` - just say "ok"'
-        echo '`nothig` - say nothing'
-        echo '`empty` - empty message (no output)'
-        echo '`rose` - send image'
-        echo '`long` - emulate long running task; you can test, how concurrency works'
+        echo '`ok` — just say "ok"'
+        echo '`nothig` — say nothing'
+        echo '`empty` — empty message (no output)'
+        echo '`rose` — send image'
+        echo '`long` — emulate long running task; you can test, how concurrency works'
         echo '*Information:*'
-        echo '`date` - date'
-        echo '`pwd` - pwd'
-        echo '`env` - env'
-        echo '`mem` - memory usage'
-        echo '`err` - emulate error exit'
-        echo '`err_long` - emulate too long result string error'
-        echo '`err_invalid` - emulate invalid UTF8 string error'
-        echo '`help` - this message'
+        echo '`date` — date'
+        echo '`pwd` — pwd'
+        echo '`env` — env'
+        echo '`mem` — memory usage'
+        echo '`err` — emulate error exit'
+        echo '`err_long` — emulate too long result string error'
+        echo '`err_invalid` — emulate invalid UTF8 string error'
+        echo '`help` — this message'
         echo '*Advanced examples:*'
-        echo '`rrose` - image with cuption'
-        echo '`note` - wait 3 seconds and push ordinary message'
-        echo '`nnote` - wait 3 seconds and push message without notification'
-        echo '`delayed` - delayed action'
+        echo '`rrose` — image with cuption'
+        echo '`note` — wait 3 seconds and push ordinary message'
+        echo '`nnote` — wait 3 seconds and push message without notification'
+        echo '`delayed` — delayed action'
+        echo '*Experimental (raw messages)*'
+        echo '`keyboard` — inline keyboard'
+        echo '`del` — delete message'
+        echo '`edit` — how bot can edit its messages'
+        echo '*Misc. Just for fun*'
+        echo '`cn` — random Chuck Norris joke from http://www.icndb.com'
         ) |
         curl -qsX POST -o /dev/null --data-binary @- "$url?parse_mode=markdown"
         echo .
         ;;
     x_rrose)
-        convert rose: png:- |
+        convert rose: -resize 200x png:- |
         curl -qsX POST -o /dev/null --data-binary @- "$url?parse_mode=markdown&caption=Caption+text"
         echo .
         ;;
@@ -118,8 +124,9 @@ case "$cmd" in
         echo "$delayed_command"
         echo 'Wait one minute for result'
         ;;
-    x_json)
+    x_keyboard)
         cat <<JSON
+sendMessage
 {
     "chat_id": "$user",
     "text": "Demo of inline keyboard",
@@ -144,6 +151,29 @@ JSON
         ;;
     x_callback_data:c)
         echo 'C!'
+        ;;
+    x_del)
+        message_id=`echo 'Message will be deleted!' | curl -qsX POST --data-binary @- "$url"`
+        sleep 2
+        echo 'deleteMessage{"chat_id":'"$user"',"message_id":'"$message_id"'}' |
+        curl -qsX POST -o /dev/null --data-binary @- "$url"
+        echo .
+        ;;
+    x_edit)
+        message_id=`echo 'Message will be edited!' | curl -qsX POST --data-binary @- "$url"`
+        for text in 'Edited!' 'Updated text' 'Final text'
+        do
+            sleep 2
+            method=editMessageText
+            payload='{"chat_id":'"$user"',"message_id":'"$message_id"',"text":"'"$text"'"}'
+            echo "$method$payload" |
+            curl -qsX POST -o /dev/null --data-binary @- "$url"
+        done
+        echo .
+        ;;
+    x_cn)
+        curl -s http://api.icndb.com/jokes/random |
+        python -c 'import sys, json; t=json.load(sys.stdin); print(t["value"]["joke"])'
         ;;
     *)
         for i in "$@"

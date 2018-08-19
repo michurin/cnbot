@@ -1,7 +1,6 @@
 package httpif
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -35,21 +34,29 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	h.log.Info(chatId)
+	h.log.Infof("HTTP req for target %d", chatId)
 	body, err := ioutil.ReadAll(r.Body) // The ServeHTTP Handler does not need to close Body.
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	k := r.URL.Query()
-	w.Write([]byte(fmt.Sprintf("Ok %#v\n%#v\n%#v\n%#v\n\n", r.Method, string(body), r.URL, k))) // TODO: http replay
-	q, err := prepareoutgoing.PrepareOutgoing(h.log, body, chatId, valueToMap(k))
+	resp := make(chan []byte, 1)
+	q, err := prepareoutgoing.PrepareOutgoing(h.log, body, chatId, valueToMap(k), resp)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	replayData := []byte("nodata")
 	if q.MessageType != "" {
 		h.outQueue <- q
+		replayData = <-resp
+	}
+	messageId, err := replyToMessageId(replayData)
+	if err != nil {
+		w.Write([]byte("ERROR: " + err.Error()))
+	} else {
+		w.Write([]byte(strconv.FormatInt(messageId, 10)))
 	}
 }
 

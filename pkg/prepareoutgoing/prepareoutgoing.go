@@ -17,8 +17,9 @@ func PrepareOutgoing(
 	outData []byte,
 	chatId int64,
 	tips map[string]string,
+	responseChan chan []byte,
 ) (sender.OutgoingData, error) {
-	isEmpty, leftIt, rawJSON, isImage, imageType, err := classifyData(outData)
+	isEmpty, leftIt, isRaw, rawMethod, rawPayload, isImage, imageType, err := classifyData(outData)
 	if err != nil {
 		log.Errorf("Classification error: %s", err.Error())
 		payload := map[string]interface{}{
@@ -33,6 +34,7 @@ func PrepareOutgoing(
 			MessageType: "sendMessage",
 			Type:        "application/json",
 			Body:        body,
+			Response:    responseChan,
 		}, nil
 	}
 	if leftIt {
@@ -41,11 +43,12 @@ func PrepareOutgoing(
 	if isEmpty {
 		outData = []byte("(no data)")
 	}
-	if rawJSON {
+	if isRaw {
 		return sender.OutgoingData{
-			MessageType: "sendMessage",
+			MessageType: rawMethod,
 			Type:        "application/json",
-			Body:        outData,
+			Body:        rawPayload,
+			Response:    responseChan,
 		}, nil
 	}
 	if isImage {
@@ -74,6 +77,7 @@ func PrepareOutgoing(
 			MessageType: "sendPhoto",
 			Type:        w.FormDataContentType(),
 			Body:        b.Bytes(),
+			Response:    responseChan,
 		}, nil
 	} else {
 		payload := map[string]interface{}{
@@ -94,6 +98,7 @@ func PrepareOutgoing(
 			MessageType: "sendMessage",
 			Type:        "application/json",
 			Body:        body,
+			Response:    responseChan,
 		}, nil
 	}
 }
