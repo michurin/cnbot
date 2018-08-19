@@ -1,11 +1,13 @@
 package processor
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/michurin/cnbot/pkg/log"
 	"github.com/michurin/cnbot/pkg/prepareoutgoing"
@@ -124,7 +126,9 @@ func Processor(
 				}
 				outQueue <- q
 			}
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
 			outData := execute(
+				ctx,
 				log,
 				command,
 				cwd,
@@ -135,9 +139,9 @@ func Processor(
 					"BOT_CHAT_ID="+strconv.FormatInt(chatId, 10),
 					"BOT_TARGET_ID="+strconv.FormatInt(targetId, 10),
 				),
-				timeout,
 				args,
 			)
+			cancel()
 			q, err := prepareoutgoing.PrepareOutgoing(
 				log,
 				outData,
