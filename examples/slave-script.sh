@@ -88,11 +88,15 @@ case "$cmd" in
         echo '`nnote` — wait 3 seconds and push message without notification'
         echo '`delayed` — delayed action'
         echo '*Experimental (raw messages)*'
-        echo '`keyboard` — inline keyboard'
+        echo '`kbd` — keyboard'
+        echo '`ikbd` — inline keyboard'
         echo '`del` — delete message'
         echo '`edit` — how bot can edit its messages'
         echo '*Misc. Just for fun*'
         echo '`cn` — random Chuck Norris joke from http://www.icndb.com'
+        echo '`geo` — keyboard with requests of additional information'
+        echo '`menu` — this help as menu'
+        echo '`removemenu` — remove menu from screen'
         ) |
         curl -qsX POST -o /dev/null --data-binary @- "$url?parse_mode=markdown"
         echo .
@@ -124,7 +128,7 @@ case "$cmd" in
         echo "$delayed_command"
         echo 'Wait one minute for result'
         ;;
-    x_keyboard)
+    x_ikbd)
         cat <<JSON
 sendMessage
 {
@@ -138,6 +142,22 @@ sendMessage
             {"text": "Say A", "callback_data": "A"},
             {"text": "Say B", "callback_data": "B"},
             {"text": "Say C", "callback_data": "C"}
+        ]
+    ]}
+}
+JSON
+        ;;
+    x_kbd)
+        cat <<JSON
+sendMessage
+{
+    "chat_id": "$user",
+    "text": "Demo of keyboard",
+    "reply_markup": {"keyboard": [
+        [
+            {"text": "help"},
+            {"text": "date"},
+            {"text": "env"}
         ]
     ]}
 }
@@ -174,6 +194,54 @@ JSON
     x_cn)
         curl -s http://api.icndb.com/jokes/random |
         python -c 'import sys, json; t=json.load(sys.stdin); print(t["value"]["joke"])'
+        ;;
+    x_geo)
+        cat <<JSON
+sendMessage
+{
+    "chat_id": "$user",
+    "text": "Demo of geo location and contact requests (not yet fully supported)",
+    "reply_markup": {"keyboard": [
+        [
+            {"text": "Send location", "request_location": true},
+            {"text": "Send contact", "request_contact": true}
+        ]
+    ]}
+}
+JSON
+        ;;
+    x_menu)
+        cat <<JSON
+sendMessage
+{
+    "chat_id": "$user",
+    "text": "Help as menu, just push the button",
+    "reply_markup": {"keyboard": [
+JSON
+        cat "$0" |
+        perl -lne '
+            BEGIN{$n=0; $a=$b=""}
+            while(<>){if (m/^\s+x_([a-z_]+)\)\s*$/) {
+                if ($n==0) {print "${a}["; $a="],"; $b=""}
+                print qq[${b}{"text":"$1"}];
+                $b=",";
+                $n=($n+1)%4;
+            }}
+            END{print "]"}'
+        cat <<JSON
+    ]}
+}
+JSON
+        ;;
+    x_removemenu)
+        cat <<JSON
+sendMessage
+{
+    "chat_id": "$user",
+    "text": "Remove keyboard",
+    "reply_markup": {"remove_keyboard": true}
+}
+JSON
         ;;
     *)
         for i in "$@"
