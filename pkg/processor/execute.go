@@ -2,21 +2,21 @@ package processor
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
 	"syscall"
-	"time"
 
 	"github.com/michurin/cnbot/pkg/log"
 )
 
 func execute(
+	ctx context.Context,
 	log *log.Logger,
 	command string,
 	cwd string,
 	env []string,
-	timeout int64,
 	args []string,
 ) []byte {
 	var stdout bytes.Buffer
@@ -30,15 +30,18 @@ func execute(
 	stderr.Reset()
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	afterFuncTimer := time.AfterFunc(time.Second*time.Duration(timeout), func() {
-		// https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
-		if cmd.Process != nil { // nil if script not started (not exists)
-			syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL) // -PID is the same as -PGID
-		}
-	})
-	defer afterFuncTimer.Stop() // cosmetics, all timers share the same gorutine
 	log.Infof("Run %+v", cmd)
-	err := cmd.Run()
+	err := cmd.Start()
+	if err == nil {
+		go func() {
+			<-ctx.Done()
+			// cmd.Process is not nil here cose we are started
+			// -PID is the same as -PGID
+			// https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
+			syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
+		}()
+		err = cmd.Wait()
+	}
 	if err == nil {
 		log.Info("Done.")
 		outData = stdout.Bytes()
