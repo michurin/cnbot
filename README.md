@@ -68,3 +68,9 @@ Also, you can use environment variable `HTTPS_PROXY=socks5://host:port`.
 ## Configuration and protocol
 
 Under construction. See examples.
+
+## License
+
+Copyright (c) 2018, Alexey Michurin \<a.michurin@gmail.com\>. All rights reserved.
+
+Licensed under the [New BSD (no advertising, 3 clause)](LICENSE) License.
