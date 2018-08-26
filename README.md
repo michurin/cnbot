@@ -67,7 +67,9 @@ Also, you can use environment variable `HTTPS_PROXY=socks5://host:port`.
 
 ## Configuration and protocol
 
-Under construction. See examples.
+Under construction. See [examples](examples):
+[configuration file](examples/config.toml) and
+[script](examples/slave-script.sh) with bot commands implementation.
 
 ## License
 
