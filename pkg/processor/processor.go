@@ -15,6 +15,12 @@ import (
 	"github.com/michurin/cnbot/pkg/sender"
 )
 
+var (
+	errorNoBody = errors.New("Can not find message body")
+	errorNoFrom = errors.New("Can not find <from> info")
+	errorNoChat = errors.New("Can not find <chat> info")
+)
+
 func BuildEnv(env []string, envPass []string, envForce []string) []string {
 	res := []string{}
 	allowed := map[string]bool{}
@@ -55,7 +61,7 @@ func messageToArgs(
 			return true, []string{"callback_data:" + *p.CallbackQuery.Data}, nil
 		}
 	}
-	return false, nil, errors.New("Can not find message body")
+	return false, nil, errorNoBody
 }
 
 func messageToFrom(p receiver.TUpdateResult) (receiver.TUpdateFrom, error) {
@@ -66,7 +72,7 @@ func messageToFrom(p receiver.TUpdateResult) (receiver.TUpdateFrom, error) {
 	} else if p.CallbackQuery != nil {
 		return p.CallbackQuery.From, nil
 	}
-	return receiver.TUpdateFrom{}, errors.New("Can not find <from> info")
+	return receiver.TUpdateFrom{}, errorNoFrom
 }
 
 func getChat(p receiver.TUpdateResult) (receiver.TUpdateChat, error) {
@@ -74,7 +80,7 @@ func getChat(p receiver.TUpdateResult) (receiver.TUpdateChat, error) {
 		return p.Message.Chat, nil
 	}
 	// chat_id not present in callback_query messages
-	return receiver.TUpdateChat{}, errors.New("Can not find <chat> info")
+	return receiver.TUpdateChat{}, errorNoChat
 }
 
 func Processor(

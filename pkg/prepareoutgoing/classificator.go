@@ -29,6 +29,9 @@ var (
 	FP_JPG_A = []byte{0xFF, 0xD8, 0xFF, 0xDB}
 	FP_JPG_B = []byte{0xFF, 0xD8, 0xFF, 0xE0}
 	FP_JPG_C = []byte{0xFF, 0xD8, 0xFF, 0xE1}
+	// Errors
+	errorMessageTooLong = errors.New("Message too long")
+	errorInvalidUTF8    = errors.New("Invalid UTF8 string")
 )
 
 func classifyData(data []byte) (
@@ -64,10 +67,10 @@ func classifyData(data []byte) (
 					rawMethod = string(r[1])
 					rawPayload = r[2]
 				} else if utf8.RuneCount(data) > 4000 {
-					err = errors.New("Message too long")
+					err = errorMessageTooLong
 				}
 			} else {
-				err = errors.New("Invalid UTF8 string")
+				err = errorInvalidUTF8
 			}
 		}
 	}
