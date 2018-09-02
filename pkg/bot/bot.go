@@ -46,9 +46,11 @@ func Run(version, buildRev, buildDate string) {
 						"BOT_BUILD_DATE="+buildDate,
 					)),
 				s.ReplayToUser,
-				*s.ArgsTrim,
-				*s.ArgsLowerCase,
-				*s.ArgsSplit,
+				processor.MessageToArgs{
+					Trim:      *s.ArgsTrim,
+					LowerCase: *s.ArgsLowerCase,
+					SplitArgs: *s.ArgsSplit,
+				},
 				s.Timeout,
 			)
 		}
