@@ -16,7 +16,6 @@ import (
 )
 
 var (
-	errorNoBody = errors.New("Can not find message body")
 	errorNoFrom = errors.New("Can not find <from> info")
 	errorNoChat = errors.New("Can not find <chat> info")
 )
@@ -33,35 +32,6 @@ func BuildEnv(env []string, envPass []string, envForce []string) []string {
 		}
 	}
 	return append(append(res, "BOT_PID="+strconv.Itoa(os.Getpid())), envForce...)
-}
-
-func messageToArgs(
-	p receiver.TUpdateResult,
-	trim bool,
-	lowerCaseArgs bool,
-	splitArgs bool,
-) (bool, []string, error) {
-	if p.Message != nil {
-		if p.Message.Text != nil {
-			s := *p.Message.Text
-			if trim {
-				s = strings.TrimSpace(s)
-			}
-			if lowerCaseArgs {
-				s = strings.ToLower(s)
-			}
-			if splitArgs {
-				return false, strings.Fields(s), nil
-			}
-			return false, []string{s}, nil
-		}
-	}
-	if p.CallbackQuery != nil {
-		if p.CallbackQuery.Data != nil {
-			return true, []string{"callback_data:" + *p.CallbackQuery.Data}, nil
-		}
-	}
-	return false, nil, errorNoBody
 }
 
 func messageToFrom(p receiver.TUpdateResult) (receiver.TUpdateFrom, error) {
@@ -92,9 +62,7 @@ func Processor(
 	cwd string,
 	env []string,
 	replayToUser bool,
-	trim bool,
-	lowerCaseArgs bool,
-	splitArgs bool,
+	ma MessageToArgs,
 	timeout int64,
 ) {
 	for part := range inQueue {
@@ -114,12 +82,7 @@ func Processor(
 			targetId = from.Id
 		}
 		if intInSlice(targetId, whitelist) {
-			isCallBack, args, err := messageToArgs(
-				part,
-				trim,
-				lowerCaseArgs,
-				splitArgs,
-			)
+			isCallBack, args, err := ma.MessageToArgs(part)
 			if err != nil {
 				log.Warnf("%s: %+v", err, part)
 				continue
