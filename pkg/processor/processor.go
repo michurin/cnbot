@@ -133,7 +133,7 @@ func Processor(
 			q, err := prepareoutgoing.PrepareOutgoing(
 				log,
 				[]byte(fmt.Sprintf(
-					"Sorry. Your effective ID %d not allowd.",
+					"Sorry. Your effective ID %d not allowed.",
 					targetId,
 				)),
 				targetId,
