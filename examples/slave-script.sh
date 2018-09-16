@@ -14,7 +14,7 @@ case "$cmd" in
     x_ok)
         echo ok
         ;;
-    x_nothig)
+    x_nothing)
         echo . # Single dot is a special silent marker, you will get nothing
         ;;
     x_empty)

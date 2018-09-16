@@ -22,7 +22,7 @@ func PostBytes(
 	data []byte,
 	mime string,
 ) ([]byte, error) {
-	//log.Debugf("Raw send: %v", data)
+	//log.Debugf("Raw send: %s", data)
 	req, err := http.NewRequest(http.MethodPost, url(token, method), bytes.NewReader(data))
 	if err != nil {
 		return nil, err
@@ -41,6 +41,6 @@ func PostBytes(
 	if err != nil {
 		return nil, err
 	}
-	//log.Debugf("Raw recv: %v", body)
+	//log.Debugf("Raw recv: %s", body)
 	return body, nil
 }

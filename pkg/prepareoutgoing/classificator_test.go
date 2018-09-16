@@ -34,6 +34,18 @@ func TestClassifier(t *testing.T) {
 			nil,
 		},
 		{
+			"EmptyInputBlankChars",
+			[]byte{"\r\n\t\x20"},
+			true,
+			false,
+			false,
+			"",
+			nil,
+			false,
+			"",
+			nil,
+		},
+		{
 			"Dot:Simplest",
 			[]byte("."),
 			false,
