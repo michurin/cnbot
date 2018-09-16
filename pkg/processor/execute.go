@@ -26,8 +26,6 @@ func execute(
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true} // setpgid(2) between fork(2) and execve(2)
 	cmd.Env = env
 	cmd.Dir = cwd
-	stdout.Reset()
-	stderr.Reset()
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	log.Infof("Run %+v", cmd)
