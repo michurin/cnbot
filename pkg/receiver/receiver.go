@@ -107,9 +107,11 @@ func RunPollingLoop(
 			}
 			if offset <= part.UpdateId {
 				offset = part.UpdateId + 1
+				log.Infof("Message part: %+v", part)
+				parts <- part
+			} else {
+				log.Errorf("Left too old message: %+v (current offset = %d)", part, offset)
 			}
-			log.Infof("Message part: %+v", part)
-			parts <- part
 		}
 		log.Debugf("offset = %d", offset)
 	}
