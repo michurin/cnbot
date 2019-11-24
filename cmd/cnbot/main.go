@@ -46,7 +46,7 @@ func main() {
 	if check {
 		c := client.WithLogging(client.New(http.Client{Timeout: 5 * time.Second}), logger)
 		a := api.New(c, token)
-		body, err := a.JSON(context.Background(), api.MethodGetMe, nil)
+		body, err := a.Call(context.Background(), api.MethodGetMe, api.EncodeEmpty())
 		if err != nil {
 			fmt.Printf("Error: %+v\n", err)
 			return

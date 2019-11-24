@@ -38,11 +38,29 @@ func QueueProcessor(
 			})
 			fmt.Printf("OUT: %s\n", string(out))
 			fmt.Printf("ERR: %+v\n", err)
-			fmt.Printf("TASK: %s\n", task.Text)                                 // TODO use logger
-			_, err = a.JSON(ctx, api.MethodSendMessage, map[string]interface{}{ // TODO process body? how?
+			fmt.Printf("TASK: %s\n", task.Text) // TODO use logger
+
+			/* How to send photo
+			body, err := api.EncodeMultipart(task.ReplyTo, out)
+			if err != nil {
+				panic(err)
+			}
+			_, err = a.Call(ctx, api.MethodSendPhoto, body)
+			if err != nil {
+				panic(err)
+			}
+			continue
+			*/
+
+			body, err := api.EncodeJSON(map[string]interface{}{
 				"chat_id": task.ReplyTo,
 				"text":    string(out),
 			})
+			if err != nil {
+				// TODO sleep?
+				logger.Log(err)
+			}
+			_, err = a.Call(ctx, api.MethodSendMessage, body)
 			if err != nil {
 				// TODO sleep?
 				logger.Log(err)

@@ -1,5 +1,8 @@
 package api
 
-const MethodGetMe = "getMe"
-const MethodGetUpdates = "getUpdates"
-const MethodSendMessage = "sendMessage"
+const (
+	MethodGetMe       = "getMe"
+	MethodGetUpdates  = "getUpdates"
+	MethodSendMessage = "sendMessage"
+	MethodSendPhoto   = "sendPhoto"
+)

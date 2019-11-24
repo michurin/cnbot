@@ -9,6 +9,12 @@ import (
 	"github.com/pkg/errors"
 )
 
+type Request struct {
+	Method string
+	MIME   string
+	Body   []byte
+}
+
 type API struct {
 	apiURLPrefix string
 	client       interfaces.HTTPClient
@@ -21,16 +27,13 @@ func New(client interfaces.HTTPClient, token string) *API {
 	}
 }
 
-func (a *API) JSON(ctx context.Context, method string, params interface{}) (json.RawMessage, error) {
-	var err error
-	var body []byte
-	if params != nil {
-		body, err = json.Marshal(params)
-		if err != nil {
-			return nil, errors.WithStack(err)
-		}
-	}
-	status, body, err := a.client.Do(ctx, "POST", "application/json", a.apiURLPrefix+method, body)
+func (a *API) Call(ctx context.Context, method string, request Request) (json.RawMessage, error) {
+	status, body, err := a.client.Do(
+		ctx,
+		request.Method,
+		request.MIME,
+		a.apiURLPrefix+method,
+		request.Body)
 	if err != nil {
 		return nil, err
 	}

@@ -37,7 +37,13 @@ func Poller(
 		if addOffset {
 			request["offset"] = offset + 1
 		}
-		result, err := a.JSON(ctx, api.MethodGetUpdates, request)
+		body, err := api.EncodeJSON(request)
+		if err != nil {
+			logger.Log(fmt.Sprintf("Poller error: %s", err))
+			sleepWithContext(ctx, 60*time.Second) // TODO sleep flag
+			continue
+		}
+		result, err := a.Call(ctx, api.MethodGetUpdates, body)
 		if err != nil {
 			logger.Log(fmt.Sprintf("Poller error: %s", err))
 			sleepWithContext(ctx, 60*time.Second) // TODO sleep flag
@@ -74,10 +80,11 @@ func Poller(
 				}
 			}
 			// TODO remove it. It added just for debug
-			_, err := a.JSON(ctx, api.MethodSendMessage, map[string]interface{}{
+			xbody, _ := api.EncodeJSON(map[string]interface{}{
 				"chat_id": u.Message.From.ID,
 				"text":    "OK",
 			})
+			_, err := a.Call(ctx, api.MethodSendMessage, xbody)
 			if err != nil {
 				logger.Log(fmt.Sprintf("Poller error: %s", err))
 				sleepWithContext(ctx, 60*time.Second) // TODO sleep flag
