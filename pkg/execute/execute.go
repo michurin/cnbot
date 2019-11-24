@@ -55,10 +55,9 @@ func (e *Executor) Run(ctx context.Context, script ScriptInfo) ([]byte, error) {
 	}
 	ctx, cancel := context.WithTimeout(ctx, script.Timeout)
 	defer cancel()
-	var processAlreadyDone bool
 	go func() {
 		<-ctx.Done()
-		if processAlreadyDone {
+		if cmd.ProcessState.Exited() {
 			return
 		}
 		e.Logger.Log("Kill process due to timeout")
@@ -74,8 +73,10 @@ func (e *Executor) Run(ctx context.Context, script ScriptInfo) ([]byte, error) {
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	processAlreadyDone = true
-	// TODO check error code
-	// TODO check stderr
+	exitCode := cmd.ProcessState.ExitCode()
+	errOutput := stderr.String()
+	if exitCode != 0 || len(errOutput) > 0 {
+		return nil, errors.New(fmt.Sprintf("exitCode=%d stderr=\"%s\"", exitCode, errOutput))
+	}
 	return stdout.Bytes(), nil
 }
