@@ -13,6 +13,7 @@ import (
 	"github.com/michurin/cnbot/pkg/interfaces"
 	"github.com/michurin/cnbot/pkg/log"
 	"github.com/michurin/cnbot/pkg/poller"
+	"github.com/michurin/cnbot/pkg/processors"
 	"github.com/michurin/cnbot/pkg/server"
 	"github.com/michurin/cnbot/pkg/workers"
 	"github.com/pkg/errors"
@@ -76,6 +77,7 @@ func main() {
 			logger,
 			api.New(pollingClient, token),
 			script,
+			processors.Safe,
 			taskQueue)
 	})
 	eg.Go(func() error {

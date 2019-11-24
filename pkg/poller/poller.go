@@ -7,6 +7,7 @@ import (
 
 	"github.com/michurin/cnbot/pkg/api"
 	"github.com/michurin/cnbot/pkg/interfaces"
+	"github.com/michurin/cnbot/pkg/processors"
 	"github.com/michurin/cnbot/pkg/response"
 	"github.com/michurin/cnbot/pkg/workers"
 )
@@ -16,6 +17,7 @@ func Poller(
 	logger interfaces.Logger,
 	a *api.API,
 	script string,
+	messageProcessor processors.MessageProcessor,
 	taskQueue chan<- workers.Task,
 ) error {
 	logger.Log("Poller started")
@@ -59,8 +61,14 @@ func Poller(
 				itIsNewMessage = true
 			}
 			if itIsNewMessage {
+				args, xerr := messageProcessor(u.Message.Text)
+				if xerr != nil {
+					logger.Log(fmt.Sprintf("Poller error: %s", err))
+					continue // TODO what we have to do here?
+				}
 				taskQueue <- workers.Task{
 					Text:    u.Message.Text,
+					Args:    args,
 					ReplyTo: u.Message.From.ID,
 					Script:  script,
 				}

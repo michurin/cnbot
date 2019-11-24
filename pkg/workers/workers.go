@@ -11,7 +11,8 @@ import (
 )
 
 type Task struct {
-	Text    string
+	Text    string // TODO what is this field fore?
+	Args    []string
 	ReplyTo int
 	Script  string
 }
@@ -33,7 +34,7 @@ func QueueProcessor(
 				Name:    task.Script,
 				Timeout: 2 * time.Second, // TODO get from Task
 				Env:     nil,             // TODO
-				Args:    nil,             // TODO
+				Args:    task.Args,
 			})
 			fmt.Printf("OUT: %s\n", string(out))
 			fmt.Printf("ERR: %+v\n", err)
