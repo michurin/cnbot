@@ -2,16 +2,15 @@ package api
 
 import (
 	"bytes"
+	"fmt"
 	"mime/multipart"
+	"net/textproto"
 	"strconv"
 
 	"github.com/pkg/errors"
 )
 
-func EncodeMultipart(chatID int, data []byte) (Request, error) {
-
-	typeExtension := "png" // TODO
-
+func EncodeMultipart(chatID int, data []byte, typeExtension string) (Request, error) {
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
 
@@ -20,7 +19,11 @@ func EncodeMultipart(chatID int, data []byte) (Request, error) {
 		return Request{}, errors.WithStack(err)
 	}
 
-	fw, err := w.CreateFormFile("photo", "image."+typeExtension)
+	contentDesc := fmt.Sprintf(`form-data; name="%s"; filename="%s"`, "photo", "image."+typeExtension)
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition", contentDesc)
+	h.Set("Content-Type", "image/"+typeExtension)
+	fw, err := w.CreatePart(h)
 	if err != nil {
 		return Request{}, errors.WithStack(err)
 	}
@@ -32,7 +35,10 @@ func EncodeMultipart(chatID int, data []byte) (Request, error) {
 		return Request{}, errors.New("Not all data has been written")
 	}
 
-	w.Close()
+	err = w.Close()
+	if err != nil {
+		return Request{}, errors.WithStack(err)
+	}
 
 	return Request{
 		Method: "POST",

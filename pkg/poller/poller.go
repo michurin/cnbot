@@ -79,7 +79,7 @@ func Poller(
 					Script:  script,
 				}
 			}
-			// TODO remove it. It added just for debug
+			/* // TODO remove it. It added just for debug
 			xbody, _ := api.EncodeJSON(map[string]interface{}{
 				"chat_id": u.Message.From.ID,
 				"text":    "OK",
@@ -90,7 +90,7 @@ func Poller(
 				sleepWithContext(ctx, 60*time.Second) // TODO sleep flag
 				continue
 			}
-			// TODO /remove it
+			*/ // TODO /remove it
 		}
 	}
 }

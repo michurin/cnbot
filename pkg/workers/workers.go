@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/michurin/cnbot/pkg/api"
+	"github.com/michurin/cnbot/pkg/datatype"
 	"github.com/michurin/cnbot/pkg/execute"
 	"github.com/michurin/cnbot/pkg/interfaces"
 )
@@ -36,35 +39,48 @@ func QueueProcessor(
 				Env:     nil,             // TODO
 				Args:    task.Args,
 			})
-			fmt.Printf("OUT: %s\n", string(out))
+			if err != nil {
+				// TODO sleep? break?
+				logger.Log(err)
+			}
+			fmt.Printf("OUT: %q\n", string(out))
 			fmt.Printf("ERR: %+v\n", err)
 			fmt.Printf("TASK: %s\n", task.Text) // TODO use logger
 
-			/* How to send photo
-			body, err := api.EncodeMultipart(task.ReplyTo, out)
+			method, body, err := buildRequest(out, task)
 			if err != nil {
-				panic(err)
-			}
-			_, err = a.Call(ctx, api.MethodSendPhoto, body)
-			if err != nil {
-				panic(err)
-			}
-			continue
-			*/
-
-			body, err := api.EncodeJSON(map[string]interface{}{
-				"chat_id": task.ReplyTo,
-				"text":    string(out),
-			})
-			if err != nil {
-				// TODO sleep?
+				// TODO sleep? break?
 				logger.Log(err)
 			}
-			_, err = a.Call(ctx, api.MethodSendMessage, body)
+			_, err = a.Call(ctx, method, body)
 			if err != nil {
 				// TODO sleep?
 				logger.Log(err)
 			}
 		}
 	}
+}
+
+func buildRequest(data []byte, task Task) (string, api.Request, error) {
+	var err error
+	var body api.Request
+	var method string
+	imgType := datatype.ImageType(data)
+	if imgType != "" {
+		method = api.MethodSendPhoto
+		body, err = api.EncodeMultipart(task.ReplyTo, data, imgType)
+		if err != nil {
+			return "", api.Request{}, errors.WithStack(err)
+		}
+	} else {
+		method = api.MethodSendMessage
+		body, err = api.EncodeJSON(map[string]interface{}{
+			"chat_id": task.ReplyTo,
+			"text":    string(data),
+		})
+		if err != nil {
+			return "", api.Request{}, errors.WithStack(err)
+		}
+	}
+	return method, body, nil
 }

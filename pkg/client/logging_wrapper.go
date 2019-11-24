@@ -54,8 +54,8 @@ func strBody(b []byte) string {
 		return string(b)
 	}
 	s := fmt.Sprintf("%q", b)
-	if len(s) > 200 {
-		s = s[:200] + "..."
+	if len(s) > 400 {
+		s = s[:400] + "..."
 	}
 	return s
 }
