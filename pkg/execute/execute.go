@@ -48,8 +48,13 @@ func (e *Executor) Run(ctx context.Context, env []string, args []string) ([]byte
 	}
 	ctx, cancel := context.WithTimeout(ctx, e.Timeout)
 	defer cancel()
+	var processAlreadyDone bool
 	go func() {
 		<-ctx.Done()
+		if processAlreadyDone {
+			return
+		}
+		e.Logger.Log("Kill process due to timeout")
 		// cmd.Process is not nil here because we are started
 		// -PID is the same as -PGID
 		// https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
@@ -62,5 +67,8 @@ func (e *Executor) Run(ctx context.Context, env []string, args []string) ([]byte
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
+	processAlreadyDone = true
+	// TODO check error code
+	// TODO check stderr
 	return stdout.Bytes(), nil
 }

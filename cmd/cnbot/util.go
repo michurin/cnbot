@@ -5,10 +5,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	"github.com/michurin/cnbot/pkg/interfaces"
@@ -48,18 +46,6 @@ func formatJSON(b []byte) (string, error) {
 
 func parseFlags() (string, bool, error) {
 	check := flag.Bool("just-check", false, "Just check token. Call getMe method")
-	token := flag.String("token", "", "You can specify token in command line. However you do not want")
-	tokenFile := flag.String("token-file", "", "File name with token")
 	flag.Parse()
-	if *token == "" {
-		if *tokenFile == "" {
-			return "", false, errors.New("You have to specify either token or token file.")
-		}
-		content, err := ioutil.ReadFile(*tokenFile)
-		if err != nil {
-			return "", false, errors.WithStack(err)
-		}
-		return strings.TrimSpace(string(content)), *check, nil
-	}
-	return *token, *check, nil
+	return "bots.ini", *check, nil // TODO filename hardcoded
 }

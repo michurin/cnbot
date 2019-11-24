@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/michurin/cnbot/pkg/api"
+	"github.com/michurin/cnbot/pkg/cfg"
 	"github.com/michurin/cnbot/pkg/client"
 	"github.com/michurin/cnbot/pkg/execute"
 	"github.com/michurin/cnbot/pkg/interfaces"
@@ -19,14 +20,26 @@ import (
 )
 
 func main() {
-	token, check, err := parseFlags()
-
 	logger := log.New()
 
+	configFileNane, check, err := parseFlags()
 	if err != nil {
-		fmt.Printf("Error: %+v\n", err)
+		logger.Log(err)
 		return
 	}
+
+	configs, err := cfg.Read(configFileNane, logger)
+	if err != nil {
+		logger.Log(err)
+		return
+	}
+
+	// TODO we use only one section
+	if len(configs) != 1 {
+		panic("Oh.")
+	}
+	token := configs[0].Token
+	// TODO REMOVE IT
 
 	if check {
 		c := client.WithLogging(client.New(http.Client{Timeout: 5 * time.Second}), logger)
