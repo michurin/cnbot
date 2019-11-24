@@ -3,8 +3,10 @@ package workers
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/michurin/cnbot/pkg/api"
+	"github.com/michurin/cnbot/pkg/execute"
 	"github.com/michurin/cnbot/pkg/interfaces"
 )
 
@@ -17,7 +19,7 @@ type Task struct {
 func QueueProcessor(
 	ctx context.Context,
 	logger interfaces.Logger,
-	executor interfaces.Executor,
+	runner *execute.Executor,
 	taskQueue <-chan Task,
 	a *api.API,
 ) error {
@@ -27,7 +29,12 @@ func QueueProcessor(
 		case <-ctx.Done():
 			return nil
 		case task := <-taskQueue:
-			out, err := executor.Run(ctx, task.Script, nil, nil)
+			out, err := runner.Run(ctx, execute.ScriptInfo{
+				Name:    task.Script,
+				Timeout: 2 * time.Second, // TODO get from Task
+				Env:     nil,             // TODO
+				Args:    nil,             // TODO
+			})
 			fmt.Printf("OUT: %s\n", string(out))
 			fmt.Printf("ERR: %+v\n", err)
 			fmt.Printf("TASK: %s\n", task.Text)                                 // TODO use logger

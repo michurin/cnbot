@@ -14,34 +14,37 @@ import (
 	"github.com/pkg/errors"
 )
 
+type ScriptInfo struct {
+	Name    string
+	Timeout time.Duration
+	Env     []string
+	Args    []string
+}
+
 type Executor struct {
-	Timeout    time.Duration
 	Logger     interfaces.Logger
-	Command    string
-	Cwd        string
 	KillSignal syscall.Signal
 }
 
 func New(logger interfaces.Logger) *Executor {
 	return &Executor{
-		Timeout:    2 * time.Second, // TODO
 		Logger:     logger,
 		KillSignal: syscall.SIGKILL,
 	}
 }
 
-func (e *Executor) Run(ctx context.Context, script string, env []string, args []string) ([]byte, error) {
+func (e *Executor) Run(ctx context.Context, script ScriptInfo) ([]byte, error) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	command, err := filepath.Abs(script)
+	command, err := filepath.Abs(script.Name)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	// CommandContext still do not use GPID, so I need to control timeout manually
 	// to avoid problems with process that spawn children. Like sh script that does sleep(1)
-	cmd := exec.Command(command, args...)
+	cmd := exec.Command(command, script.Args...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true} // setpgid(2) between fork(2) and execve(2)
-	cmd.Env = env
+	cmd.Env = script.Env
 	cmd.Dir = path.Dir(command)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -50,7 +53,7 @@ func (e *Executor) Run(ctx context.Context, script string, env []string, args []
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	ctx, cancel := context.WithTimeout(ctx, e.Timeout)
+	ctx, cancel := context.WithTimeout(ctx, script.Timeout)
 	defer cancel()
 	var processAlreadyDone bool
 	go func() {
