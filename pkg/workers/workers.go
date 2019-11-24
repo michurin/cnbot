@@ -11,6 +11,7 @@ import (
 type Task struct {
 	Text    string
 	ReplyTo int
+	Script  string
 }
 
 func QueueProcessor(
@@ -26,7 +27,7 @@ func QueueProcessor(
 		case <-ctx.Done():
 			return nil
 		case task := <-taskQueue:
-			out, err := executor.Run(ctx, nil, nil)
+			out, err := executor.Run(ctx, task.Script, nil, nil)
 			fmt.Printf("OUT: %s\n", string(out))
 			fmt.Printf("ERR: %+v\n", err)
 			fmt.Printf("TASK: %s\n", task.Text)                                 // TODO use logger

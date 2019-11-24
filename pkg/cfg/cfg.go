@@ -9,20 +9,22 @@ import (
 )
 
 type BotConfig struct {
-	Name  string
-	Token string
+	Name   string
+	Token  string
+	Script string
 }
 
 type cfgSection struct {
-	Token *string `ini:"token"`
+	Token  *string `ini:"token"`
+	Script string  `ini:"script"`
 }
 
 func Read(fileName string, logger interfaces.Logger) ([]BotConfig, error) {
 	f, err := ini.Load(fileName)
-	f.ValueMapper = os.ExpandEnv
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
+	f.ValueMapper = os.ExpandEnv
 	sections := f.SectionStrings()
 	configs := []BotConfig(nil)
 	for _, sectionName := range sections {
@@ -36,8 +38,9 @@ func Read(fileName string, logger interfaces.Logger) ([]BotConfig, error) {
 			continue
 		}
 		configs = append(configs, BotConfig{
-			Name:  sectionName,
-			Token: *c.Token,
+			Name:   sectionName,
+			Token:  *c.Token,
+			Script: pathToScript(fileName, c.Script),
 		})
 	}
 	return configs, nil

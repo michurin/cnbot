@@ -39,6 +39,7 @@ func main() {
 		panic("Oh.")
 	}
 	token := configs[0].Token
+	script := configs[0].Script
 	// TODO REMOVE IT
 
 	if check {
@@ -69,7 +70,14 @@ func main() {
 
 	taskQueue := make(chan workers.Task, 100)
 	eg, ctx := errgroup.WithContext(breakableCtx)
-	eg.Go(func() error { return poller.Poller(ctx, logger, api.New(pollingClient, token), taskQueue) })
+	eg.Go(func() error {
+		return poller.Poller(
+			ctx,
+			logger,
+			api.New(pollingClient, token),
+			script,
+			taskQueue)
+	})
 	eg.Go(func() error {
 		return workers.QueueProcessor(ctx, logger, executor, taskQueue, api.New(pollingClient, token))
 	})

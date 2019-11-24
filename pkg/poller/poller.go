@@ -15,6 +15,7 @@ func Poller(
 	ctx context.Context,
 	logger interfaces.Logger,
 	a *api.API,
+	script string,
 	taskQueue chan<- workers.Task,
 ) error {
 	logger.Log("Poller started")
@@ -61,6 +62,7 @@ func Poller(
 				taskQueue <- workers.Task{
 					Text:    u.Message.Text,
 					ReplyTo: u.Message.From.ID,
+					Script:  script,
 				}
 			}
 			// TODO remove it. It added just for debug

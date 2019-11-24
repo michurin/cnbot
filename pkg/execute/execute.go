@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
+	"path"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -24,25 +26,27 @@ func New(logger interfaces.Logger) *Executor {
 	return &Executor{
 		Timeout:    2 * time.Second, // TODO
 		Logger:     logger,
-		Command:    "./test_user_script.sh", // TODO it seems it have to come to Run from Task
-		Cwd:        ".",                     // TODO ...and it too
 		KillSignal: syscall.SIGKILL,
 	}
 }
 
-func (e *Executor) Run(ctx context.Context, env []string, args []string) ([]byte, error) {
+func (e *Executor) Run(ctx context.Context, script string, env []string, args []string) ([]byte, error) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
+	command, err := filepath.Abs(script)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
 	// CommandContext still do not use GPID, so I need to control timeout manually
 	// to avoid problems with process that spawn children. Like sh script that does sleep(1)
-	cmd := exec.Command(e.Command, args...)
+	cmd := exec.Command(command, args...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true} // setpgid(2) between fork(2) and execve(2)
 	cmd.Env = env
-	cmd.Dir = e.Cwd
+	cmd.Dir = path.Dir(command)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	e.Logger.Log(fmt.Sprintf("Run %+v", cmd))
-	err := cmd.Start()
+	err = cmd.Start()
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
