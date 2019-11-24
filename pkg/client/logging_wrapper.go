@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"time"
+	"unicode/utf8"
 
 	"github.com/michurin/cnbot/pkg/interfaces"
 )
@@ -49,5 +50,12 @@ func strBody(b []byte) string {
 	if len(b) == 0 {
 		return "<empty_body>"
 	}
-	return string(b)
+	if utf8.Valid(b) {
+		return string(b)
+	}
+	s := fmt.Sprintf("%q", b)
+	if len(s) > 200 {
+		s = s[:200] + "..."
+	}
+	return s
 }
