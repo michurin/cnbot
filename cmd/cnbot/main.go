@@ -23,6 +23,11 @@ import (
 func main() {
 	logger := log.New()
 
+	rootCtx := context.Background()
+
+	breakableCtx, cancel := sigtermListener(rootCtx, logger)
+	defer cancel()
+
 	configFileNane, check, err := parseFlags()
 	if err != nil {
 		logger.Log(err)
@@ -35,58 +40,84 @@ func main() {
 		return
 	}
 
-	// TODO we use only one section
-	if len(configs) != 1 {
-		panic("Oh.")
-	}
-	token := configs[0].Token
-	script := configs[0].Script
-	// TODO REMOVE IT
+	pollingClient := client.WithLogging(client.New(http.Client{Timeout: 60 * time.Second}), logger)
+	sendClient := client.WithLogging(client.New(http.Client{Timeout: 20 * time.Second}), logger)
 
 	if check {
-		c := client.WithLogging(client.New(http.Client{Timeout: 5 * time.Second}), logger)
-		a := api.New(c, token)
-		body, err := a.Call(context.Background(), api.MethodGetMe, api.EncodeEmpty())
+		err := checkBots(breakableCtx, sendClient, configs)
 		if err != nil {
-			fmt.Printf("Error: %+v\n", err)
-			return
+			logger.Log(err)
+		}
+	} else {
+		err := launch(breakableCtx, logger, configs, pollingClient, sendClient)
+		if err != nil {
+			logger.Log(err)
+		}
+	}
+}
+
+func checkBots(ctx context.Context, client interfaces.HTTPClient, configs []cfg.BotConfig) error {
+	for _, conf := range configs {
+		fmt.Printf("Bot configuration:\n%s\n", conf)
+		a := api.New(client, conf.Token)
+		body, err := a.Call(ctx, api.MethodGetMe, api.EncodeEmpty())
+		if err != nil {
+			return err
 		}
 		str, err := formatJSON(body)
 		if err != nil {
-			fmt.Printf("Telegram response: %s\n", string(body))
-			return
+			return err
 		}
 		fmt.Printf("Bot info:\n%s\n", str)
-		return
+	}
+	return nil
+}
+
+func launch(
+	ctx context.Context,
+	logger interfaces.Logger,
+	configs []cfg.BotConfig,
+	pollingClient interfaces.HTTPClient,
+	sendClient interfaces.HTTPClient,
+) error {
+	taskQueue := make(chan workers.Task, 100)
+
+	eg, ctx := errgroup.WithContext(ctx)
+
+	multiAPI := map[string]*api.API{} // we don't protect this map by lock, we only read it in go-routines
+
+	mx := http.NewServeMux()
+
+	for _, conf := range configs {
+		conf := conf
+		eg.Go(func() error {
+			return poller.Poller(
+				ctx,
+				logger,
+				conf.Name,
+				api.New(pollingClient, conf.Token),
+				conf.Script,
+				processors.Safe, // TODO make it configurable
+				taskQueue)
+		})
+		a := api.New(sendClient, conf.Token)
+		multiAPI[conf.Name] = a
+		mx.Handle("/"+conf.Name, server.New(logger, a))
 	}
 
-	pollingClient := client.WithLogging(client.New(http.Client{Timeout: 60 * time.Second}), logger)
-
-	rootCtx := context.Background()
-
-	breakableCtx, cancel := sigtermListener(rootCtx, logger)
-	defer cancel()
-
-	executor := execute.New(logger)
-
-	taskQueue := make(chan workers.Task, 100)
-	eg, ctx := errgroup.WithContext(breakableCtx)
-	eg.Go(func() error {
-		return poller.Poller(
-			ctx,
-			logger,
-			api.New(pollingClient, token),
-			script,
-			processors.Safe,
-			taskQueue)
+	bindAddress := "127.0.0.1:9999" // TODO make it configurable
+	executor := execute.New(logger, []string{
+		"PATH=/bin:/usr/bin:/usr/local/bin", // TODO configurable
+		"T_BIND=" + bindAddress,
 	})
 	eg.Go(func() error {
-		return workers.QueueProcessor(ctx, logger, executor, taskQueue, api.New(pollingClient, token))
+		return workers.QueueProcessor(ctx, logger, executor, taskQueue, multiAPI)
 	})
-	eg.Go(func() error { return serve(ctx, logger, server.HTTPHandler{}, "0.0.0.0:9999") })
-	err = eg.Wait()
+	eg.Go(func() error {
+		return serve(ctx, logger, mx, bindAddress)
+	})
 
-	_ = err // TODO
+	return eg.Wait()
 }
 
 func serve(

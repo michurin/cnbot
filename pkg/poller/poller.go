@@ -15,6 +15,7 @@ import (
 func Poller(
 	ctx context.Context,
 	logger interfaces.Logger,
+	botName string,
 	a *api.API,
 	script string,
 	messageProcessor processors.MessageProcessor,
@@ -75,22 +76,11 @@ func Poller(
 				taskQueue <- workers.Task{
 					Text:    u.Message.Text,
 					Args:    args,
+					BotName: botName,
 					ReplyTo: u.Message.From.ID,
 					Script:  script,
 				}
 			}
-			/* // TODO remove it. It added just for debug
-			xbody, _ := api.EncodeJSON(map[string]interface{}{
-				"chat_id": u.Message.From.ID,
-				"text":    "OK",
-			})
-			_, err := a.Call(ctx, api.MethodSendMessage, xbody)
-			if err != nil {
-				logger.Log(fmt.Sprintf("Poller error: %s", err))
-				sleepWithContext(ctx, 60*time.Second) // TODO sleep flag
-				continue
-			}
-			*/ // TODO /remove it
 		}
 	}
 }

@@ -10,13 +10,33 @@ import (
 	"github.com/pkg/errors"
 )
 
-func EncodeMultipart(chatID int, data []byte, typeExtension string) (Request, error) {
+func EncodeMultipart(
+	chatID int,
+	data []byte,
+	typeExtension string,
+	caption string,
+	isMarkdown bool,
+) (Request, error) {
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
 
 	err := w.WriteField("chat_id", strconv.Itoa(chatID))
 	if err != nil {
 		return Request{}, errors.WithStack(err)
+	}
+
+	if caption != "" {
+		err := w.WriteField("caption", caption)
+		if err != nil {
+			return Request{}, errors.WithStack(err)
+		}
+	}
+
+	if isMarkdown {
+		err := w.WriteField("parse_mode", "markdown")
+		if err != nil {
+			return Request{}, errors.WithStack(err)
+		}
 	}
 
 	contentDesc := fmt.Sprintf(`form-data; name="%s"; filename="%s"`, "photo", "image."+typeExtension)

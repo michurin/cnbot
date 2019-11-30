@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
@@ -22,14 +23,19 @@ type ScriptInfo struct {
 }
 
 type Executor struct {
-	Logger     interfaces.Logger
+	Logger     interfaces.Logger // TODO make it private?
 	KillSignal syscall.Signal
+	Env        []string
 }
 
-func New(logger interfaces.Logger) *Executor {
+func New(logger interfaces.Logger, commonEnv []string) *Executor {
+	e := append(
+		getEnvs("HOME"), // TODO make it configurable? or don't copy envs?
+		commonEnv...)
 	return &Executor{
 		Logger:     logger,
 		KillSignal: syscall.SIGKILL,
+		Env:        e,
 	}
 }
 
@@ -44,8 +50,8 @@ func (e *Executor) Run(ctx context.Context, script ScriptInfo) ([]byte, error) {
 	// to avoid problems with process that spawn children. Like sh script that does sleep(1)
 	cmd := exec.Command(command, script.Args...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true} // setpgid(2) between fork(2) and execve(2)
-	cmd.Env = script.Env
-	cmd.Dir = path.Dir(command)
+	cmd.Env = append(e.Env, script.Env...)
+	cmd.Dir = path.Dir(command) // TODO configurable?
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	e.Logger.Log(fmt.Sprintf("Run %+v", cmd))
@@ -57,7 +63,7 @@ func (e *Executor) Run(ctx context.Context, script ScriptInfo) ([]byte, error) {
 	defer cancel()
 	go func() {
 		<-ctx.Done()
-		if cmd.ProcessState.Exited() {
+		if cmd.ProcessState != nil && cmd.ProcessState.Exited() {
 			return
 		}
 		e.Logger.Log("Kill process due to timeout")
@@ -79,4 +85,15 @@ func (e *Executor) Run(ctx context.Context, script ScriptInfo) ([]byte, error) {
 		return nil, errors.New(fmt.Sprintf("exitCode=%d stderr=\"%s\"", exitCode, errOutput))
 	}
 	return stdout.Bytes(), nil
+}
+
+func getEnvs(names ...string) []string {
+	res := []string(nil)
+	for _, k := range names {
+		v, ok := os.LookupEnv(k)
+		if ok {
+			res = append(res, fmt.Sprintf("%s=%s", k, v))
+		}
+	}
+	return res
 }
