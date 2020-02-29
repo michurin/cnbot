@@ -45,7 +45,8 @@ func formatJSON(b []byte) (string, error) {
 }
 
 func parseFlags() (string, bool, error) {
+	configFile := flag.String("config-file", "bots.ini", "Configuration file")
 	check := flag.Bool("just-check", false, "Just check token. Call getMe method")
-	flag.Parse()
-	return "bots.ini", *check, nil // TODO filename hardcoded
+	flag.Parse() // could cause os.Exit(2) or panic()
+	return *configFile, *check, nil
 }

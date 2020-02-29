@@ -1,5 +1,8 @@
 package datatype
 
+// TODO move this detector and encoders (from api) altogether
+// TODO and make it private
+
 import "bytes"
 
 var (

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
@@ -29,13 +28,10 @@ type Executor struct {
 }
 
 func New(logger interfaces.Logger, commonEnv []string) *Executor {
-	e := append(
-		getEnvs("HOME"), // TODO make it configurable? or don't copy envs?
-		commonEnv...)
 	return &Executor{
 		Logger:     logger,
 		KillSignal: syscall.SIGKILL,
-		Env:        e,
+		Env:        commonEnv,
 	}
 }
 
@@ -54,7 +50,7 @@ func (e *Executor) Run(ctx context.Context, script ScriptInfo) ([]byte, error) {
 	cmd.Dir = path.Dir(command) // TODO configurable?
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	e.Logger.Log(fmt.Sprintf("Run %+v", cmd))
+	e.Logger.Log(fmt.Sprintf("Run %v %+v", cmd.Env, cmd))
 	err = cmd.Start()
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -85,15 +81,4 @@ func (e *Executor) Run(ctx context.Context, script ScriptInfo) ([]byte, error) {
 		return nil, errors.New(fmt.Sprintf("exitCode=%d stderr=\"%s\"", exitCode, errOutput))
 	}
 	return stdout.Bytes(), nil
-}
-
-func getEnvs(names ...string) []string {
-	res := []string(nil)
-	for _, k := range names {
-		v, ok := os.LookupEnv(k)
-		if ok {
-			res = append(res, fmt.Sprintf("%s=%s", k, v))
-		}
-	}
-	return res
 }

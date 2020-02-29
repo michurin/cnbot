@@ -1,4 +1,4 @@
-// Wary simple http client. Even simpler than standard http.Client
+// Weary simple http client. Even simpler than standard http.Client
 // I use it everywhere in this library as interface. So you are free
 // to make your own implementation or simple wrapper as I do in logging wrapper.
 

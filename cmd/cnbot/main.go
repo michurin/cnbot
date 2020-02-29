@@ -13,7 +13,6 @@ import (
 	"github.com/michurin/cnbot/pkg/interfaces"
 	"github.com/michurin/cnbot/pkg/log"
 	"github.com/michurin/cnbot/pkg/poller"
-	"github.com/michurin/cnbot/pkg/processors"
 	"github.com/michurin/cnbot/pkg/server"
 	"github.com/michurin/cnbot/pkg/workers"
 	"github.com/pkg/errors"
@@ -28,27 +27,29 @@ func main() {
 	breakableCtx, cancel := sigtermListener(rootCtx, logger)
 	defer cancel()
 
-	configFileNane, check, err := parseFlags()
+	configFileName, check, err := parseFlags() // TODO MOVE IT TO READER
 	if err != nil {
 		logger.Log(err)
 		return
 	}
 
-	configs, err := cfg.Read(configFileNane, logger)
+	appConfig, err := cfg.Read(configFileName, logger) // TODO REMOVE
 	if err != nil {
 		logger.Log(err)
 		return
 	}
 
-	pollingClient := client.WithLogging(client.New(http.Client{Timeout: 60 * time.Second}), logger)
-	sendClient := client.WithLogging(client.New(http.Client{Timeout: 20 * time.Second}), logger)
+	configs := appConfig.Bots
 
 	if check {
+		sendClient := client.WithLogging(client.New(http.Client{Timeout: 20 * time.Second}), logger)
 		err := checkBots(breakableCtx, sendClient, configs)
 		if err != nil {
 			logger.Log(err)
 		}
 	} else {
+		pollingClient := client.WithLogging(client.New(http.Client{Timeout: 60 * time.Second}), logger)
+		sendClient := client.WithLogging(client.New(http.Client{Timeout: 20 * time.Second}), logger)
 		err := launch(breakableCtx, logger, configs, pollingClient, sendClient)
 		if err != nil {
 			logger.Log(err)
@@ -95,9 +96,12 @@ func launch(
 				ctx,
 				logger,
 				conf.Name,
+				poller.FilterMessageByUser{Users: conf.AllowedUsers},
 				api.New(pollingClient, conf.Token),
+				api.New(sendClient, conf.Token),
+				conf.Env,
 				conf.Script,
-				processors.Safe, // TODO make it configurable
+				poller.SafeArgs, // TODO make it configurable
 				taskQueue)
 		})
 		a := api.New(sendClient, conf.Token)
@@ -106,12 +110,9 @@ func launch(
 	}
 
 	bindAddress := "127.0.0.1:9999" // TODO make it configurable
-	executor := execute.New(logger, []string{
-		"PATH=/bin:/usr/bin:/usr/local/bin", // TODO configurable
-		"T_BIND=" + bindAddress,
-	})
+	executor := execute.New(logger, []string{"T_BIND=" + bindAddress})
 	eg.Go(func() error {
-		return workers.QueueProcessor(ctx, logger, executor, taskQueue, multiAPI)
+		return workers.QueueProcessor(ctx, logger, executor, taskQueue)
 	})
 	eg.Go(func() error {
 		return serve(ctx, logger, mx, bindAddress)

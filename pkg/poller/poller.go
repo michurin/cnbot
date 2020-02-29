@@ -7,8 +7,6 @@ import (
 
 	"github.com/michurin/cnbot/pkg/api"
 	"github.com/michurin/cnbot/pkg/interfaces"
-	"github.com/michurin/cnbot/pkg/processors"
-	"github.com/michurin/cnbot/pkg/response"
 	"github.com/michurin/cnbot/pkg/workers"
 )
 
@@ -16,9 +14,12 @@ func Poller(
 	ctx context.Context,
 	logger interfaces.Logger,
 	botName string,
-	a *api.API,
+	messageFilter MessageFilter,
+	pollAPI api.Interface,
+	replierAPI api.Interface,
+	env []string,
 	script string,
-	messageProcessor processors.MessageProcessor,
+	messageProcessor ArgProcessor,
 	taskQueue chan<- workers.Task,
 ) error {
 	logger.Log("Poller started")
@@ -44,13 +45,13 @@ func Poller(
 			sleepWithContext(ctx, 60*time.Second) // TODO sleep flag
 			continue
 		}
-		result, err := a.Call(ctx, api.MethodGetUpdates, body)
+		result, err := pollAPI.Call(ctx, api.MethodGetUpdates, body)
 		if err != nil {
 			logger.Log(fmt.Sprintf("Poller error: %s", err))
 			sleepWithContext(ctx, 60*time.Second) // TODO sleep flag
 			continue
 		}
-		updates, err := response.ParseUpdates(result)
+		updates, err := ParseUpdates(result)
 		if err != nil {
 			panic("TODO") // TODO ENORMOUS TODO
 		}
@@ -73,12 +74,17 @@ func Poller(
 					logger.Log(fmt.Sprintf("Poller error: %s", err))
 					continue // TODO what we have to do here?
 				}
-				taskQueue <- workers.Task{
-					Text:    u.Message.Text,
-					Args:    args,
-					BotName: botName,
-					ReplyTo: u.Message.From.ID,
-					Script:  script,
+				if messageFilter.IsAllowed(u) {
+					taskQueue <- workers.Task{
+						Args:        args,
+						BotName:     botName,
+						ReplyTo:     u.Message.From.ID,
+						ReplayToAPI: replierAPI,
+						Env:         env,
+						Script:      script,
+					}
+				} else {
+					logger.Log(fmt.Sprintf("User %d DISALLOWED!", u.Message.From.ID))
 				}
 			}
 		}

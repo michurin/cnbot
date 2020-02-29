@@ -49,8 +49,8 @@ func (h HTTPHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	_, _ = resp.Write([]byte("")) // TODO
 	resp.WriteHeader(http.StatusOK)
+	_, _ = resp.Write([]byte("")) // TODO
 }
 
 func (h HTTPHandler) serve(req *http.Request) error {
