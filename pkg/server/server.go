@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"github.com/michurin/cnbot/pkg/api"
 	"io"
 	"io/ioutil"
 	"log"
@@ -13,7 +14,7 @@ import (
 
 	"github.com/michurin/cnbot/pkg/datatype"
 
-	"github.com/michurin/cnbot/pkg/api"
+	"github.com/michurin/cnbot/pkg/apirequest"
 	"github.com/michurin/cnbot/pkg/interfaces"
 
 	"github.com/pkg/errors"
@@ -78,7 +79,7 @@ func (h HTTPHandler) simple(req *http.Request) error {
 		return errors.WithStack(err)
 	}
 
-	method, apiReq, err := api.SimpleRequest(body, replyTo)
+	method, apiReq, err := apirequest.SimpleRequest(body, replyTo)
 	if err != nil {
 		return err
 	}
@@ -128,18 +129,18 @@ func (h HTTPHandler) multi(req *http.Request, boundary string) error {
 		if imgType == "" {
 			return errors.Errorf("can not detect image type: %q", data[:10]) // TODO RANGE!!!
 		}
-		apiReq, err := api.EncodeMultipart(replyTo, data, imgType, text, isMarkdown)
+		apiReq, err := apirequest.EncodeMultipart(replyTo, data, imgType, text, isMarkdown)
 		if err != nil {
 			return err
 		}
-		resp, err := h.api.Call(req.Context(), api.MethodSendPhoto, apiReq)
+		resp, err := h.api.Call(req.Context(), apirequest.MethodSendPhoto, apiReq)
 		_ = resp // TODO
 	} else {
-		apiReq, err := api.TextMessage(text, replyTo, isMarkdown)
+		apiReq, err := apirequest.TextMessage(text, replyTo, isMarkdown)
 		if err != nil {
 			return err
 		}
-		resp, err := h.api.Call(req.Context(), api.MethodSendMessage, apiReq)
+		resp, err := h.api.Call(req.Context(), apirequest.MethodSendMessage, apiReq)
 		_ = resp // TODO
 	}
 	return nil

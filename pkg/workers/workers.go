@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/michurin/cnbot/pkg/api"
+	"github.com/michurin/cnbot/pkg/apirequest"
 	"github.com/michurin/cnbot/pkg/execute"
 	"github.com/michurin/cnbot/pkg/interfaces"
 )
 
 type Task struct {
-	Args    []string
-	BotName string
-	ReplyTo int
-	Env     []string
-	Script  string
-	ReplayToAPI api.Interface
+	Args        []string
+	BotName     string
+	ReplyTo     int
+	Env         []string
+	Script      string
+	ReplayToAPI interfaces.Interface
 }
 
 func QueueProcessor(
@@ -47,7 +47,7 @@ func QueueProcessor(
 			fmt.Printf("OUT: %q\n", string(out))
 			fmt.Printf("ERR: %+v\n", err)
 
-			method, body, err := api.SimpleRequest(out, task.ReplyTo)
+			method, body, err := apirequest.SimpleRequest(out, task.ReplyTo)
 			if err != nil {
 				// TODO sleep? break?
 				logger.Log(err)

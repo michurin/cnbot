@@ -1,4 +1,4 @@
-package api
+package apirequest
 
 const (
 	MethodGetMe       = "getMe"

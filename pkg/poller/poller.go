@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/michurin/cnbot/pkg/api"
+	"github.com/michurin/cnbot/pkg/apirequest"
 	"github.com/michurin/cnbot/pkg/interfaces"
 	"github.com/michurin/cnbot/pkg/workers"
 )
@@ -15,8 +15,8 @@ func Poller(
 	logger interfaces.Logger,
 	botName string,
 	messageFilter MessageFilter,
-	pollAPI api.Interface,
-	replierAPI api.Interface,
+	pollAPI interfaces.Interface,
+	replierAPI interfaces.Interface,
 	env []string,
 	script string,
 	messageProcessor ArgProcessor,
@@ -39,13 +39,13 @@ func Poller(
 		if addOffset {
 			request["offset"] = offset + 1
 		}
-		body, err := api.EncodeJSON(request)
+		body, err := apirequest.EncodeJSON(request)
 		if err != nil {
 			logger.Log(fmt.Sprintf("Poller error: %s", err))
 			sleepWithContext(ctx, 60*time.Second) // TODO sleep flag
 			continue
 		}
-		result, err := pollAPI.Call(ctx, api.MethodGetUpdates, body)
+		result, err := pollAPI.Call(ctx, apirequest.MethodGetUpdates, body)
 		if err != nil {
 			logger.Log(fmt.Sprintf("Poller error: %s", err))
 			sleepWithContext(ctx, 60*time.Second) // TODO sleep flag

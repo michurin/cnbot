@@ -1,4 +1,4 @@
-package api
+package apirequest
 
 func EncodeEmpty() Request {
 	return Request{

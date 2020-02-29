@@ -3,17 +3,12 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"github.com/michurin/cnbot/pkg/apirequest"
 	"net/http"
 
 	"github.com/michurin/cnbot/pkg/interfaces"
 	"github.com/pkg/errors"
 )
-
-type Request struct {
-	Method string
-	MIME   string
-	Body   []byte
-}
 
 type API struct {
 	apiURLPrefix string
@@ -27,7 +22,7 @@ func New(client interfaces.HTTPClient, token string) *API {
 	}
 }
 
-func (a *API) Call(ctx context.Context, method string, request Request) (json.RawMessage, error) {
+func (a *API) Call(ctx context.Context, method string, request apirequest.Request) (json.RawMessage, error) {
 	status, body, err := a.client.Do(
 		ctx,
 		request.Method,
