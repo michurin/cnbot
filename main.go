@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	"strings"
@@ -15,21 +14,6 @@ import (
 )
 
 func main() {
-	//stdout, stderr, exitCode, err := hps.Exec(
-	//	context.Background(),
-	//	time.Millisecond*500,
-	//	time.Millisecond*500,
-	//	time.Millisecond*500,
-	//	"./script.sh",
-	//	nil,
-	//	nil,
-	//	"")
-	//hps.Log(context.Background(), "======")
-	//hps.Log(context.Background(), "OUT:", stdout)
-	//hps.Log(context.Background(), "ERR:", stderr)
-	//hps.Log(context.Background(), "CODE:", exitCode)
-	//hps.Log(context.Background(), err)
-	//hps.Log(context.Background(), "======")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -66,37 +50,45 @@ func main() {
 
 MainLoop: // TODO: move to separate func
 	for {
-		var msg string
 		select {
 		case <-ctx.Done():
 			hps.Log(ctx, "Queue listener exited due to context cancellation")
 			break MainLoop
 		case m := <-msgQueue:
 			hps.Log(ctx, "MESSAGE", m.BotName, m.Text)
-			stdout, stderr, exitCode, err := hps.Exec(
+			stdout, stderr, err := hps.Exec(
 				ctx,
-				time.Millisecond*1000,
-				time.Millisecond*500,
-				time.Millisecond*500,
+				time.Millisecond*1000, // TODO config
+				time.Millisecond*500,  // TODO config
+				time.Millisecond*500,  // TODO config
 				botNameToToken[m.BotName].Script,
-				strings.Fields(m.Text),
-				nil,
-				"")
-			if err == nil {
-				msg = fmt.Sprintf("%s [%d]: %s (%s)", botNameToToken[m.BotName].Script, exitCode, stdout, stderr)
-			} else {
-				msg = err.Error()
+				strings.Fields(m.Text), // TODO config
+				nil,                    // TODO config
+				"")                     // TODO config
+			if err != nil {
 				hps.Log(ctx, err)
+				continue
+			}
+			if len(stderr) > 0 {
+				hps.Log(ctx, stderr)
+			}
+			msg, imgType, err := tg.DataType(stdout)
+			if err != nil {
+				hps.Log(ctx, err)
+				continue
+			}
+			if imgType != "" {
+				msg = "It is image. Type: " + imgType + ". No encoder for it yet." // TODO sendPhoto
 			}
 			req, err := tg.Encode(botNameToToken[m.BotName].Token, tg.EncodeSendMessage(m.FromID, msg))
 			if err != nil {
 				hps.Log(ctx, err)
-				panic(err)
+				continue
 			}
 			_, err = hps.Do(ctx, req)
 			if err != nil {
 				hps.Log(ctx, err)
-				panic(err)
+				continue
 			}
 		}
 	}

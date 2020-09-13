@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"os/exec"
 	"syscall"
 	"time"
@@ -22,7 +23,6 @@ func Exec(
 ) (
 	stdout []byte,
 	stderr []byte,
-	exitCode int,
 	err error,
 ) {
 	// setup cmd
@@ -40,7 +40,7 @@ func Exec(
 	err = cmd.Start()
 	if err != nil {
 		Log(ctx, err)
-		return nil, nil, 0, err
+		return nil, nil, err
 	}
 	// wait command with care about timeouts and ctx
 	sync := make(chan error)
@@ -50,7 +50,7 @@ func Exec(
 	pgid, err := syscall.Getpgid(cmd.Process.Pid) // not cmd.SysProcAttr.Pgid
 	if err != nil {
 		Log(ctx, err)
-		return nil, nil, 0, err
+		return nil, nil, err
 	}
 	pgid = -pgid // minus!
 	termBound := time.After(termTimeout)
@@ -61,35 +61,39 @@ func Exec(
 		case err := <-sync: // it has to appear before kill sections to catch stat errors
 			if err != nil {
 				Log(ctx, err)
-				return nil, nil, 0, err
+				return nil, nil, err
 			}
 			if !cmd.ProcessState.Exited() {
 				panic("The program is not exited! It's impossible")
 			}
-			return outBuffer.Bytes(), errBuffer.Bytes(), cmd.ProcessState.ExitCode(), nil
+			exitCode := cmd.ProcessState.ExitCode()
+			if exitCode != 0 {
+				return nil, nil, fmt.Errorf("Exit code %d: %s", exitCode, string(stderr))
+			}
+			return outBuffer.Bytes(), errBuffer.Bytes(), nil
 		case <-ctx.Done(): // we doesn't even wait for process finalization
 			err = syscall.Kill(pgid, syscall.SIGKILL)
 			if err != nil {
 				Log(ctx, err)
-				return nil, nil, 0, err
+				return nil, nil, err
 			}
-			return nil, nil, 1, errors.New("aborted by context")
+			return nil, nil, errors.New("aborted by context")
 		case <-termBound:
 			err = syscall.Kill(pgid, syscall.SIGTERM)
 			if err != nil {
 				Log(ctx, err)
-				return nil, nil, 0, err
+				return nil, nil, err
 			}
 		case <-killBound:
 			err = syscall.Kill(pgid, syscall.SIGKILL)
 			if err != nil {
 				Log(ctx, err)
-				return nil, nil, 0, err
+				return nil, nil, err
 			}
 		case <-waitBound:
 			err := errors.New("can't wait anymore")
 			Log(ctx, err)
-			return nil, nil, 0, err
+			return nil, nil, err
 		}
 	}
 }
