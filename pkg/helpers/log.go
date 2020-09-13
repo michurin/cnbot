@@ -15,7 +15,7 @@ func init() {
 	if !ok {
 		panic("can not get build prefix")
 	}
-	buildPrefixLen = len(fileName) - len("pkg/helpers/log/log.go")
+	buildPrefixLen = len(fileName) - len("pkg/helpers/log.go")
 	fi, err := os.Stdout.Stat()
 	if err != nil {
 		Log(context.Background(), "Can not check stat(stdout)", err)
