@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -39,14 +40,51 @@ func main() {
 		hps.Log(ctx, "Run poller for bot", bot.Username)
 		wg.Add(1)
 		go func(bot tg.Bot) {
+			defer wg.Done()
 			tg.Poller(ctx, bot, msgQueue)
-			wg.Done()
 		}(bot)
 	}
 
 	botNameToToken := map[string]tg.Bot{ // TODO
 		bots[0].Username: bots[0],
 	}
+
+	// server
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte("OK\n"))
+		if err != nil {
+			hps.Log(r.Context(), err)
+		}
+		hps.Log(r.Context(), r.Method, r.URL.Path)
+	})
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		s := http.Server{
+			Addr:    ":9090", // TODO config
+			Handler: handler,
+		}
+		go func() { // what if we shutdown before listen?
+			<-ctx.Done()
+			dCtx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			err := s.Shutdown(dCtx)
+			if err != nil {
+				hps.Log(ctx, err)
+			}
+		}()
+		err := s.ListenAndServe()
+		if err != nil {
+			hps.Log(ctx, err)
+			return
+		}
+		hps.Log(ctx, "Server finished")
+	}()
+
+	// /server
 
 MainLoop: // TODO: move to separate func
 	for {
