@@ -92,5 +92,4 @@ func Exec(
 			return nil, nil, 0, err
 		}
 	}
-	return nil, nil, 1, nil
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	hps "github.com/michurin/cnbot/pkg/helpers"
@@ -31,7 +32,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, os.Kill, os.Interrupt)
+	signal.Notify(sigs, syscall.SIGTERM, os.Interrupt)
 	go func() {
 		sig := <-sigs
 		hps.Log(ctx, "Killed by signal", sig)
@@ -48,9 +49,9 @@ func main() {
 
 	for _, bot := range bots {
 		hps.Log(ctx, "Run poller for bot", bot.Username)
-		go func() {
+		go func(bot tg.Bot) {
 			tg.Poller(ctx, bot, msgQueue)
-		}()
+		}(bot)
 	}
 
 	botNameToToken := map[string]tg.Bot{ // TODO
