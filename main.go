@@ -62,9 +62,9 @@ MainLoop: // TODO: move to separate func
 				time.Millisecond*500,  // TODO config
 				time.Millisecond*500,  // TODO config
 				botNameToToken[m.BotName].Script,
-				strings.Fields(m.Text), // TODO config
-				nil,                    // TODO config
-				"")                     // TODO config
+				strings.Fields(strings.ToLower(m.Text)), // TODO config
+				nil,                                     // TODO config
+				"")                                      // TODO config
 			if err != nil {
 				hps.Log(ctx, err)
 				continue
