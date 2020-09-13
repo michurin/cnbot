@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -39,6 +40,8 @@ func main() {
 		cancel()
 	}()
 
+	var wg sync.WaitGroup
+
 	msgQueue := make(chan tg.Message)
 
 	bots, err := tg.Bots(ctx, hps.Config())
@@ -49,8 +52,10 @@ func main() {
 
 	for _, bot := range bots {
 		hps.Log(ctx, "Run poller for bot", bot.Username)
+		wg.Add(1)
 		go func(bot tg.Bot) {
 			tg.Poller(ctx, bot, msgQueue)
+			wg.Done()
 		}(bot)
 	}
 
@@ -58,11 +63,12 @@ func main() {
 		bots[0].Username: bots[0],
 	}
 
-MainLoop: // TODO (2): move to separate proc
+MainLoop: // TODO: move to separate func
 	for {
 		var msg string
 		select {
 		case <-ctx.Done():
+			hps.Log(ctx, "Queue listener exited due to context cancellation")
 			break MainLoop
 		case m := <-msgQueue:
 			hps.Log(ctx, "MESSAGE", m.BotName, m.Text)
@@ -94,5 +100,5 @@ MainLoop: // TODO (2): move to separate proc
 		}
 	}
 
-	// TODO wait for all pollers and servers (servers are not implemented yet)
+	wg.Wait()
 }
