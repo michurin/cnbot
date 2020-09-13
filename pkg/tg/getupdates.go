@@ -27,8 +27,9 @@ func EncodeGetUpdates(offset int, timeout int) Request {
 		return Request{Error: err}
 	}
 	return Request{
-		Method: "getUpdates",
-		Body:   body,
+		Method:      "getUpdates",
+		ContentType: "application/json",
+		Body:        body,
 	}
 }
 

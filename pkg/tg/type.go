@@ -21,17 +21,17 @@ var (
 
 func DataType(data []byte) (
 	text string,
-	imageType string,
+	imgExt string,
 	err error,
 ) {
 	if bytes.HasPrefix(data, FpGif) {
-		imageType = "image/gif"
+		imgExt = "gif"
 	} else if bytes.HasPrefix(data, FpPng) {
-		imageType = "image/png"
+		imgExt = "png"
 	} else if bytes.HasPrefix(data, FpJpgA) ||
 		bytes.HasPrefix(data, FpJpgB) ||
 		bytes.HasPrefix(data, FpJpgC) {
-		imageType = "image/jpeg"
+		imgExt = "jpeg"
 	} else {
 		if utf8.Valid(data) {
 			text = strings.TrimSpace(string(data))

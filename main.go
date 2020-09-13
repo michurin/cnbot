@@ -65,22 +65,25 @@ MainLoop: // TODO: move to separate func
 				strings.Fields(strings.ToLower(m.Text)), // TODO config
 				nil,                                     // TODO config
 				"")                                      // TODO config
-			if err != nil {
-				hps.Log(ctx, err)
-				continue
-			}
 			if len(stderr) > 0 {
 				hps.Log(ctx, stderr)
 			}
-			msg, imgType, err := tg.DataType(stdout)
 			if err != nil {
 				hps.Log(ctx, err)
 				continue
 			}
-			if imgType != "" {
-				msg = "It is image. Type: " + imgType + ". No encoder for it yet." // TODO sendPhoto
+			msg, imgExt, err := tg.DataType(stdout)
+			if err != nil {
+				hps.Log(ctx, err)
+				continue
 			}
-			req, err := tg.Encode(botNameToToken[m.BotName].Token, tg.EncodeSendMessage(m.FromID, msg))
+			var reqX tg.Request
+			if imgExt == "" {
+				reqX = tg.EncodeSendMessage(m.FromID, msg)
+			} else {
+				reqX = tg.EncodeSendPhoto(m.FromID, imgExt, stdout)
+			}
+			req, err := tg.Encode(botNameToToken[m.BotName].Token, reqX)
 			if err != nil {
 				hps.Log(ctx, err)
 				continue

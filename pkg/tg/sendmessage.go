@@ -18,7 +18,8 @@ func EncodeSendMessage(to int, text string) Request {
 		return Request{Error: err}
 	}
 	return Request{
-		Method: "sendMessage",
-		Body:   body,
+		Method:      "sendMessage",
+		ContentType: "application/json",
+		Body:        body,
 	}
 }
