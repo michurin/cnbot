@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -78,7 +79,7 @@ MainLoop: // TODO: move to separate func
 				time.Millisecond*500,
 				time.Millisecond*500,
 				botNameToToken[m.BotName].Script,
-				nil,
+				strings.Fields(m.Text),
 				nil,
 				"")
 			if err == nil {
