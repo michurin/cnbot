@@ -4,14 +4,14 @@ import (
 	"context"
 	"time"
 
-	"github.com/michurin/cnbot/pkg/tg"
 	hps "github.com/michurin/cnbot/pkg/helpers"
+	"github.com/michurin/cnbot/pkg/tg"
 )
 
 const pollingRequestTimeOutSeconds = 10
 const errorSleepDuration = time.Second * 10
 
-func Poller(ctx context.Context, botName string, bot Bot, msgQueue chan<- tg.Message) {
+func Poller(ctx context.Context, botName string, bot hps.BotConfig, msgQueue chan<- tg.Message) {
 	var offset int
 	var mm []tg.Message
 	ctx = hps.Label(ctx, botName)

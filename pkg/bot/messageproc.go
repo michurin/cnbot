@@ -11,7 +11,7 @@ import (
 	"github.com/michurin/cnbot/pkg/tg"
 )
 
-func process(ctx context.Context, botMap map[string]Bot, m tg.Message) {
+func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message) {
 	fromStr := strconv.Itoa(m.FromID)
 	ctx = hps.Label(ctx, m.BotName, fromStr, hps.RandLabel())
 	hps.Log(ctx, "Message", m.FromID, m.BotName, m.Text)
@@ -48,7 +48,7 @@ func process(ctx context.Context, botMap map[string]Bot, m tg.Message) {
 	}
 }
 
-func MessageProcessor(ctx context.Context, msgQueue <-chan tg.Message, botMap map[string]Bot) {
+func MessageProcessor(ctx context.Context, msgQueue <-chan tg.Message, botMap map[string]hps.BotConfig) {
 	for {
 		select {
 		case <-ctx.Done():

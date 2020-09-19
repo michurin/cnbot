@@ -16,10 +16,10 @@ import (
 )
 
 type Handler struct {
-	BotMap map[string]Bot
+	BotMap map[string]hps.BotConfig
 }
 
-func (h *Handler) pathDecode(ctx context.Context, path string) (destUser int, botName string, bot Bot, err error) {
+func (h *Handler) pathDecode(ctx context.Context, path string) (destUser int, botName string, bot hps.BotConfig, err error) {
 	var ok bool
 	urlParts := strings.Split(strings.Trim(path, "/"), "/")
 	if len(urlParts) != 3 {
@@ -84,7 +84,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	hps.Log(ctx, http.StatusOK)
 }
 
-func RunHTTPServer(ctx context.Context, botMap map[string]Bot) {
+func RunHTTPServer(ctx context.Context, botMap map[string]hps.BotConfig) {
 	s := http.Server{
 		ReadTimeout:  10 * time.Second,                                                       // TODO config
 		WriteTimeout: 10 * time.Second,                                                       // TODO config

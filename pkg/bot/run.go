@@ -15,17 +15,23 @@ func Run(ctx context.Context) {
 
 	msgQueue := make(chan tg.Message)
 
-	config := hps.ReadConfig()
-
-	bots, err := Bots(ctx, config.Bots)
+	configBots, err := hps.ReadConfig()
 	if err != nil {
 		hps.Log(ctx, err)
-		panic(err)
+		return
 	}
+
+	bots, err := Bots(ctx, configBots)
+	if err != nil { // canceled context cause err too
+		hps.Log(ctx, err)
+		return
+	}
+
+	hps.DumpBotConfig(ctx, bots)
 
 	for botName, bot := range bots {
 		wg.Add(1)
-		go func(n string, b Bot) {
+		go func(n string, b hps.BotConfig) {
 			defer wg.Done()
 			Poller(ctx, n, b, msgQueue)
 		}(botName, bot)
