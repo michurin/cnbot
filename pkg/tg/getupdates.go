@@ -11,9 +11,9 @@ type getUpdateRequest struct {
 	AllowedUpdates []string `json:"allowed_updates"`
 }
 
-func EncodeGetUpdates(offset int, timeout int) Request {
+func EncodeGetUpdates(offset int, timeout int) (*Request, error) {
 	if timeout <= 0 {
-		return Request{Error: errors.New("timeout have to be greater then zero")}
+		return nil, errors.New("timeout have to be greater then zero")
 	}
 	r := getUpdateRequest{
 		Timeout:        timeout,
@@ -24,13 +24,13 @@ func EncodeGetUpdates(offset int, timeout int) Request {
 	}
 	body, err := json.Marshal(r)
 	if err != nil {
-		return Request{Error: err}
+		return nil, err
 	}
-	return Request{
+	return &Request{
 		Method:      "getUpdates",
 		ContentType: "application/json",
 		Body:        body,
-	}
+	}, nil
 }
 
 type Message struct {

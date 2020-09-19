@@ -1,26 +1,21 @@
-package tg
+package bot
 
 import (
 	"context"
 	"time"
 
+	"github.com/michurin/cnbot/pkg/tg"
 	hps "github.com/michurin/cnbot/pkg/helpers"
 )
 
 const pollingRequestTimeOutSeconds = 10
-
 const errorSleepDuration = time.Second * 10
 
-func errorSleep(ctx context.Context, duration time.Duration) {
-	select {
-	case <-ctx.Done():
-	case <-time.After(duration):
-	}
-}
-
-func Poller(ctx context.Context, bot Bot, msgQueue chan<- Message) {
+func Poller(ctx context.Context, botName string, bot Bot, msgQueue chan<- tg.Message) {
 	var offset int
-	var mm []Message
+	var mm []tg.Message
+	ctx = hps.Label(ctx, botName)
+	hps.Log(ctx, "Poller runs for bot", botName)
 MainLoop:
 	for {
 		select {
@@ -29,22 +24,22 @@ MainLoop:
 			break MainLoop
 		default:
 		}
-		req, err := Encode(bot.Token, EncodeGetUpdates(offset, pollingRequestTimeOutSeconds))
-		if err != nil {
+		req, err := tg.EncodeGetUpdates(offset, pollingRequestTimeOutSeconds)
+		if err != nil { // in fact, it is reason for panic
 			hps.Log(ctx, err)
-			errorSleep(ctx, errorSleepDuration)
+			hps.Sleep(ctx, errorSleepDuration)
 			continue
 		}
-		out, err := hps.Do(ctx, req)
+		out, err := hps.Do(ctx, tg.Encode(bot.Token, req))
 		if err != nil {
 			hps.Log(ctx, err)
-			errorSleep(ctx, errorSleepDuration)
+			hps.Sleep(ctx, errorSleepDuration)
 			continue
 		}
-		mm, offset, err = DecodeGetUpdate(out, offset, bot.Username)
+		mm, offset, err = tg.DecodeGetUpdate(out, offset, botName)
 		if err != nil {
 			hps.Log(ctx, err)
-			errorSleep(ctx, errorSleepDuration)
+			hps.Sleep(ctx, errorSleepDuration)
 			continue
 		}
 		for _, m := range mm {
@@ -54,7 +49,7 @@ MainLoop:
 				break MainLoop
 			case msgQueue <- m:
 			}
-			hps.Log(ctx, m)
 		}
 	}
+	hps.Log(ctx, "Poller is stopped")
 }

@@ -5,8 +5,8 @@ import (
 	"errors"
 )
 
-func EncodeGetMe() (request Request) {
-	return Request{Method: "getMe"}
+func EncodeGetMe() (request *Request) {
+	return &Request{Method: "getMe"}
 }
 
 type getMeResponse struct {

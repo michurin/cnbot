@@ -2,12 +2,16 @@ package helpers
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 func init() {
@@ -24,12 +28,24 @@ func init() {
 	if (fi.Mode() & os.ModeCharDevice) != 0 {
 		labelInfo = "\033[32minfo\033[0m"
 		labelError = "\033[31merror\033[0m"
+		labelPrefix = "\033[1m"
+		labelPostfix = "\033[0m"
+		callerPrefix = "\033[34m"
+		callerPostfix = "\033[0m"
 	}
 }
 
+type logContextKey string
+
+const labelKey = logContextKey("label")
+
 var buildPrefixLen int
-var labelInfo = "info"
-var labelError = "error"
+var labelInfo = "[info]"
+var labelError = "[error]"
+var labelPrefix = "["
+var labelPostfix = "]"
+var callerPrefix = "["
+var callerPostfix = "]"
 
 func fmtMessage(messages ...interface{}) (label, msg string) {
 	label = labelInfo
@@ -39,7 +55,14 @@ func fmtMessage(messages ...interface{}) (label, msg string) {
 		case string:
 			msg = m
 		case []byte:
-			msg = string(m)
+			if utf8.Valid(m) {
+				msg = string(m)
+			} else {
+				if len(m) > 200 {
+					m = m[:200]
+				}
+				msg = fmt.Sprintf("%q", m)
+			}
 		case int:
 			msg = fmt.Sprintf("%d", m)
 		case nil:
@@ -72,6 +95,31 @@ func Log(ctx context.Context, message ...interface{}) {
 	if !ok {
 		file = "[nofile]"
 	}
+	label, ok := ctx.Value(labelKey).(string)
+	if !ok {
+		label = "root"
+	}
 	level, msg := fmtMessage(message...)
-	fmt.Printf("%s [%s] [%s:%d] %s\n", tm, level, file[buildPrefixLen:], line, msg)
+	fmt.Printf("%s %s %s%s%s %s%s:%d%s %s\n", tm, level, labelPrefix, label, labelPostfix, callerPrefix, file[buildPrefixLen:], line, callerPostfix, msg)
+}
+
+func Label(ctx context.Context, labels ...string) context.Context {
+	label := strings.Join(labels, ":")
+	prevLabel, ok := ctx.Value(labelKey).(string)
+	if ok {
+		label = prevLabel + ":" + label
+	}
+	return context.WithValue(ctx, labelKey, label)
+}
+
+func RandLabel() string {
+	b := make([]byte, 3)
+	n, err := rand.Reader.Read(b)
+	if err != nil {
+		Log(context.Background(), err)
+	}
+	if n != len(b) {
+		Log(context.Background(), errors.New("not enough data"))
+	}
+	return hex.EncodeToString(b)
 }
