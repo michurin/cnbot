@@ -15,7 +15,7 @@ func Run(ctx context.Context) {
 
 	msgQueue := make(chan tg.Message)
 
-	configBots, err := hps.ReadConfig()
+	configBots, configServer, err := hps.ReadConfig()
 	if err != nil {
 		hps.Log(ctx, err)
 		return
@@ -37,11 +37,15 @@ func Run(ctx context.Context) {
 		}(botName, bot)
 	}
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		RunHTTPServer(ctx, bots)
-	}()
+	if configServer != nil {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			RunHTTPServer(ctx, configServer, bots)
+		}()
+	} else {
+		hps.Log(ctx, "Server didn't start. Not configured")
+	}
 
 	MessageProcessor(ctx, msgQueue, bots)
 

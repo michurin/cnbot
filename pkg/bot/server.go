@@ -84,12 +84,12 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	hps.Log(ctx, http.StatusOK)
 }
 
-func RunHTTPServer(ctx context.Context, botMap map[string]hps.BotConfig) {
+func RunHTTPServer(ctx context.Context, cfg *hps.ServerConfig, botMap map[string]hps.BotConfig) {
 	s := http.Server{
-		ReadTimeout:  10 * time.Second,                                                       // TODO config
-		WriteTimeout: 10 * time.Second,                                                       // TODO config
+		ReadTimeout:  cfg.ReadTimeout,
+		WriteTimeout: cfg.WriteTimeout,
 		ErrorLog:     log.New(os.Stdout, "http", log.LstdFlags|log.Llongfile|log.Lmsgprefix), // TODO establish wrapper for helpers/log.go
-		Addr:         ":9090",                                                                // TODO config
+		Addr:         cfg.BindAddress,
 		Handler:      &Handler{BotMap: botMap},
 		ConnContext: func(ctx context.Context, c net.Conn) context.Context {
 			return hps.Label(ctx, "["+c.RemoteAddr().String()+"]", hps.RandLabel())
@@ -104,6 +104,7 @@ func RunHTTPServer(ctx context.Context, botMap map[string]hps.BotConfig) {
 			hps.Log(ctx, err)
 		}
 	}()
+	hps.Log(ctx, "Server started on", s.Addr, "with timeouts", s.ReadTimeout, s.WriteTimeout)
 	err := s.ListenAndServe()
 	if err != nil {
 		hps.Log(ctx, err)

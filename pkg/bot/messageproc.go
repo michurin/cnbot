@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	hps "github.com/michurin/cnbot/pkg/helpers"
 	"github.com/michurin/cnbot/pkg/tg"
@@ -26,9 +25,9 @@ func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message)
 	}
 	stdout, stderr, err := hps.Exec(
 		ctx,
-		time.Second*10, // TODO config
-		time.Second,    // TODO config
-		time.Second,    // TODO config
+		bot.ScriptTermTimeout,
+		bot.ScriptKillTimeout,
+		bot.ScriptWaitTimeout,
 		bot.Script,
 		strings.Fields(strings.ToLower(m.Text)), // TODO config
 		hps.Env("BOT_NAME", m.BotName, "BOT_FROM", fromStr),

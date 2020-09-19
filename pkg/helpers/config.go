@@ -11,17 +11,28 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type BotConfig struct {
-	Token        string
-	AllowedUsers map[int]struct{}
-	Script       string
-	WorkingDir   string
+	Token             string
+	AllowedUsers      map[int]struct{}
+	Script            string
+	WorkingDir        string
+	ScriptTermTimeout time.Duration
+	ScriptKillTimeout time.Duration
+	ScriptWaitTimeout time.Duration
+}
+
+type ServerConfig struct {
+	BindAddress  string
+	ReadTimeout  time.Duration
+	WriteTimeout time.Duration
 }
 
 type config struct {
-	Bots []botConfig `json:"bots"`
+	Bots   []botConfig   `json:"bots"`
+	Server *serverConfig `json:"server"`
 }
 
 type botConfig struct {
@@ -29,6 +40,12 @@ type botConfig struct {
 	AllowedUsers []int  `json:"allowed_users"`
 	Script       string `json:"script"`
 	WorkingDir   string `json:"working_dir"`
+}
+
+type serverConfig struct {
+	BindingAddress string `json:"bind_address"`
+	ReadingTimeout int    `json:"read_timeout"`
+	WritingTimeout int    `json:"write_timeout"`
 }
 
 func allowedUsers(uu []int) (map[int]struct{}, error) {
@@ -49,39 +66,50 @@ func toAbsPath(baseDir string, path string) string {
 	return filepath.Join(baseDir, path)
 }
 
-func ReadConfig() ([]BotConfig, error) {
+func ReadConfig() ([]BotConfig, *ServerConfig, error) {
 	configFile := flag.String("c", "config.json", "Configuration file in JSON format")
 	flag.Parse()
 	if configFile == nil {
-		return nil, errors.New("can not receive config file name") // it's impossible
+		return nil, nil, errors.New("can not receive config file name") // it's impossible
 	}
 	if !filepath.IsAbs(*configFile) {
-		return nil, errors.New("path to config file must be absolute")
+		return nil, nil, errors.New("path to config file must be absolute")
 	}
 	data, err := ioutil.ReadFile(*configFile)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	cfg := new(config)
 	err = json.Unmarshal(data, cfg)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	baseDir := filepath.Dir(*configFile)
 	botCfg := make([]BotConfig, len(cfg.Bots))
 	for i, b := range cfg.Bots {
 		au, err := allowedUsers(b.AllowedUsers)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		botCfg[i] = BotConfig{
-			Token:        b.Token, // TODO check not empty? some format?
-			AllowedUsers: au,
-			Script:       toAbsPath(baseDir, b.Script),
-			WorkingDir:   toAbsPath(baseDir, b.WorkingDir),
+			Token:             b.Token, // TODO check not empty? some format?
+			AllowedUsers:      au,
+			Script:            toAbsPath(baseDir, b.Script),
+			WorkingDir:        toAbsPath(baseDir, b.WorkingDir),
+			ScriptTermTimeout: 10 * time.Second,
+			ScriptKillTimeout: time.Second,
+			ScriptWaitTimeout: time.Second,
 		}
 	}
-	return botCfg, nil
+	if cfg.Server == nil {
+		return botCfg, nil, nil
+	}
+	serverCfg := &ServerConfig{ // TODO check? defaults?
+		BindAddress:  cfg.Server.BindingAddress,
+		ReadTimeout:  time.Duration(cfg.Server.ReadingTimeout) * time.Second,
+		WriteTimeout: time.Duration(cfg.Server.WritingTimeout) * time.Second,
+	}
+	return botCfg, serverCfg, nil
 }
 
 func allowedUsersToString(uu map[int]struct{}) string {

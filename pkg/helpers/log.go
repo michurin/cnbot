@@ -65,6 +65,8 @@ func fmtMessage(messages ...interface{}) (label, msg string) {
 			}
 		case int:
 			msg = fmt.Sprintf("%d", m)
+		case time.Duration:
+			msg = m.String()
 		case nil:
 			msg = "<nil>"
 		case *exec.ExitError:
