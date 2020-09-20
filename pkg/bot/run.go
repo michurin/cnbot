@@ -2,16 +2,16 @@ package bot
 
 import (
 	"context"
-	"sync"
 
 	hps "github.com/michurin/cnbot/pkg/helpers"
 	"github.com/michurin/cnbot/pkg/tg"
 )
 
-func Run(ctx context.Context) {
-	hps.Log(ctx, "Bot is starting...") // TODO log bot version
+func Run(rootCtx context.Context) {
+	ctx, cancel := context.WithCancel(rootCtx)
+	defer cancel()
 
-	var wg sync.WaitGroup
+	hps.Log(ctx, "Bot is starting...") // TODO log bot version
 
 	msgQueue := make(chan tg.Message)
 
@@ -29,27 +29,44 @@ func Run(ctx context.Context) {
 
 	hps.DumpBotConfig(ctx, bots)
 
+	done := make(chan struct{}, 1)
+	doneCount := 0
+
 	for botName, bot := range bots {
-		wg.Add(1)
+		doneCount++
 		go func(n string, b hps.BotConfig) {
-			defer wg.Done()
+			defer func() { done <- struct{}{} }()
 			Poller(ctx, n, b, msgQueue)
 		}(botName, bot)
 	}
 
 	if configServer != nil {
-		wg.Add(1)
+		doneCount++
 		go func() {
-			defer wg.Done()
+			defer func() { done <- struct{}{} }()
 			RunHTTPServer(ctx, configServer, bots)
 		}()
 	} else {
 		hps.Log(ctx, "Server didn't start. Not configured")
 	}
 
-	MessageProcessor(ctx, msgQueue, bots)
+	if len(bots) > 0 {
+		doneCount++
+		go func() {
+			defer func() { done <- struct{}{} }()
+			MessageProcessor(ctx, msgQueue, bots)
+			done <- struct{}{}
+		}()
+	}
 
-	wg.Wait()
+	if doneCount > 0 {
+		<-done // waiting for at least one exit
+		doneCount--
+		cancel() // cancel all
+		for ; doneCount > 0; doneCount-- {
+			<-done
+		}
+	}
 
 	hps.Log(ctx, "Bot has been stopped")
 }
