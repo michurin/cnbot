@@ -8,7 +8,7 @@ import (
 	"github.com/michurin/cnbot/pkg/tg"
 )
 
-const pollingRequestTimeOutSeconds = 10
+const pollingRequestTimeOutSeconds = 30
 const errorSleepDuration = time.Second * 10
 
 func Poller(ctx context.Context, botName string, bot hps.BotConfig, msgQueue chan<- tg.Message) {
