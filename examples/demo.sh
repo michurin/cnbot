@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 PATH=/usr/local/bin:/bin:/usr/bin
 
 case "CMD_$1" in # NOTCMD
@@ -25,7 +27,7 @@ case "CMD_$1" in # NOTCMD
         echo '```'
         ;;
     CMD_rose)
-        convert rose: -resize 200x png:- # Just throw image to stdout as is
+        convert rose: -resize 200x png:- # Just throw image to stdout as is and it will appear in the chat
         ;;
     CMD_help)
         echo 'Available commands:' # We use "CMD"/"NOTCMD" substrings to build help message automatically
