@@ -21,9 +21,8 @@ func Exec(
 	env []string,
 	pwd string,
 ) (
-	stdout []byte,
-	stderr []byte,
-	err error,
+	[]byte,
+	error,
 ) {
 	// setup cmd
 	cmd := exec.Command(command, args...) // we don't use ctx here because it kills only process, not group
@@ -37,10 +36,10 @@ func Exec(
 	var errBuffer bytes.Buffer
 	cmd.Stderr = &errBuffer
 	// start command synchronously; we hope it doesn't take a long time
-	err = cmd.Start()
+	err := cmd.Start()
 	if err != nil {
 		Log(ctx, err)
-		return nil, nil, err
+		return nil, err
 	}
 	// wait command with care about timeouts and ctx
 	sync := make(chan error)
@@ -50,7 +49,7 @@ func Exec(
 	pgid, err := syscall.Getpgid(cmd.Process.Pid) // not cmd.SysProcAttr.Pgid
 	if err != nil {
 		Log(ctx, err)
-		return nil, nil, err
+		return nil, err
 	}
 	pgid = -pgid // minus!
 	termBound := time.After(termTimeout)
@@ -61,39 +60,42 @@ func Exec(
 		case err := <-sync: // it has to appear before kill sections to catch stat errors
 			if err != nil {
 				Log(ctx, err)
-				return nil, nil, err
+				return nil, err
 			}
 			if !cmd.ProcessState.Exited() {
 				panic("The program is not exited! It's impossible")
 			}
+			if len(errBuffer.Bytes()) != 0 {
+				Log(ctx, command, args, errBuffer.Bytes())
+			}
 			exitCode := cmd.ProcessState.ExitCode()
 			if exitCode != 0 {
-				return nil, nil, fmt.Errorf("Exit code %d: %s", exitCode, string(stderr))
+				return nil, fmt.Errorf("exit code %d", exitCode)
 			}
-			return outBuffer.Bytes(), errBuffer.Bytes(), nil
-		case <-ctx.Done(): // we doesn't even wait for process finalization
+			return outBuffer.Bytes(), nil
+		case <-ctx.Done(): // urgent exit, we doesn't even wait for process finalization
 			err = syscall.Kill(pgid, syscall.SIGKILL)
 			if err != nil {
 				Log(ctx, err)
-				return nil, nil, err
+				return nil, err
 			}
-			return nil, nil, errors.New("aborted by context")
+			return nil, errors.New("aborted by context")
 		case <-termBound:
 			err = syscall.Kill(pgid, syscall.SIGTERM)
 			if err != nil {
 				Log(ctx, err)
-				return nil, nil, err
+				return nil, err
 			}
 		case <-killBound:
 			err = syscall.Kill(pgid, syscall.SIGKILL)
 			if err != nil {
 				Log(ctx, err)
-				return nil, nil, err
+				return nil, err
 			}
 		case <-waitBound:
 			err := errors.New("can't wait anymore")
 			Log(ctx, err)
-			return nil, nil, err
+			return nil, err
 		}
 	}
 }

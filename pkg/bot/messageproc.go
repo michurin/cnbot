@@ -23,7 +23,7 @@ func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message)
 		hps.Log(ctx, fmt.Errorf("user %d is not allowed", m.FromID))
 		return
 	}
-	stdout, stderr, err := hps.Exec(
+	stdout, err := hps.Exec(
 		ctx,
 		bot.ScriptTermTimeout,
 		bot.ScriptKillTimeout,
@@ -32,9 +32,6 @@ func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message)
 		strings.Fields(strings.ToLower(m.Text)), // TODO config
 		hps.Env("BOT_NAME", m.BotName, "BOT_FROM", fromStr),
 		bot.WorkingDir)
-	if len(stderr) > 0 {
-		hps.Log(ctx, stderr)
-	}
 	if err != nil {
 		hps.Log(ctx, err)
 		return
