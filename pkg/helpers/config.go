@@ -113,6 +113,9 @@ func ReadConfig() ([]BotConfig, *ServerConfig, error) {
 }
 
 func allowedUsersToString(uu map[int]struct{}) string {
+	if len(uu) == 0 {
+		return "(empty)"
+	}
 	v := []int(nil)
 	for u := range uu {
 		v = append(v, u)
@@ -130,7 +133,7 @@ func DumpBotConfig(ctx context.Context, cfg map[string]BotConfig) {
 		c := Label(ctx, n)
 		Log(c, "Token:", b.Token)
 		Log(c, "Allowed users:", allowedUsersToString(b.AllowedUsers))
-		Log(c, "Script:", b.Script)
+		Log(c, "Script:", b.Script, "timeouts:", b.ScriptTermTimeout, b.ScriptKillTimeout, b.ScriptWaitTimeout)
 		Log(c, "Working dir:", b.WorkingDir)
 	}
 }
