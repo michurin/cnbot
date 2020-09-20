@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -91,11 +92,27 @@ func ReadConfig() ([]BotConfig, *ServerConfig, error) {
 		if err != nil {
 			return nil, nil, err
 		}
+		script := toAbsPath(baseDir, b.Script)
+		stat, err := os.Stat(script)
+		if err != nil {
+			return nil, nil, err
+		}
+		if !stat.Mode().IsRegular() {
+			return nil, nil, fmt.Errorf("script file %s is not regular", script)
+		}
+		pwd := toAbsPath(baseDir, b.WorkingDir)
+		stat, err = os.Stat(pwd)
+		if err != nil {
+			return nil, nil, err
+		}
+		if !stat.Mode().IsDir() {
+			return nil, nil, fmt.Errorf("working dir %s is not a dirrectory", pwd)
+		}
 		botCfg[i] = BotConfig{
 			Token:             b.Token, // TODO check not empty? some format?
 			AllowedUsers:      au,
-			Script:            toAbsPath(baseDir, b.Script),
-			WorkingDir:        toAbsPath(baseDir, b.WorkingDir),
+			Script:            script,
+			WorkingDir:        pwd,
 			ScriptTermTimeout: 10 * time.Second,
 			ScriptKillTimeout: time.Second,
 			ScriptWaitTimeout: time.Second,
