@@ -100,6 +100,9 @@ func ReadConfig() ([]BotConfig, *ServerConfig, error) {
 		if !stat.Mode().IsRegular() {
 			return nil, nil, fmt.Errorf("script file %s is not regular", script)
 		}
+		if stat.Mode()&0111 == 0 { // slightly weird. just mimic exec.findExecutable
+			return nil, nil, fmt.Errorf("script file %s is not permited", script)
+		}
 		pwd := toAbsPath(baseDir, b.WorkingDir)
 		stat, err = os.Stat(pwd)
 		if err != nil {
