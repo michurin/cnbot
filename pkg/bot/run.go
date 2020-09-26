@@ -13,7 +13,7 @@ func Run(rootCtx context.Context) {
 
 	hps.Log(ctx, "Bot is starting...") // TODO log bot version
 
-	msgQueue := make(chan tg.Message)
+	msgQueue := make(chan tg.Message, 1000) // TODO make buffer size configurable
 
 	configBots, configServer, err := hps.ReadConfig()
 	if err != nil {
@@ -44,7 +44,9 @@ func Run(rootCtx context.Context) {
 		doneCount++
 		go func() {
 			defer func() { done <- struct{}{} }()
-			RunHTTPServer(ctx, configServer, bots)
+			RunHTTPServer(ctx, configServer, &Handler{
+				BotMap: bots,
+			})
 		}()
 	} else {
 		hps.Log(ctx, "Server didn't start. Not configured")
@@ -54,7 +56,7 @@ func Run(rootCtx context.Context) {
 		doneCount++
 		go func() {
 			defer func() { done <- struct{}{} }()
-			MessageProcessor(ctx, msgQueue, bots)
+			MessageProcessor(ctx, msgQueue, bots, configServer.BindAddress)
 			done <- struct{}{}
 		}()
 	}

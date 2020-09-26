@@ -10,7 +10,7 @@ import (
 	"github.com/michurin/cnbot/pkg/tg"
 )
 
-func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message) {
+func process(ctx context.Context, botMap map[string]hps.BotConfig, serverAddress string, m tg.Message) {
 	fromStr := strconv.Itoa(m.FromID)
 	ctx = hps.Label(ctx, m.BotName, fromStr, hps.RandLabel())
 	hps.Log(ctx, "Message", m.FromID, m.BotName, m.Text)
@@ -30,7 +30,7 @@ func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message)
 		bot.ScriptWaitTimeout,
 		bot.Script,
 		strings.Fields(strings.ToLower(m.Text)), // TODO config
-		hps.Env("BOT_NAME", m.BotName, "BOT_FROM", fromStr),
+		hps.Env("BOT_NAME", m.BotName, "BOT_FROM", fromStr, "BOT_SERVER", serverAddress),
 		bot.WorkingDir)
 	if err != nil {
 		hps.Log(ctx, err)
@@ -44,14 +44,14 @@ func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message)
 	}
 }
 
-func MessageProcessor(ctx context.Context, msgQueue <-chan tg.Message, botMap map[string]hps.BotConfig) {
+func MessageProcessor(ctx context.Context, msgQueue <-chan tg.Message, botMap map[string]hps.BotConfig, serverAddress string) {
 	for {
 		select {
 		case <-ctx.Done():
 			hps.Log(ctx, "Queue listener exited due to context cancellation")
 			return
 		case m := <-msgQueue:
-			process(ctx, botMap, m)
+			process(ctx, botMap, serverAddress, m)
 		}
 	}
 }

@@ -84,13 +84,13 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	hps.Log(ctx, http.StatusOK)
 }
 
-func RunHTTPServer(ctx context.Context, cfg *hps.ServerConfig, botMap map[string]hps.BotConfig) {
+func RunHTTPServer(ctx context.Context, cfg *hps.ServerConfig, handler http.Handler) {
 	s := http.Server{
 		ReadTimeout:  cfg.ReadTimeout,
 		WriteTimeout: cfg.WriteTimeout,
 		ErrorLog:     log.New(os.Stdout, "http", log.LstdFlags|log.Llongfile|log.Lmsgprefix), // TODO establish wrapper for helpers/log.go
 		Addr:         cfg.BindAddress,
-		Handler:      &Handler{BotMap: botMap},
+		Handler:      handler,
 		ConnContext: func(ctx context.Context, c net.Conn) context.Context {
 			return hps.Label(ctx, "["+c.RemoteAddr().String()+"]", hps.RandLabel())
 		},
