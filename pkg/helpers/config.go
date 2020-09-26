@@ -37,16 +37,19 @@ type config struct {
 }
 
 type botConfig struct {
-	Token        string `json:"token"`
-	AllowedUsers []int  `json:"allowed_users"`
-	Script       string `json:"script"`
-	WorkingDir   string `json:"working_dir"`
+	Token        string   `json:"token"`
+	AllowedUsers []int    `json:"allowed_users"`
+	Script       string   `json:"script"`
+	WorkingDir   string   `json:"working_dir"`
+	TermTimeout  *float64 `json:"term_timeout"`
+	KillTimeout  *float64 `json:"kill_timeout"`
+	WaitTimeout  *float64 `json:"wait_timeout"`
 }
 
 type serverConfig struct {
-	BindingAddress string `json:"bind_address"`
-	ReadingTimeout int    `json:"read_timeout"`
-	WritingTimeout int    `json:"write_timeout"`
+	BindingAddress string   `json:"bind_address"`
+	ReadingTimeout *float64 `json:"read_timeout"`
+	WritingTimeout *float64 `json:"write_timeout"`
 }
 
 func allowedUsers(uu []int) (map[int]struct{}, error) {
@@ -116,20 +119,27 @@ func ReadConfig() ([]BotConfig, *ServerConfig, error) {
 			AllowedUsers:      au,
 			Script:            script,
 			WorkingDir:        pwd,
-			ScriptTermTimeout: 10 * time.Second,
-			ScriptKillTimeout: time.Second,
-			ScriptWaitTimeout: time.Second,
+			ScriptTermTimeout: defaultDuration(b.TermTimeout, 10*time.Second),
+			ScriptKillTimeout: defaultDuration(b.KillTimeout, time.Second),
+			ScriptWaitTimeout: defaultDuration(b.WaitTimeout, time.Second),
 		}
 	}
 	if cfg.Server == nil {
 		return botCfg, nil, nil
 	}
-	serverCfg := &ServerConfig{ // TODO check? defaults?
+	serverCfg := &ServerConfig{
 		BindAddress:  cfg.Server.BindingAddress,
-		ReadTimeout:  time.Duration(cfg.Server.ReadingTimeout) * time.Second,
-		WriteTimeout: time.Duration(cfg.Server.WritingTimeout) * time.Second,
+		ReadTimeout:  defaultDuration(cfg.Server.ReadingTimeout, 10*time.Second),
+		WriteTimeout: defaultDuration(cfg.Server.WritingTimeout, 10*time.Second),
 	}
 	return botCfg, serverCfg, nil
+}
+
+func defaultDuration(dur *float64, def time.Duration) time.Duration {
+	if dur == nil {
+		return def
+	}
+	return time.Duration(*dur * float64(time.Second))
 }
 
 func allowedUsersToString(uu map[int]struct{}) string {
