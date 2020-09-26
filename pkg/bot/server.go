@@ -104,11 +104,7 @@ func RunHTTPServer(ctx context.Context, cfg *hps.ServerConfig, botMap map[string
 			hps.Log(ctx, err)
 		}
 	}()
-	hps.Log(ctx, "Server started on", s.Addr, "with timeouts", s.ReadTimeout, s.WriteTimeout)
-	err := s.ListenAndServe()
-	if err != nil {
-		hps.Log(ctx, err)
-		return
-	}
+	hps.Log(ctx, "Server is starting on", s.Addr, "with timeouts", s.ReadTimeout, s.WriteTimeout)
+	hps.Log(ctx, s.ListenAndServe())
 	hps.Log(ctx, "Server finished")
 }
