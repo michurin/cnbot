@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"runtime"
 	"strings"
 	"time"
@@ -71,9 +70,6 @@ func fmtMessage(messages ...interface{}) (label, msg string) {
 			msg = "[" + strings.Join(m, ", ") + "]"
 		case nil:
 			msg = "<nil>"
-		case *exec.ExitError:
-			label = labelError
-			msg = fmt.Sprintf("Exit error [code=%d]: %s: %s", m.ExitCode(), m.Error(), string(m.Stderr))
 		case error:
 			label = labelError
 			msg = m.Error()
