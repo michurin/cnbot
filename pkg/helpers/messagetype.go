@@ -30,7 +30,8 @@ func MessageType(data []byte) (
 		return
 	}
 	if text == "" {
-		text = "(empty)"
+		isMarkdown = true
+		text = "_empty_"
 		return
 	}
 	if text == "." {
