@@ -42,7 +42,7 @@ func MessageType(data []byte) (
 			isMarkdown = true
 			text = strings.TrimSpace(text[3 : len(text)-3])
 			text = markDownEscaping.ReplaceAllString(text, "\\$1")
-			text = markDownMarker + text + markDownMarker
+			text = markDownMarker + "\n" + text + "\n" + markDownMarker
 			return
 		}
 	}
