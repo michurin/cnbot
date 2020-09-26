@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"os/exec"
 	"syscall"
 	"time"
@@ -24,6 +23,7 @@ func Exec(
 	[]byte,
 	error,
 ) {
+	Log(ctx, env, command, args)
 	// setup cmd
 	cmd := exec.Command(command, args...) // we don't use ctx here because it kills only process, not group
 	cmd.SysProcAttr = &syscall.SysProcAttr{
@@ -58,19 +58,15 @@ func Exec(
 	for {
 		select {
 		case err := <-sync: // it has to appear before kill sections to catch stat errors
-			if err != nil {
-				Log(ctx, err)
+			if err != nil { // *exec.ExitError if status != 0
+				Log(ctx, err, errBuffer.Bytes())
 				return nil, err
+			}
+			if len(errBuffer.Bytes()) != 0 { // just log stderr if any
+				Log(ctx, command, args, errBuffer.Bytes())
 			}
 			if !cmd.ProcessState.Exited() {
 				panic("The program is not exited! It's impossible")
-			}
-			if len(errBuffer.Bytes()) != 0 {
-				Log(ctx, command, args, errBuffer.Bytes())
-			}
-			exitCode := cmd.ProcessState.ExitCode()
-			if exitCode != 0 {
-				return nil, fmt.Errorf("exit code %d", exitCode)
 			}
 			return outBuffer.Bytes(), nil
 		case <-ctx.Done(): // urgent exit, we doesn't even wait for process finalization
