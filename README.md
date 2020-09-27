@@ -69,14 +69,12 @@ Create in the root of project the following file
       "working_dir": "/tmp",
       "term_timeout": 3,
       "kill_timeout": 1,
-      "wait_timeout": 1
+      "wait_timeout": 1,
+      "bind_address": ":9090",
+      "read_timeout": 2,
+      "write_timeout": 2
     }
-  ],
-  "server": {
-    "bind_address": ":9090",
-    "read_timeout": 2,
-    "write_timeout": 2
-  }
+  ]
 }
 ```
 
@@ -89,9 +87,8 @@ Quick glance over it:
     - `allowed_users` White list of users. The easiest way to figure out your ID is to leave this array
     empty, try to talk to bot and find in logs error message about rejected user.
     - `term_timeout`, `kill_timeout`, `wait_timeout`. Optional. Delays in second. Could be fractional.
-- `server` Optional section. Server for asyncronious messaging won't start if this section is not present.
-    - `bind_address` Address in format like `127.0.0.1:8000`, `[::]:8080` or just `:8888`.
-    - `read_timeout`, `write_timeout` Optional. Request reading and writing timeouts.
+    - `bind_address` Optional. Address in format like `127.0.0.1:8000`, `[::]:8080` or just `:8888`.
+    - `read_timeout`, `write_timeout` Optional. Request reading and writing timeouts in seconds. Could be fractional.
 
 The details are given below.
 
@@ -316,9 +313,11 @@ implement.
 
 ### Asynchronous flow
 
-If `"server"` section is present in your configuration, `cnbot` starts simple HTTP server.
+Due to security reasons, each bot has its own server.
 
-It accepts the `POST` method and paths like `/${BOT_NAME}/to/${TARGET_USER}`. `cnbot` threats
+If `"server"` key is present in bot's configuration, `cnbot` starts for that bot simple HTTP server.
+
+It accepts the `POST` method and paths like `/${TARGET_USER}`. `cnbot` threats
 the body of request in the same way as output of scripts. So you can send text, preformatted text
 and images in PNG, JPEG and GIF formats.
 

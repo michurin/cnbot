@@ -36,7 +36,7 @@ case "CMD_$1" in # We are to say NOCMD here. See "help" section.
         grep CMD_ $0 | grep -v NOCMD | sed 's-.*CMD_-=> -;s-.$--'
         ;;
     CMD_curl)
-        url="http://$BOT_SERVER/$BOT_NAME/to/$BOT_FROM"
+        url="http://$BOT_SERVER/$BOT_FROM"
         echo 'Message one' | curl -qfsX POST -o /dev/null --data-binary @- "$url"
         echo 'Message two' | curl -qfsX POST -o /dev/null --data-binary @- "$url"
         echo '.'

@@ -24,7 +24,7 @@ func Run(rootCtx context.Context) {
 
 	msgQueue := make(chan tg.Message, 1000) // TODO make buffer size configurable
 
-	configBots, configServer, err := hps.ReadConfig()
+	configBots, err := hps.ReadConfig()
 	if err != nil {
 		hps.Log(ctx, err)
 		return
@@ -47,25 +47,23 @@ func Run(rootCtx context.Context) {
 			defer func() { done <- struct{}{} }()
 			Poller(ctx, n, b, msgQueue)
 		}(botName, bot)
-	}
-
-	if configServer != nil {
-		doneCount++
-		go func() {
-			defer func() { done <- struct{}{} }()
-			RunHTTPServer(ctx, configServer, &Handler{
-				BotMap: bots,
-			})
-		}()
-	} else {
-		hps.Log(ctx, "Server didn't start. Not configured")
+		if bot.BindAddress != "" {
+			doneCount++
+			go func(b hps.BotConfig) {
+				defer func() { done <- struct{}{} }()
+				RunHTTPServer(ctx, b.BindAddress, b.WriteTimeout, b.ReadTimeout, &Handler{
+					Token:        b.Token,
+					AllowedUsers: b.AllowedUsers,
+				})
+			}(bot)
+		}
 	}
 
 	if len(bots) > 0 {
 		doneCount++
 		go func() {
 			defer func() { done <- struct{}{} }()
-			MessageProcessor(ctx, msgQueue, bots, configServer.BindAddress)
+			MessageProcessor(ctx, msgQueue, bots)
 			done <- struct{}{}
 		}()
 	}
