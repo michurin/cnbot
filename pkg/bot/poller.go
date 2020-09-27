@@ -11,13 +11,13 @@ import (
 const pollingRequestTimeOutSeconds = 30
 const errorSleepDuration = time.Second * 10
 
-func Poller(ctx context.Context, botName string, bot hps.BotConfig, msgQueue chan<- tg.Message) {
+func Poller(baseCtx context.Context, botName string, bot hps.BotConfig, msgQueue chan<- tg.Message) {
 	var offset int
 	var mm []tg.Message
-	ctx = hps.Label(ctx, botName)
-	hps.Log(ctx, "Poller runs for bot", botName)
+	hps.Log(hps.Label(baseCtx, botName), "Poller runs for bot", botName)
 MainLoop:
 	for {
+		ctx := hps.Label(baseCtx, hps.RandLabel(), botName)
 		select {
 		case <-ctx.Done():
 			hps.Log(ctx, "Poller is halted by context canceling")
@@ -51,5 +51,5 @@ MainLoop:
 			}
 		}
 	}
-	hps.Log(ctx, "Poller is stopped")
+	hps.Log(baseCtx, "Poller is stopped")
 }

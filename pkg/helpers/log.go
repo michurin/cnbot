@@ -2,13 +2,13 @@ package helpers
 
 import (
 	"context"
-	"crypto/rand"
+	"encoding/binary"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"os"
 	"runtime"
 	"strings"
+	"sync/atomic"
 	"time"
 	"unicode/utf8"
 )
@@ -115,14 +115,10 @@ func Label(ctx context.Context, labels ...interface{}) context.Context {
 	return context.WithValue(ctx, labelKey, label)
 }
 
+var labelCounter uint32
+
 func RandLabel() string {
-	b := make([]byte, 3)
-	n, err := rand.Reader.Read(b)
-	if err != nil {
-		Log(context.Background(), err)
-	}
-	if n != len(b) {
-		Log(context.Background(), errors.New("not enough data"))
-	}
-	return hex.EncodeToString(b)
+	b := make([]byte, 4)
+	binary.BigEndian.PutUint32(b, atomic.AddUint32(&labelCounter, 1))
+	return hex.EncodeToString(b[2:4])
 }
