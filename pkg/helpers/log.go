@@ -89,6 +89,9 @@ func fmtMessage(messages ...interface{}) (label, msg string) {
 // - derive log level from type of argument
 // - smart formatting
 // - print caller
+// TODO
+// - rewrite it to struct and use Logger from log
+// - inject it everywhere
 func Log(ctx context.Context, message ...interface{}) {
 	tm := time.Now().Format("2006-01-02 15:04:05")
 	_, file, line, ok := runtime.Caller(1)
