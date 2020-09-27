@@ -2,13 +2,22 @@ package bot
 
 import (
 	"context"
+	"os"
+	"syscall"
 
 	hps "github.com/michurin/cnbot/pkg/helpers"
 	"github.com/michurin/cnbot/pkg/tg"
 )
 
+// TODO split Run to make it embeddable
+// Run have to obtain:
+// - shutdown context
+// - configs
+// - logger
+// - http client
+// - http server
 func Run(rootCtx context.Context) {
-	ctx, cancel := context.WithCancel(rootCtx)
+	ctx, cancel := ShutdownCtx(rootCtx, syscall.SIGTERM, os.Interrupt)
 	defer cancel()
 
 	hps.Log(ctx, "Bot is starting...") // TODO log bot version
