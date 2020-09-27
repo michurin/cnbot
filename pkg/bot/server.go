@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io/ioutil"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -16,6 +15,7 @@ import (
 )
 
 type Handler struct {
+	BotName      string
 	Token        string
 	AllowedUsers map[int]struct{}
 }
@@ -27,7 +27,7 @@ func (h *Handler) pathDecode(ctx context.Context, path string) (destUser int, er
 		hps.Log(ctx, path, err)
 		return
 	}
-	user := urlParts[0]
+	user := urlParts[len(urlParts)-1]
 	destUser, err = strconv.Atoi(user)
 	if err != nil {
 		hps.Log(ctx, user, err)
@@ -42,7 +42,7 @@ func (h *Handler) pathDecode(ctx context.Context, path string) (destUser int, er
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	ctx := hps.Label(r.Context(), hps.RandLabel(), h.BotName)
 	hps.Log(ctx, r.Method, r.URL.String())
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -54,7 +54,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		hps.Log(ctx, r.URL.String(), err)
 		return
 	}
-	ctx = hps.Label(ctx, strconv.Itoa(destUser))
+	ctx = hps.Label(ctx, destUser)
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -78,9 +78,6 @@ func RunHTTPServer(ctx context.Context, addr string, writeTimeout time.Duration,
 		ErrorLog:     log.New(os.Stdout, "http", log.LstdFlags|log.Llongfile|log.Lmsgprefix), // TODO establish wrapper for helpers/log.go
 		Addr:         addr,
 		Handler:      handler,
-		ConnContext: func(ctx context.Context, c net.Conn) context.Context {
-			return hps.Label(ctx, "["+addr+"|"+c.RemoteAddr().String()+"]", hps.RandLabel())
-		},
 	}
 	go func() { // what if we shutdown before listen?
 		<-ctx.Done()

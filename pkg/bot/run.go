@@ -49,13 +49,14 @@ func Run(rootCtx context.Context) {
 		}(botName, bot)
 		if bot.BindAddress != "" {
 			doneCount++
-			go func(b hps.BotConfig) {
+			go func(n string, b hps.BotConfig) {
 				defer func() { done <- struct{}{} }()
 				RunHTTPServer(ctx, b.BindAddress, b.WriteTimeout, b.ReadTimeout, &Handler{
+					BotName:      n,
 					Token:        b.Token,
 					AllowedUsers: b.AllowedUsers,
 				})
-			}(bot)
+			}(botName, bot)
 		}
 	}
 

@@ -11,8 +11,7 @@ import (
 )
 
 func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message) {
-	fromStr := strconv.Itoa(m.FromID)
-	ctx = hps.Label(ctx, m.BotName, fromStr, hps.RandLabel())
+	ctx = hps.Label(ctx, hps.RandLabel(), m.BotName, m.FromID)
 	hps.Log(ctx, "Message", m.FromID, m.BotName, m.Text)
 	bot, ok := botMap[m.BotName]
 	if !ok {
@@ -30,7 +29,7 @@ func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message)
 		bot.ScriptWaitTimeout,
 		bot.Script,
 		strings.Fields(strings.ToLower(m.Text)), // TODO config
-		hps.Env("BOT_NAME", m.BotName, "BOT_FROM", fromStr, "BOT_SERVER", bot.BindAddress),
+		hps.Env("BOT_NAME", m.BotName, "BOT_FROM", strconv.Itoa(m.FromID), "BOT_SERVER", bot.BindAddress),
 		bot.WorkingDir)
 	if err != nil {
 		hps.Log(ctx, err)

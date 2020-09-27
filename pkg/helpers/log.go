@@ -46,7 +46,7 @@ var labelPostfix = "]"
 var callerPrefix = "["
 var callerPostfix = "]"
 
-func fmtMessage(messages ...interface{}) (label, msg string) {
+func fmtMessage(sep string, messages ...interface{}) (label, msg string) {
 	label = labelInfo
 	msgs := []string(nil)
 	for _, message := range messages {
@@ -79,7 +79,7 @@ func fmtMessage(messages ...interface{}) (label, msg string) {
 		}
 		msgs = append(msgs, msg)
 	}
-	msg = strings.Join(msgs, " ")
+	msg = strings.Join(msgs, sep)
 	return
 }
 
@@ -102,12 +102,12 @@ func Log(ctx context.Context, message ...interface{}) {
 	if !ok {
 		label = "root"
 	}
-	level, msg := fmtMessage(message...)
+	level, msg := fmtMessage(" ", message...)
 	fmt.Printf("%s %s %s%s%s %s%s:%d%s %s\n", tm, level, labelPrefix, label, labelPostfix, callerPrefix, file[buildPrefixLen:], line, callerPostfix, msg)
 }
 
-func Label(ctx context.Context, labels ...string) context.Context {
-	label := strings.Join(labels, ":")
+func Label(ctx context.Context, labels ...interface{}) context.Context {
+	_, label := fmtMessage(":", labels...)
 	prevLabel, ok := ctx.Value(labelKey).(string)
 	if ok {
 		label = prevLabel + ":" + label
