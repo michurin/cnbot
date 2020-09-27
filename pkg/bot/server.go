@@ -16,37 +16,24 @@ import (
 )
 
 type Handler struct {
-	BotMap map[string]hps.BotConfig
+	Token        string
+	AllowedUsers map[int]struct{}
 }
 
-func (h *Handler) pathDecode(ctx context.Context, path string) (destUser int, botName string, bot hps.BotConfig, err error) {
-	var ok bool
+func (h *Handler) pathDecode(ctx context.Context, path string) (destUser int, err error) {
 	urlParts := strings.Split(strings.Trim(path, "/"), "/")
-	if len(urlParts) != 3 {
+	if len(urlParts) != 1 {
 		err = errors.New("invalid path")
 		hps.Log(ctx, path, err)
 		return
 	}
-	botName = urlParts[0]
-	bot, ok = h.BotMap[botName]
-	if !ok {
-		err = errors.New("bot does not exists")
-		hps.Log(ctx, botName, err)
-		return
-	}
-	act := urlParts[1]
-	if act != "to" {
-		err = errors.New("invalid action")
-		hps.Log(ctx, act, err)
-		return
-	}
-	user := urlParts[2]
+	user := urlParts[0]
 	destUser, err = strconv.Atoi(user)
 	if err != nil {
 		hps.Log(ctx, user, err)
 		return
 	}
-	if _, ok := bot.AllowedUsers[destUser]; !ok {
+	if _, ok := h.AllowedUsers[destUser]; !ok {
 		err = errors.New("user is not allowed")
 		hps.Log(ctx, destUser, err)
 		return
@@ -61,20 +48,20 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	destUser, botName, bot, err := h.pathDecode(ctx, r.URL.Path)
+	destUser, err := h.pathDecode(ctx, r.URL.Path)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		hps.Log(ctx, r.URL.String(), err)
 		return
 	}
-	ctx = hps.Label(ctx, botName, strconv.Itoa(destUser))
+	ctx = hps.Label(ctx, strconv.Itoa(destUser))
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		hps.Log(ctx, body, err)
 		return
 	}
-	err = SmartSend(ctx, bot.Token, destUser, body)
+	err = SmartSend(ctx, h.Token, destUser, body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		hps.Log(ctx, body, err)
@@ -84,15 +71,15 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	hps.Log(ctx, http.StatusOK)
 }
 
-func RunHTTPServer(ctx context.Context, cfg *hps.ServerConfig, handler http.Handler) {
+func RunHTTPServer(ctx context.Context, addr string, writeTimeout time.Duration, readTimeout time.Duration, handler http.Handler) {
 	s := http.Server{
-		ReadTimeout:  cfg.ReadTimeout,
-		WriteTimeout: cfg.WriteTimeout,
+		ReadTimeout:  readTimeout,
+		WriteTimeout: writeTimeout,
 		ErrorLog:     log.New(os.Stdout, "http", log.LstdFlags|log.Llongfile|log.Lmsgprefix), // TODO establish wrapper for helpers/log.go
-		Addr:         cfg.BindAddress,
+		Addr:         addr,
 		Handler:      handler,
 		ConnContext: func(ctx context.Context, c net.Conn) context.Context {
-			return hps.Label(ctx, "["+c.RemoteAddr().String()+"]", hps.RandLabel())
+			return hps.Label(ctx, "["+addr+"|"+c.RemoteAddr().String()+"]", hps.RandLabel())
 		},
 	}
 	go func() { // what if we shutdown before listen?
@@ -106,5 +93,5 @@ func RunHTTPServer(ctx context.Context, cfg *hps.ServerConfig, handler http.Hand
 	}()
 	hps.Log(ctx, "Server is starting on", s.Addr, "with timeouts", s.ReadTimeout, s.WriteTimeout)
 	hps.Log(ctx, s.ListenAndServe())
-	hps.Log(ctx, "Server finished")
+	hps.Log(ctx, "Server finished on", s.Addr)
 }
