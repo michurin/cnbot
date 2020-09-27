@@ -33,7 +33,7 @@ Quick start
 
 ### Compile
 
-All you need is [Go](https://golang.org/) language 1.13
+All you need is [Go](https://golang.org/) language 1.14
 or newer. You can [install](https://golang.org/doc/install) it
 even without root permissions. To compile just say:
 
