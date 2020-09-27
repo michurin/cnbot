@@ -212,7 +212,7 @@ curl 'https://api.telegram.org/bot$TOKEN/deleteWebhook'
 #### Telegram API is unreachable (use proxy)
 
 Use `HTTPS_PROXY` environment
-```
+```sh
 HTTPS_PROXY=socks5://localhost:8888 ./cnbot -c $PWD/config.json
 ```
 
