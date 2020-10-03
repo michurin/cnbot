@@ -14,32 +14,36 @@ const errorSleepDuration = time.Second * 10
 func Poller(baseCtx context.Context, botName string, bot hps.BotConfig, msgQueue chan<- tg.Message) {
 	var offset int
 	var mm []tg.Message
-	hps.Log(hps.Label(baseCtx, botName), "Poller runs for bot", botName)
+	var sleep bool
+	hps.Log(hps.Label(baseCtx, botName), "Poller runs")
+	ctx := baseCtx
 MainLoop:
 	for {
-		ctx := hps.Label(baseCtx, hps.RandLabel(), botName)
-		select {
-		case <-ctx.Done():
-			hps.Log(ctx, "Poller is halted by context canceling")
-			break MainLoop
-		default:
+		if sleep { // comes from previous iteration; it will never execute in first run
+			err := hps.Sleep(ctx, errorSleepDuration)
+			if err != nil {
+				hps.Log(ctx, "Poller is halted by ctx")
+				break
+			}
+			sleep = false
 		}
+		ctx = hps.Label(baseCtx, hps.RandLabel(), botName)
 		req, err := tg.EncodeGetUpdates(offset, pollingRequestTimeOutSeconds)
 		if err != nil { // in fact, it is reason for panic
 			hps.Log(ctx, err)
-			hps.Sleep(ctx, errorSleepDuration)
+			sleep = true
 			continue
 		}
 		out, err := hps.Do(ctx, tg.Encode(bot.Token, req))
 		if err != nil {
 			hps.Log(ctx, err)
-			hps.Sleep(ctx, errorSleepDuration)
+			sleep = true
 			continue
 		}
 		mm, offset, err = tg.DecodeGetUpdate(out, offset, botName)
 		if err != nil {
 			hps.Log(ctx, err)
-			hps.Sleep(ctx, errorSleepDuration)
+			sleep = true
 			continue
 		}
 		for _, m := range mm {
@@ -51,5 +55,5 @@ MainLoop:
 			}
 		}
 	}
-	hps.Log(baseCtx, "Poller is stopped")
+	hps.Log(hps.Label(baseCtx, botName), "Poller is stopped")
 }

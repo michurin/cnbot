@@ -72,6 +72,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func RunHTTPServer(ctx context.Context, addr string, writeTimeout time.Duration, readTimeout time.Duration, handler http.Handler) {
+	ctx = hps.Label(ctx, addr)
 	s := http.Server{
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
@@ -81,6 +82,7 @@ func RunHTTPServer(ctx context.Context, addr string, writeTimeout time.Duration,
 	}
 	go func() { // what if we shutdown before listen?
 		<-ctx.Done()
+		hps.Log(ctx, "Server is going to shutdown")
 		dCtx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 		err := s.Shutdown(dCtx)
@@ -90,5 +92,5 @@ func RunHTTPServer(ctx context.Context, addr string, writeTimeout time.Duration,
 	}()
 	hps.Log(ctx, "Server is starting on", s.Addr, "with timeouts", s.ReadTimeout, s.WriteTimeout)
 	hps.Log(ctx, s.ListenAndServe())
-	hps.Log(ctx, "Server finished on", s.Addr)
+	hps.Log(ctx, "Server finished")
 }

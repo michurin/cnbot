@@ -102,6 +102,10 @@ func Log(ctx context.Context, message ...interface{}) {
 	if !ok {
 		label = "root"
 	}
+	err := ctx.Err()
+	if err != nil {
+		message = append(message, err)
+	}
 	level, msg := fmtMessage(" ", message...)
 	fmt.Printf("%s %s %s%s%s %s%s:%d%s %s\n", tm, level, labelPrefix, label, labelPostfix, callerPrefix, file[buildPrefixLen:], line, callerPostfix, msg)
 }

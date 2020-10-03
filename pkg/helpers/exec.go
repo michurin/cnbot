@@ -70,6 +70,7 @@ func Exec(
 			}
 			return outBuffer.Bytes(), nil
 		case <-ctx.Done(): // urgent exit, we doesn't even wait for process finalization
+			Log(ctx, "Exec terminated by context")
 			err = syscall.Kill(pgid, syscall.SIGKILL)
 			if err != nil {
 				Log(ctx, err)
