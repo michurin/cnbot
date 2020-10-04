@@ -1,10 +1,8 @@
-cnbot: Tool for creating Telegram bots as easy as writing sh script
-===================================================================
+# cnbot: Tool for creating Telegram bots as easy as writing sh script
 
 ![build](https://github.com/michurin/cnbot/workflows/build/badge.svg)
 
-What is it
-----------
+## What is it
 
 ### Motivation
 
@@ -30,8 +28,7 @@ that is complying with extremely simple contract.
 - Clear logs: caller, labels
 - Security: restrict access by users white list, pass only certain environment variables to script
 
-Quick start
------------
+## Quick start
 
 ### Compile
 
@@ -218,8 +215,7 @@ Use `HTTPS_PROXY` environment
 HTTPS_PROXY=socks5://localhost:8888 ./cnbot -c $PWD/config.json
 ```
 
-Writing your own bot scenarios in details
------------------------------------------
+## Writing your own bot scenarios in details
 
 As you saw above, you are to write you
 "script" to animate your bot. This script
@@ -331,8 +327,7 @@ Using this mechanism you can:
 
 You can configure reading and writing timeouts. Default values are 10s and 10s.
 
-System administration topics
-----------------------------
+## System administration topics
 
 ### Daemonize
 
@@ -345,20 +340,16 @@ However, if you use `sistemd` you don't need for daemonization.
 `cnbot` just throws log messages to `stdout`. You can use
 tools like `multilog` to manage log files.
 
-Todo
-----
+## Todo
 
 - Modes of arguments preparation (for user's process)
 - `reply_markup=InlineKeyboardMarkup` (?)
 - Ability to send any Telegram API requests (using HTTP interface?)
-- Travis
-- Disable web hook if any `getWebhookInfo`+`deleteWebhook`
+- Disable web hook if any `getWebhookInfo`+`deleteWebhook` (?)
 - Play with `getMyCommands`/`setMyCommands` that were added in March 2020 in Bot API 4.7
 - Tests
-- Throttling
 - Examples of rc-scripts and systemd service-file.
 
-Relative links
---------------
+## Relative links
 
 - [Telegram Bot API](https://core.telegram.org/bots/api)
