@@ -1,6 +1,8 @@
 cnbot: Tool for creating Telegram bots as easy as writing sh script
 ===================================================================
 
+![build](https://github.com/michurin/cnbot/workflows/build/badge.svg)
+
 What is it
 ----------
 
