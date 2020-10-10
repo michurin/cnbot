@@ -114,7 +114,6 @@ func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) (string,
 			c.ScriptKillTimeout,
 			c.ScriptWaitTimeout,
 			serverConfigurationToString(c.BindAddress, c.WriteTimeout, c.ReadTimeout))
-		i++
 	}
 	return strings.Join(reports, "\n"), nil
 }
