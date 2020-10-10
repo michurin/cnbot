@@ -24,14 +24,8 @@ func Run(rootCtx context.Context) {
 
 	msgQueue := make(chan tg.Message, 1000) // TODO make buffer size configurable
 
-	configBots, err := hps.ReadConfig()
+	bots, err := hps.ReadConfig()
 	if err != nil {
-		hps.Log(ctx, err)
-		return
-	}
-
-	bots, err := Bots(ctx, configBots)
-	if err != nil { // canceled context cause err too
 		hps.Log(ctx, err)
 		return
 	}

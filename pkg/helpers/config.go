@@ -29,7 +29,7 @@ type BotConfig struct {
 }
 
 type config struct {
-	Bots []botConfig `json:"bots"`
+	Bots map[string]botConfig `json:"bots"`
 }
 
 type botConfig struct {
@@ -63,7 +63,7 @@ func toAbsPath(baseDir string, path string) string {
 	return filepath.Join(baseDir, path)
 }
 
-func ReadConfig() ([]BotConfig, error) {
+func ReadConfig() (map[string]BotConfig, error) {
 	configFile := flag.String("c", "config.json", "Configuration file in JSON format")
 	flag.Parse()
 	if configFile == nil {
@@ -82,8 +82,8 @@ func ReadConfig() ([]BotConfig, error) {
 		return nil, err
 	}
 	baseDir := filepath.Dir(*configFile)
-	botCfg := make([]BotConfig, len(cfg.Bots))
-	for i, b := range cfg.Bots {
+	botCfg := map[string]BotConfig{}
+	for nick, b := range cfg.Bots {
 		au, err := allowedUsers(b.AllowedUsers)
 		if err != nil {
 			return nil, err
@@ -107,7 +107,7 @@ func ReadConfig() ([]BotConfig, error) {
 		if !stat.Mode().IsDir() {
 			return nil, fmt.Errorf("working dir %s is not a dirrectory", pwd)
 		}
-		botCfg[i] = BotConfig{
+		botCfg[nick] = BotConfig{
 			Token:             b.Token, // TODO check not empty? some format?
 			AllowedUsers:      au,
 			Script:            script,
