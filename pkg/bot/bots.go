@@ -65,6 +65,23 @@ func botInfo(ctx context.Context, token string) string {
     - first name: %q`, botID, botName, firstName)
 }
 
+func botWebHook(ctx context.Context, token string) string {
+	out, err := hps.Do(ctx, tg.Encode(token, tg.EncodeGetWebhookInfo()))
+	if err != nil {
+		hps.Log(ctx, err)
+		return "ERROR"
+	}
+	u, err := tg.DecodeGetWebhookInfo(out)
+	if err != nil {
+		hps.Log(ctx, err)
+		return "ERROR"
+	}
+	if u == "" {
+		return "empty (it's ok)"
+	}
+	return fmt.Sprintf("%q (NOT OK!)", u)
+}
+
 func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) (string, error) {
 	nicks := make([]string, len(cfgs))
 	i := 0
@@ -79,6 +96,7 @@ func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) (string,
 		c := cfgs[nick]
 		reports[i] = fmt.Sprintf(`- nickname: %q
   - bot info:%s
+    - web hook: %s
   - configuration:
     - allowed users:%s
     - script:
@@ -88,6 +106,7 @@ func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) (string,
     - server:%s`,
 			nick,
 			botInfo(ctx, c.Token),
+			botWebHook(ctx, c.Token),
 			allowedUsersToString(c.AllowedUsers),
 			c.Script,
 			c.WorkingDir,
