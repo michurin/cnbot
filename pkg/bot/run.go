@@ -20,17 +20,29 @@ func Run(rootCtx context.Context) {
 	ctx, cancel := ShutdownCtx(rootCtx, syscall.SIGTERM, os.Interrupt)
 	defer cancel()
 
-	hps.Log(ctx, "Bot is starting...") // TODO log bot version
-
-	msgQueue := make(chan tg.Message, 1000) // TODO make buffer size configurable
-
-	bots, err := hps.ReadConfig()
+	configFile, infoMode, err := hps.CommandLine()
 	if err != nil {
 		hps.Log(ctx, err)
 		return
 	}
 
+	bots, err := hps.ReadConfig(configFile)
+	if err != nil {
+		hps.Log(ctx, configFile, err)
+		return
+	}
+
 	hps.DumpBotConfig(ctx, bots)
+
+	if infoMode {
+		err = Bots(ctx, bots)
+		if err != nil {
+			hps.Log(ctx, err)
+		}
+		return
+	}
+
+	msgQueue := make(chan tg.Message, 1000) // TODO make buffer size configurable
 
 	done := make(chan struct{}, 1)
 	doneCount := 0

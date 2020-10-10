@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -63,16 +62,11 @@ func toAbsPath(baseDir string, path string) string {
 	return filepath.Join(baseDir, path)
 }
 
-func ReadConfig() (map[string]BotConfig, error) {
-	configFile := flag.String("c", "config.json", "Configuration file in JSON format")
-	flag.Parse()
-	if configFile == nil {
-		return nil, errors.New("can not receive config file name") // it's impossible
-	}
-	if !filepath.IsAbs(*configFile) {
+func ReadConfig(configFile string) (map[string]BotConfig, error) {
+	if !filepath.IsAbs(configFile) {
 		return nil, errors.New("path to config file must be absolute")
 	}
-	data, err := ioutil.ReadFile(*configFile)
+	data, err := ioutil.ReadFile(configFile)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +75,7 @@ func ReadConfig() (map[string]BotConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	baseDir := filepath.Dir(*configFile)
+	baseDir := filepath.Dir(configFile)
 	botCfg := map[string]BotConfig{}
 	for nick, b := range cfg.Bots {
 		au, err := allowedUsers(b.AllowedUsers)
