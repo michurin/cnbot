@@ -2,6 +2,7 @@ package bot
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"syscall"
 
@@ -32,13 +33,12 @@ func Run(rootCtx context.Context) {
 		return
 	}
 
-	hps.DumpBotConfig(ctx, bots)
-
 	if infoMode {
-		err = Bots(ctx, bots)
+		report, err := BotsReport(ctx, bots)
 		if err != nil {
 			hps.Log(ctx, err)
 		}
+		fmt.Print("\nREPORT\n\n" + report + "\n\n")
 		return
 	}
 

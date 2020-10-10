@@ -1,16 +1,12 @@
 package helpers
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"sort"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -122,35 +118,4 @@ func defaultDuration(dur *float64, def time.Duration) time.Duration {
 		return def
 	}
 	return time.Duration(*dur * float64(time.Second))
-}
-
-func allowedUsersToString(uu map[int]struct{}) string {
-	if len(uu) == 0 {
-		return "(empty)"
-	}
-	v := []int(nil)
-	for u := range uu {
-		v = append(v, u)
-	}
-	sort.Ints(v)
-	s := make([]string, len(v))
-	for i, p := range v {
-		s[i] = strconv.Itoa(p)
-	}
-	return strings.Join(s, ", ")
-}
-
-func DumpBotConfig(ctx context.Context, cfg map[string]BotConfig) {
-	for n, b := range cfg {
-		c := Label(ctx, n)
-		Log(c, "Token:", b.Token)
-		Log(c, "Allowed users:", allowedUsersToString(b.AllowedUsers))
-		Log(c, "Script:", b.Script, "timeouts:", b.ScriptTermTimeout, b.ScriptKillTimeout, b.ScriptWaitTimeout)
-		Log(c, "Working dir:", b.WorkingDir)
-		if b.BindAddress != "" {
-			Log(c, "Serve at", b.BindAddress, "timeouts:", b.ReadTimeout, b.WriteTimeout)
-		} else {
-			Log(c, "No server")
-		}
-	}
 }
