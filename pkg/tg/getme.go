@@ -19,7 +19,7 @@ type getMeResponse struct {
 	}
 }
 
-func DecodeGetMe(body []byte) (id int, username string, err error) {
+func DecodeGetMe(body []byte) (id int, username string, firstname string, err error) {
 	data := getMeResponse{}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
@@ -35,5 +35,6 @@ func DecodeGetMe(body []byte) (id int, username string, err error) {
 	}
 	id = data.Result.ID
 	username = data.Result.Username
+	firstname = data.Result.FirstName
 	return
 }

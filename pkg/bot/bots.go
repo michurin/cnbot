@@ -54,14 +54,15 @@ func botInfo(ctx context.Context, token string) string {
 		hps.Log(ctx, err)
 		return " ERROR"
 	}
-	botID, botName, err := tg.DecodeGetMe(out)
+	botID, botName, firstName, err := tg.DecodeGetMe(out)
 	if err != nil {
 		hps.Log(ctx, err)
 		return " ERROR"
 	}
 	return fmt.Sprintf(`
     - bot id: %d
-    - bot name: %q`, botID, botName)
+    - bot name: %q
+    - first name: %q`, botID, botName, firstName)
 }
 
 func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) (string, error) {
