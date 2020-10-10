@@ -66,10 +66,17 @@ func botInfo(ctx context.Context, token string) string {
 }
 
 func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) (string, error) {
-	reports := make([]string, len(cfgs))
+	nicks := make([]string, len(cfgs))
 	i := 0
-	for nick, c := range cfgs { // TODO sort by nickname
+	for nick := range cfgs {
+		nicks[i] = nick
+		i++
+	}
+	sort.Strings(nicks)
+	reports := make([]string, len(nicks))
+	for i, nick := range nicks {
 		ctx := hps.Label(rootCtx, nick)
+		c := cfgs[nick]
 		reports[i] = fmt.Sprintf(`- nickname: %q
   - bot info:%s
   - configuration:
