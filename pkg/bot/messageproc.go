@@ -11,15 +11,16 @@ import (
 )
 
 func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message) {
-	ctx = hps.Label(ctx, hps.RandLabel(), m.BotName, m.FromID)
-	hps.Log(ctx, "Message", m.FromID, m.BotName, m.Text)
+	target := m.ChatID
+	ctx = hps.Label(ctx, hps.RandLabel(), m.BotName, target)
+	hps.Log(ctx, "Message", m.Text)
 	bot, ok := botMap[m.BotName]
 	if !ok {
 		hps.Log(ctx, fmt.Errorf("bot `%s` is not known", m.BotName))
 		return
 	}
-	if _, ok := bot.AllowedUsers[m.FromID]; !ok {
-		hps.Log(ctx, fmt.Errorf("user %d is not allowed", m.FromID))
+	if _, ok := bot.AllowedUsers[target]; !ok {
+		hps.Log(ctx, fmt.Errorf("user %d is not allowed", target))
 		return
 	}
 	stdout, err := hps.Exec(
@@ -29,14 +30,24 @@ func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message)
 		bot.ScriptWaitTimeout,
 		bot.Script,
 		strings.Fields(strings.ToLower(m.Text)), // TODO config
-		hps.Env("BOT_NAME", m.BotName, "BOT_FROM", strconv.Itoa(m.FromID), "BOT_SERVER", bot.BindAddress),
+		hps.Env(
+			"BOT_NAME",
+			m.BotName,
+			"BOT_FROM",
+			strconv.Itoa(target),
+			"BOT_FROM_FIRSTNAME",
+			m.FromFirstName,
+			"BOT_CHAT",
+			strconv.Itoa(m.ChatID),
+			"BOT_SERVER",
+			bot.BindAddress),
 		bot.WorkingDir)
 	if err != nil {
 		hps.Log(ctx, err)
 		return
 	}
 	hps.Log(ctx, "script output:", stdout)
-	err = SmartSend(ctx, bot.Token, m.FromID, stdout)
+	err = SmartSend(ctx, bot.Token, target, stdout)
 	if err != nil {
 		hps.Log(ctx, err)
 		return
