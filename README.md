@@ -376,13 +376,58 @@ You can configure reading and writing timeouts. Default values are 10s and 10s.
 
 ## :pizza: System administration topics
 
-### Daemonize
+### Modern `systemd` fashion
+
+As usual create service file like this `/etc/systemd/system/cnbot.service`:
+
+```
+[Unit]
+Description=Telegram bot (cnbot) service
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=nobody
+ExecStart=/usr/big/cnbot -c /etc/cnbot-config.json
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Don't forget to set your actual username after `User=` and the proper path to your script
+and configuration file in `ExecStart=`. Keep in mind that relative paths in configuration file
+evaluate with respect of configuration file directory.
+
+```
+[root]# systemctl daemon-reload
+[root]# systemctl status cnbot
+● cnbot.service - Telegram bot (cnbot) service
+     Loaded: loaded (/etc/systemd/system/cnbot.service; disabled; vendor preset: disabled)
+     Active: inactive (dead)
+[root]# systemctl start cnbot
+[root]# systemctl status cnbot # you will see that bot is active
+```
+
+If everything is ok, you can enable service (`systemd enable`).
+If something goes wrong, you can inspect logs:
+
+```
+journalctl -u cnbot
+```
+
+You can use `-f` with `journalctl` to read live-tail logs.
+
+### Old fashioned `rc.d` scripts
+
+#### Daemonize
 
 `cnbot` doesn't have any daemonization abilities.
 If you really wish to daemonize it, you can use tools like `nohup`.
 However, if you use `sistemd` you don't need for daemonization.
 
-### Log management
+#### Log management
 
 `cnbot` just throws log messages to `stdout`.
 There is a lot of tools designed with the primary purpose
