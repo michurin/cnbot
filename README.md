@@ -4,7 +4,10 @@
 
 ## :mag_right: What it is
 
-It is a tool to create custom simple Telegram bots.
+It is a tool to create custom simple Telegram bots. For example, this is
+a part of chat with [demo script](examples/demo.sh).
+
+![Telegram bot screenshot](https://raw.githubusercontent.com/michurin/cnbot/static/screenshot.png)
 
 ### Motivation
 
