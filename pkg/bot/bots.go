@@ -3,6 +3,7 @@ package bot
 import (
 	"context"
 	"fmt"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -94,7 +95,8 @@ func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) (string,
 	for i, nick := range nicks {
 		ctx := hps.Label(rootCtx, nick)
 		c := cfgs[nick]
-		reports[i] = fmt.Sprintf(`- nickname: %q
+		reports[i] = fmt.Sprintf(`- go version: %s / %s / %s
+- nickname: %q
   - bot info:%s
     - web hook: %s
   - configuration:
@@ -104,6 +106,9 @@ func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) (string,
       - working dir: %q
       - timeouts: %v, %v, %v (term/kill/wait)
     - server:%s`,
+			runtime.Version(),
+			runtime.GOOS,
+			runtime.GOARCH,
 			nick,
 			botInfo(ctx, c.Token),
 			botWebHook(ctx, c.Token),
