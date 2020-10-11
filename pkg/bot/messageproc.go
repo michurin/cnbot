@@ -29,7 +29,17 @@ func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message)
 		bot.ScriptWaitTimeout,
 		bot.Script,
 		strings.Fields(strings.ToLower(m.Text)), // TODO config
-		hps.Env("BOT_NAME", m.BotName, "BOT_FROM", strconv.Itoa(m.FromID), "BOT_SERVER", bot.BindAddress),
+		hps.Env(
+			"BOT_NAME",
+			m.BotName,
+			"BOT_FROM",
+			strconv.Itoa(m.FromID),
+			"BOT_FROM_FIRSTNAME",
+			m.FromFirstName,
+			"BOT_CHAT",
+			strconv.Itoa(m.ChatID),
+			"BOT_SERVER",
+			bot.BindAddress),
 		bot.WorkingDir)
 	if err != nil {
 		hps.Log(ctx, err)

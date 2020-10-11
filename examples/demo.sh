@@ -40,6 +40,16 @@ case "CMD_$1" in # We are to say NOCMD here. See "help" section.
         env | sort
         echo '```'
         ;;
+    CMD_/env)
+        u="http://$BOT_SERVER/$BOT_CHAT"
+        (
+        echo '```'
+        env | sort
+        echo '```'
+        ) |
+        curl -qfsX POST -o /dev/null --data-binary @- "$u"
+        echo '.'
+        ;;
     CMD_rose)
         montage rose: rose: rose: rose: -geometry +2+2 png:- # Just throw image to stdout as is and it will appear in the chat
         ;;
