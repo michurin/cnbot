@@ -392,7 +392,7 @@ Type=simple
 Restart=always
 RestartSec=1
 User=nobody
-ExecStart=/usr/big/cnbot -c /etc/cnbot-config.json
+ExecStart=/usr/bin/cnbot -c /etc/cnbot-config.json
 
 [Install]
 WantedBy=multi-user.target
