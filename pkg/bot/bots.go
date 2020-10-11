@@ -55,7 +55,7 @@ func botInfo(ctx context.Context, token string) string {
 		hps.Log(ctx, err)
 		return " ERROR"
 	}
-	botID, botName, firstName, err := tg.DecodeGetMe(out)
+	botID, botName, firstName, canJoinGrp, canReadAllGrpMsg, supportInline, err := tg.DecodeGetMe(out)
 	if err != nil {
 		hps.Log(ctx, err)
 		return " ERROR"
@@ -63,7 +63,10 @@ func botInfo(ctx context.Context, token string) string {
 	return fmt.Sprintf(`
     - bot id: %d
     - bot name: %q
-    - first name: %q`, botID, botName, firstName)
+    - first name: %q
+    - can join grp: %v
+    - can read all grp msgs: %v
+    - support inline: %v`, botID, botName, firstName, canJoinGrp, canReadAllGrpMsg, supportInline)
 }
 
 func botWebHook(ctx context.Context, token string) string {

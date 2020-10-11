@@ -12,14 +12,25 @@ func EncodeGetMe() (request *Request) {
 type getMeResponse struct {
 	Ok     bool `json:"ok"`
 	Result struct {
-		ID        int    `json:"id"`
-		IsBot     bool   `json:"is_bot"`
-		FirstName string `json:"first_name"`
-		Username  string `json:"username"`
+		ID                      int    `json:"id"`
+		IsBot                   bool   `json:"is_bot"`
+		FirstName               string `json:"first_name"`
+		Username                string `json:"username"`
+		CanJoinGroups           bool   `json:"can_join_groups"`
+		CanReadAllGroupMessages bool   `json:"can_read_all_group_messages"`
+		SupportsInlineQueries   bool   `json:"supports_inline_queries"`
 	}
 }
 
-func DecodeGetMe(body []byte) (id int, username string, firstname string, err error) {
+func DecodeGetMe(body []byte) (
+	id int,
+	username string,
+	firstname string,
+	canJoinGrp bool,
+	canReadAllGrpMsg bool,
+	supportInline bool,
+	err error,
+) {
 	data := getMeResponse{}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
@@ -33,8 +44,12 @@ func DecodeGetMe(body []byte) (id int, username string, firstname string, err er
 		err = errors.New("bot is not bot: " + string(body))
 		return
 	}
-	id = data.Result.ID
-	username = data.Result.Username
-	firstname = data.Result.FirstName
+	r := data.Result
+	id = r.ID
+	username = r.Username
+	firstname = r.FirstName
+	canJoinGrp = r.CanJoinGroups
+	canReadAllGrpMsg = r.CanReadAllGroupMessages
+	supportInline = r.SupportsInlineQueries
 	return
 }
