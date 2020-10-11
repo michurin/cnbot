@@ -123,11 +123,15 @@ Report looks like that:
 ```
 REPORT
 
+- go version: go1.15.2 / linux / amd64
 - nickname: "test1"
   - bot info:
     - bot id: 1036010710
     - bot name: "test_111_bot"
     - first name: "Test 111"
+    - can join grp: true
+    - can read all grp msgs: false
+    - support inline: false
     - web hook: empty (it's ok)
   - configuration:
     - allowed users: 153812628
@@ -150,8 +154,6 @@ If you faced problems, read no.
 
 ### Chat with bot
 
-TODO: screenshots
-
 #### Send async messages
 
 This bot can be used to send messages asynchronously.
@@ -170,7 +172,7 @@ cat YOUR_IMAGE.jpeg | curl -qfsvX POST -o /dev/null --data-binary @- 'http://loc
 
 See more details bellow and in `examples/demo.sh`.
 
-## :pill: Possible problems
+## :pill: Troubleshooting
 
 ### Script not found: no such file or directory
 
