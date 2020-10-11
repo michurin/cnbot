@@ -384,8 +384,12 @@ However, if you use `sistemd` you don't need for daemonization.
 
 ### Log management
 
-`cnbot` just throws log messages to `stdout`. You can use
-tools like `multilog` to manage log files.
+`cnbot` just throws log messages to `stdout`.
+There is a lot of tools designed with the primary purpose
+of maintaining size-capped, automatically rotated, log file sets.
+Personally, I prefer `multilog` from [daemontools](http://cr.yp.to/daemontools.html).
+
+Further reading: [Don't use logrotate or newsyslog in this century](http://jdebp.eu/FGA/do-not-use-logrotate.html).
 
 ## :bulb: Todo
 
