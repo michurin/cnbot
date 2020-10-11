@@ -1,9 +1,14 @@
-# cnbot: Tool for creating Telegram bots as easy as writing sh script
+# cnbot: Tool for creating Telegram bots as easy as writing shell script
 
 ![build](https://github.com/michurin/cnbot/workflows/build/badge.svg)
 ![lint](https://github.com/michurin/cnbot/workflows/lint/badge.svg)
 
-## What is it
+## :mag_right: What it is
+
+It is a tool to create custom simple Telegram bots. For example, this is
+a part of chat with [demo script](examples/demo.sh).
+
+![Telegram bot screenshot](https://raw.githubusercontent.com/michurin/cnbot/static/screenshot.png)
 
 ### Motivation
 
@@ -15,13 +20,17 @@ that is complying with extremely simple contract.
 
 ### Key features
 
+- Extremely simple scripting
+  - One request - one run (like CGI)
+  - Using simply `stdin` and `stdout`
+  - You can just throw to `stdout` text or image, `cnbot` will distinguish what it is
+  - `cnbot` handles incoming messages strictly one after another. So you don't need to care about concurrency and race conditions in your scripts
 - Possibility to drive multiply bots by one process
-- Extremely simple scripting thanks to strict concurrency policy and simple contract (see bellow)
-- Support of images (JPEG/PNG/GIF)
+- Support of JPEG, PNG and GIF formats
 - Support of preformatted text (markdown)
-- Support asynchronous notification (message could be emitted by the bot, not in reply only)
-- It's based on polling. It means you don't have to have dedicated server, domain, public IP or DMZ... You can run/develop/debug your bot straight from your laptop
-- Thanks to standard Go HTTP client, this bot supports proxy servers. So you can use it even if your provider disallows Telegram
+- Support asynchronous notification. Message could be emitted by the bot, not in reply only. You are free to send messages from `cron` scripts and other similar places
+- It's based on polling. It means you don't have to have dedicated server, domain, SSL certificate, public IP or DMZ... You can run/develop/debug your bot straight from your laptop even behind NATs and firewalls
+- Thanks to standard Go HTTP client, this bot supports proxy servers. So you can use it even if your provider have disallowed Telegram
 
 ### Basic values
 
@@ -29,7 +38,13 @@ that is complying with extremely simple contract.
 - Clear logs: caller, labels
 - Security: restrict access by users white list, pass only certain environment variables to script
 
-## Quick start
+### Disadvantages and oversimplifications
+
+- This bot is not design for high load
+- Throttling was not implemented
+- Retries was not implemented
+
+## :airplane: Quick start
 
 ### Compile
 
@@ -59,8 +74,8 @@ Create in the root of project the following file
 
 ```json
 {
-  "bots": [
-    {
+  "bots": {
+    "bot_nickname": {
       "token": "111:xxx",
       "script": "examples/demo.sh",
       "allowed_users": [
@@ -74,31 +89,62 @@ Create in the root of project the following file
       "read_timeout": 2,
       "write_timeout": 2
     }
-  ]
+  }
 }
 ```
 
 Quick glance over it:
 
-- `bots` Array of bots. One process is able to drive several bots.
+- `bots` Set of bots. One process is able to drive several bots. Bots `nicknames` are for internal purpose only like logging.
     - `token` Your token. Usually looks like `[degits]:[garbage]`.
-    - `script` Path to your executable script. Absolute or relative directory with configuration file.
-    - `working_dir` Working dir. Absolute or relative directory with configuration file.
+    - `script` Path to your executable script. Absolute or relative.
+    - `working_dir` The working dir. Absolute or relative.
     - `allowed_users` White list of users. The easiest way to figure out your ID is to leave this array
     empty, try to talk to bot and find in logs error message about rejected user.
     - `term_timeout`, `kill_timeout`, `wait_timeout`. Optional. Delays in second. Could be fractional.
     - `bind_address` Optional. Address in format like `127.0.0.1:8000`, `[::]:8080` or just `:8888`.
     - `read_timeout`, `write_timeout` Optional. Request reading and writing timeouts in seconds. Could be fractional.
 
+Relative paths in `script` and `working_dir` is treated with respect to the configuration file directory-path.
+
 The details are given below.
+
+### Check configuration file
+
+```sh
+./cnbot -i -c $PWD/config.json
+```
+
+Note that the path to the configuration file must be absolute.
+
+If your configuration file is ok, you will receive bot summary for every configured bot.
+Report looks like that:
+
+```
+REPORT
+
+- nickname: "test1"
+  - bot info:
+    - bot id: 1036010710
+    - bot name: "test_111_bot"
+    - first name: "Test 111"
+    - web hook: empty (it's ok)
+  - configuration:
+    - allowed users: 153812628
+    - script:
+      - script: "/home/a/cnbot/examples/demo.sh"
+      - working dir: "/home/a/cnbot"
+      - timeouts: 5s, 500ms, 500ms (term/kill/wait)
+    - server:
+      - address: ":9091"
+      - timeouts: 10s, 10s (w/r)
+```
 
 ### Run
 
 ```sh
 ./cnbot -c $PWD/config.json
 ```
-
-TODO: screenshots
 
 If you faced problems, read no.
 
@@ -110,23 +156,23 @@ TODO: screenshots
 
 This bot can be used to send messages asynchronously.
 
-Try this commad with your bot name and user ID.
+Try this command with your user ID.
 
 ```sh
-date | curl -qfsvX POST -o /dev/null --data-binary @- 'http://localhost:9090/${YOUR_BOT_NAME}/to/${TARGET_USER_ID}'
+date | curl -qfsvX POST -o /dev/null --data-binary @- 'http://localhost:9090/${TARGET_USER_ID}'
 ```
 
 You can send images and preformatted text as well.
 
 ```sh
-cat YOUR_IMAGE.jpeg | curl -qfsvX POST -o /dev/null --data-binary @- 'http://localhost:9090/${YOUR_BOT_NAME}/to/${TARGET_USER_ID}'
+cat YOUR_IMAGE.jpeg | curl -qfsvX POST -o /dev/null --data-binary @- 'http://localhost:9090/${TARGET_USER_ID}'
 ```
 
 See more details bellow and in `examples/demo.sh`.
 
-### Possible problems
+## :pill: Possible problems
 
-#### Script not found: no such file or directory
+### Script not found: no such file or directory
 
 If you receive error `no such file or directory`,
 please check the `"script"` attribute in
@@ -134,7 +180,7 @@ your configuration file. You can
 specify an absolute path, or relative path
 related to directory of configuration file.
 
-#### Command not found
+### Command not found
 
 If your script use subprocesses, it is possible
 it will unable to find corresponding binaries.
@@ -166,7 +212,7 @@ You may want to set variables like
 `POSIXLY_CORRECT`, `PYTHONPATH`, `PERL5LIB`
 along with `PATH`.
 
-#### HTTP port is already in use
+### HTTP port is already in use
 
 If you receive log message like that
 ```
@@ -177,7 +223,7 @@ for asynchronous messages, just remove `server` section
 from config. Otherwise, change ports to eliminate
 conflict.
 
-#### Two bots at the same time
+### Two bots at the same time
 
 It is impossible to run more than one bot. Otherwise you
 will receive `HTTP 409 Conflict` error with payload like this:
@@ -186,7 +232,7 @@ will receive `HTTP 409 Conflict` error with payload like this:
 ```
 You are to stop one bot.
 
-#### Web hook
+### Web hook
 
 If your bot has been drown by another tool/library/SDK and
 this bot starts to receive `HTTP 409 Conflict` error with
@@ -209,14 +255,14 @@ curl 'https://api.telegram.org/bot$TOKEN/deleteWebhook'
 {"ok":true,"result":true,"description":"Webhook was deleted"}
 ```
 
-#### Telegram API is unreachable (use proxy)
+### Telegram API is unreachable (use proxy)
 
 Use `HTTPS_PROXY` environment
 ```sh
 HTTPS_PROXY=socks5://localhost:8888 ./cnbot -c $PWD/config.json
 ```
 
-## Writing your own bot scenarios in details
+## :wrench: Writing your own bot scenarios in details
 
 As you saw above, you are to write you
 "script" to animate your bot. This script
@@ -328,7 +374,7 @@ Using this mechanism you can:
 
 You can configure reading and writing timeouts. Default values are 10s and 10s.
 
-## System administration topics
+## :pizza: System administration topics
 
 ### Daemonize
 
@@ -341,7 +387,7 @@ However, if you use `sistemd` you don't need for daemonization.
 `cnbot` just throws log messages to `stdout`. You can use
 tools like `multilog` to manage log files.
 
-## Todo
+## :bulb: Todo
 
 - Modes of arguments preparation (for user's process)
 - `reply_markup=InlineKeyboardMarkup` (?)
@@ -351,6 +397,6 @@ tools like `multilog` to manage log files.
 - Tests
 - Examples of rc-scripts and systemd service-file.
 
-## Relative links
+## :link: Relative links
 
 - [Telegram Bot API](https://core.telegram.org/bots/api)

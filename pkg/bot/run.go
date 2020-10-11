@@ -2,6 +2,7 @@ package bot
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"syscall"
 
@@ -20,23 +21,28 @@ func Run(rootCtx context.Context) {
 	ctx, cancel := ShutdownCtx(rootCtx, syscall.SIGTERM, os.Interrupt)
 	defer cancel()
 
-	hps.Log(ctx, "Bot is starting...") // TODO log bot version
-
-	msgQueue := make(chan tg.Message, 1000) // TODO make buffer size configurable
-
-	configBots, err := hps.ReadConfig()
+	configFile, infoMode, err := hps.CommandLine()
 	if err != nil {
 		hps.Log(ctx, err)
 		return
 	}
 
-	bots, err := Bots(ctx, configBots)
-	if err != nil { // canceled context cause err too
-		hps.Log(ctx, err)
+	bots, err := hps.ReadConfig(configFile)
+	if err != nil {
+		hps.Log(ctx, configFile, err)
 		return
 	}
 
-	hps.DumpBotConfig(ctx, bots)
+	if infoMode {
+		report, err := BotsReport(ctx, bots)
+		if err != nil {
+			hps.Log(ctx, err)
+		}
+		fmt.Print("\nREPORT\n\n" + report + "\n\n")
+		return
+	}
+
+	msgQueue := make(chan tg.Message, 1000) // TODO make buffer size configurable
 
 	done := make(chan struct{}, 1)
 	doneCount := 0

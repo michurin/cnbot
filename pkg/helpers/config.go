@@ -1,17 +1,12 @@
 package helpers
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"sort"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -29,7 +24,7 @@ type BotConfig struct {
 }
 
 type config struct {
-	Bots []botConfig `json:"bots"`
+	Bots map[string]botConfig `json:"bots"`
 }
 
 type botConfig struct {
@@ -63,16 +58,11 @@ func toAbsPath(baseDir string, path string) string {
 	return filepath.Join(baseDir, path)
 }
 
-func ReadConfig() ([]BotConfig, error) {
-	configFile := flag.String("c", "config.json", "Configuration file in JSON format")
-	flag.Parse()
-	if configFile == nil {
-		return nil, errors.New("can not receive config file name") // it's impossible
-	}
-	if !filepath.IsAbs(*configFile) {
+func ReadConfig(configFile string) (map[string]BotConfig, error) {
+	if !filepath.IsAbs(configFile) {
 		return nil, errors.New("path to config file must be absolute")
 	}
-	data, err := ioutil.ReadFile(*configFile)
+	data, err := ioutil.ReadFile(configFile)
 	if err != nil {
 		return nil, err
 	}
@@ -81,9 +71,9 @@ func ReadConfig() ([]BotConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	baseDir := filepath.Dir(*configFile)
-	botCfg := make([]BotConfig, len(cfg.Bots))
-	for i, b := range cfg.Bots {
+	baseDir := filepath.Dir(configFile)
+	botCfg := map[string]BotConfig{}
+	for nick, b := range cfg.Bots {
 		au, err := allowedUsers(b.AllowedUsers)
 		if err != nil {
 			return nil, err
@@ -107,7 +97,7 @@ func ReadConfig() ([]BotConfig, error) {
 		if !stat.Mode().IsDir() {
 			return nil, fmt.Errorf("working dir %s is not a dirrectory", pwd)
 		}
-		botCfg[i] = BotConfig{
+		botCfg[nick] = BotConfig{
 			Token:             b.Token, // TODO check not empty? some format?
 			AllowedUsers:      au,
 			Script:            script,
@@ -128,35 +118,4 @@ func defaultDuration(dur *float64, def time.Duration) time.Duration {
 		return def
 	}
 	return time.Duration(*dur * float64(time.Second))
-}
-
-func allowedUsersToString(uu map[int]struct{}) string {
-	if len(uu) == 0 {
-		return "(empty)"
-	}
-	v := []int(nil)
-	for u := range uu {
-		v = append(v, u)
-	}
-	sort.Ints(v)
-	s := make([]string, len(v))
-	for i, p := range v {
-		s[i] = strconv.Itoa(p)
-	}
-	return strings.Join(s, ", ")
-}
-
-func DumpBotConfig(ctx context.Context, cfg map[string]BotConfig) {
-	for n, b := range cfg {
-		c := Label(ctx, n)
-		Log(c, "Token:", b.Token)
-		Log(c, "Allowed users:", allowedUsersToString(b.AllowedUsers))
-		Log(c, "Script:", b.Script, "timeouts:", b.ScriptTermTimeout, b.ScriptKillTimeout, b.ScriptWaitTimeout)
-		Log(c, "Working dir:", b.WorkingDir)
-		if b.BindAddress != "" {
-			Log(c, "Serve at", b.BindAddress, "timeouts:", b.ReadTimeout, b.WriteTimeout)
-		} else {
-			Log(c, "No server")
-		}
-	}
 }

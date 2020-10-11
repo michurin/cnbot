@@ -14,13 +14,25 @@ case "CMD_$1" in # We are to say NOCMD here. See "help" section.
         echo '.' # Single dot is marker of silence. The bot will reply nothing.
         ;;
     CMD_date)
+        echo '```'
         date
+        echo '```'
+        ;;
+    CMD_uname)
+        echo '```'
+        uname -a
+        echo '```'
+        ;;
+    CMD_uptime)
+        echo '```'
+        uptime
+        echo '```'
         ;;
     CMD_args)
         echo 'Passed args:'
         for a in "$@"
         do
-            echo "=> $a"
+            echo "- $a"
         done
         ;;
     CMD_env)
@@ -29,17 +41,29 @@ case "CMD_$1" in # We are to say NOCMD here. See "help" section.
         echo '```'
         ;;
     CMD_rose)
-        convert rose: -resize 200x png:- # Just throw image to stdout as is and it will appear in the chat
+        montage rose: rose: rose: rose: -geometry +2+2 png:- # Just throw image to stdout as is and it will appear in the chat
+        ;;
+    CMD_du)
+        d="$(df -P -m / | tail -1 | awk '{gsub("[^0-9]", "", $5); print $5","(100-$5)}')"
+        # This old fashioned API is deprecated in 2012, however, it is still working
+        # https://developers.google.com/chart/image/docs/making_charts
+        u="https://chart.googleapis.com/chart?cht=p&chd=t:$d&chs=300x200&chl=Used|Available&chtt=Disk%20usage"
+        curl -qfs "$u"
+        ;;
+    CMD_logo)
+        curl -qfs https://golang.org/lib/godoc/images/footer-gopher.jpg
+        # curl -qfs https://www.telegram.org/img/t_logo.png # try this if footer-gopher.jpg disappear
+        ;;
+    CMD_async)
+        u="http://$BOT_SERVER/$BOT_FROM"
+        echo "I'll send you logo..." | curl -qfsX POST -o /dev/null --data-binary @- "$u"
+        curl -qfs https://www.telegram.org/img/t_logo.png | curl -qfsX POST -o /dev/null --data-binary @- "$u"
+        echo 'Are you happy now?' | curl -qfsX POST -o /dev/null --data-binary @- "$u"
+        echo '.'
         ;;
     CMD_help)
         echo 'Available commands:' # We use "CMD"/"NOCMD" substrings to build help message automatically
         grep CMD_ $0 | grep -v NOCMD | sed 's-.*CMD_-=> -;s-.$--'
-        ;;
-    CMD_curl)
-        url="http://$BOT_SERVER/$BOT_FROM"
-        echo 'Message one' | curl -qfsX POST -o /dev/null --data-binary @- "$url"
-        echo 'Message two' | curl -qfsX POST -o /dev/null --data-binary @- "$url"
-        echo '.'
         ;;
     *)
         echo 'Try to say "help" to me'

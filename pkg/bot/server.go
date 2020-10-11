@@ -72,7 +72,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func RunHTTPServer(ctx context.Context, addr string, writeTimeout time.Duration, readTimeout time.Duration, handler http.Handler) {
-	ctx = hps.Label(ctx, addr)
+	ctx = hps.Label(ctx, "["+addr+"]")
 	s := http.Server{
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
