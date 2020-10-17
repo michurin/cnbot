@@ -11,14 +11,14 @@ import (
 )
 
 // TODO split Run to make it embeddable
-// Run have to obtain:
+// Run has to obtain:
 // - shutdown context
 // - configs
 // - logger
 // - http client
 // - http server
 func Run(rootCtx context.Context) {
-	ctx, cancel := ShutdownCtx(rootCtx, syscall.SIGTERM, os.Interrupt)
+	ctx, cancel := hps.ShutdownCtx(rootCtx, syscall.SIGTERM, os.Interrupt)
 	defer cancel()
 
 	configFile, infoMode, err := hps.CommandLine()

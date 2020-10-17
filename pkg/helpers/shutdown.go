@@ -1,11 +1,9 @@
-package bot
+package helpers
 
 import (
 	"context"
 	"os"
 	"os/signal"
-
-	hps "github.com/michurin/cnbot/pkg/helpers"
 )
 
 // Do not forget defer cancel()
@@ -15,7 +13,7 @@ func ShutdownCtx(ctx context.Context, sig ...os.Signal) (context.Context, contex
 	signal.Notify(sigs, sig...)
 	go func() {
 		sig := <-sigs
-		hps.Log(ctx, "Killed by signal", sig.String())
+		Log(ctx, "Killed by signal", sig.String())
 		cancel()
 	}()
 	return ctx, cancel
