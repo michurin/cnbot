@@ -34,11 +34,8 @@ func Run(rootCtx context.Context) {
 	}
 
 	if infoMode {
-		report, err := BotsReport(ctx, bots)
-		if err != nil {
-			hps.Log(ctx, err)
-		}
-		fmt.Print("\nREPORT\n\n" + report + "\n\n")
+		report := BotsReport(ctx, bots)
+		fmt.Print("\nREPORT (" + configFile + ")\n\n" + report + "\n\n")
 		return
 	}
 

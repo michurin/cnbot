@@ -4,15 +4,16 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 )
 
 var /* const */ markDownEscaping = regexp.MustCompile("([_*[\\]()~`>#+\\-=|{}.!\\\\])")
 
-const markDownMarker = "```"
-
 // It is slightly ugly mix of processor, validator... not just type pure type detector (as ImageType is)
-// It has to be rewrote if it grow.
+// It has to be rewritten if it grow.
+//
+// Recognize %!PRE, %!MARKDOWN. TODO: %!JSON
 func MessageType(data []byte) (
 	ignoreIt bool,
 	text string,
@@ -20,12 +21,13 @@ func MessageType(data []byte) (
 	err error,
 ) {
 	if !utf8.Valid(data) {
-		err = errors.New("invalid message: neither gif/png/jpeg image nor valid UTF8 string")
+		err = errors.New("invalid message: valid UTF8 string")
 		return
 	}
 	text = strings.TrimSpace(string(data))
 	if len(text) > 4096 {
 		// according documentation this limit applies after entities parsing
+		// however this limit is for messages only, for example, image captures has different limitations
 		err = errors.New("message too long")
 		return
 	}
@@ -38,14 +40,16 @@ func MessageType(data []byte) (
 		ignoreIt = true
 		return
 	}
-	if len(text) > 6 {
-		if strings.HasPrefix(text, markDownMarker) && strings.HasSuffix(text, markDownMarker) {
-			isMarkdown = true
-			text = strings.TrimSpace(text[3 : len(text)-3])
-			text = markDownEscaping.ReplaceAllString(text, "\\$1")
-			text = markDownMarker + "\n" + text + "\n" + markDownMarker
-			return
-		}
+	if strings.HasPrefix(text, "%!PRE") {
+		isMarkdown = true
+		text = strings.TrimLeftFunc(text[5:], unicode.IsControl)
+		text = "```\n" + markDownEscaping.ReplaceAllString(text, "\\$1") + "\n```"
+		return
+	}
+	if strings.HasPrefix(text, "%!MARKDOWN") {
+		isMarkdown = true
+		text = strings.TrimLeftFunc(text[10:], unicode.IsControl)
+		return
 	}
 	return
 }

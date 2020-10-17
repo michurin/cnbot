@@ -58,7 +58,7 @@ cd cnbot
 go build ./cmd/...
 ```
 
-and you get `cnbot` binary.
+and you'll get `cnbot` binary.
 
 ### Configure
 
@@ -274,23 +274,28 @@ It's very similar to CGI-scripts approach.
 
 ### Arguments
 
-Whole message is casted to lower case, split by spaces
-and passed to script as a set of arguments.
+`cnbot`
+
+- casts message to lower case
+- removes all characters except letters, digits, dot and minus (valid chars are `[a-z0-9._-]`)
+- split message by whitespaces to arguments list
 
 For example, the message `Hello world! ` will be represented
-by two arguments: `hello` and `world!`.
+by two arguments: `hello` and `world`.
+
+Original text of message is still available in `$BOT_TEXT`. See below.
 
 ### Environment
 
 Only three environment variables are passed
 to script:
 
-- `BOT_NAME` is a name of bot that receive a message.
-It is useful if your script drive several bots simultaneously.
-- `BOT_FROM` is the sender's user id. You can use it
-to schedule asynchronous actions and
-corresponding messaging.
-- `BOT_SERVER` is a real bind address for asynchronous communication.
+- `BOT_NAME` — a name of bot that receive a message according configuration file
+- `BOT_CHAT` — chat id. It is used to reply
+- `BOT_FROM` — the sender's user id
+- `BOT_FROM_FIRSTNAME` — sender's first name
+- `BOT_SERVER` — a real bind address for asynchronous communication
+- `BOT_TEXT` — raw message
 
 Be aware that all other variables are not passed,
 including `PATH`. See notes above.
@@ -316,14 +321,14 @@ that can produce nothing.
 If you really don't want to reply to message, you need to produce a single dot `.`.
 In this case bot won't send anything in reply.
 
-#### Preformatted reply
+#### Formatting
 
-If your output stream is started and ended by
-the triple backtick `` ``` `` sequence. All spaces
-around this triple are ignored.
+If your output stream starts by
+the `%!PRE` signature, it will be escaped properly and represented as preformatted text
 
-You don't need to care about escaping special chars
-in your message.
+If your output stream starts by
+the `%!MARKDOWN` signature, it will be sent as MarkdownV2. You *must* to escape all
+special chars according [documentation](https://core.telegram.org/bots/api#markdownv2-style).
 
 #### Images
 
@@ -378,11 +383,19 @@ You can configure reading and writing timeouts. Default values are 10s and 10s.
 
 ## :pizza: System administration topics
 
-### Modern `systemd` fashion
+### Build
+
+You can specify build version
+
+```sh
+go build -ldflags "-X github.com/michurin/cnbot/pkg/bot.Build=`date +%F`-`git rev-parse --short HEAD`" ./cmd/...
+```
+
+### Startup: modern `systemd` fashion
 
 As usual create service file like this `/etc/systemd/system/cnbot.service`:
 
-```
+```ini
 [Unit]
 Description=Telegram bot (cnbot) service
 After=network.target
@@ -415,13 +428,13 @@ evaluate with respect of configuration file directory.
 If everything is ok, you can enable service (`systemd enable`).
 If something goes wrong, you can inspect logs:
 
-```
+```sh
 journalctl -u cnbot
 ```
 
 You can use `-f` with `journalctl` to read live-tail logs.
 
-### Old fashioned `rc.d` scripts
+### Startup: old fashioned `rc.d` scripts
 
 #### Daemonize
 

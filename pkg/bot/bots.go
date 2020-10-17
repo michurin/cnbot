@@ -13,6 +13,10 @@ import (
 	"github.com/michurin/cnbot/pkg/tg"
 )
 
+const version = "1.0.0"
+
+var Build = "noBuildInfo" // go build -ldflags "-X github.com/michurin/cnbot/pkg/bot.Build=`date +%F`-`git rev-parse --short HEAD`" ./cmd/...
+
 func allowedUsersToString(a map[int]struct{}) string {
 	if len(a) == 0 {
 		return "empty (nobody can use this bot)"
@@ -86,7 +90,7 @@ func botWebHook(ctx context.Context, token string) string {
 	return fmt.Sprintf("%q (NOT OK!)", u)
 }
 
-func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) (string, error) {
+func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) string {
 	nicks := make([]string, len(cfgs))
 	i := 0
 	for nick := range cfgs {
@@ -98,7 +102,8 @@ func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) (string,
 	for i, nick := range nicks {
 		ctx := hps.Label(rootCtx, nick)
 		c := cfgs[nick]
-		reports[i] = fmt.Sprintf(`- go version: %s / %s / %s
+		reports[i] = fmt.Sprintf(`- version: %s-%s
+- go version: %s / %s / %s
 - nickname: %q
   - bot info:%s
     - web hook: %s
@@ -109,6 +114,8 @@ func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) (string,
       - working dir: %q
       - timeouts: %v, %v, %v (term/kill/wait)
     - server:%s`,
+			version,
+			Build,
 			runtime.Version(),
 			runtime.GOOS,
 			runtime.GOARCH,
@@ -123,5 +130,5 @@ func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) (string,
 			c.ScriptWaitTimeout,
 			serverConfigurationToString(c.BindAddress, c.WriteTimeout, c.ReadTimeout))
 	}
-	return strings.Join(reports, "\n"), nil
+	return strings.Join(reports, "\n")
 }

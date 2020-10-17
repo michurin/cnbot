@@ -2,7 +2,7 @@ package tg
 
 import "github.com/michurin/cnbot/pkg/helpers"
 
-const tgPrefixUrl = "https://api.telegram.org/bot"
+const tgPrefixURL = "https://api.telegram.org/bot"
 
 type Request struct {
 	Method      string
@@ -11,7 +11,7 @@ type Request struct {
 }
 
 func Encode(token string, r *Request) helpers.Request {
-	url := tgPrefixUrl + token + "/" + r.Method
+	url := tgPrefixURL + token + "/" + r.Method
 	if r.Body == nil {
 		return helpers.Request{
 			Method: "GET",

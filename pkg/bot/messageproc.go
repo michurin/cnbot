@@ -3,12 +3,26 @@ package bot
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
 	hps "github.com/michurin/cnbot/pkg/helpers"
 	"github.com/michurin/cnbot/pkg/tg"
 )
+
+var /* const */ safeChars = regexp.MustCompile(`[^a-zA-Z0-9._-]`)
+
+func argsSafe(s string) []string {
+	r := []string(nil)
+	for _, f := range strings.Fields(strings.ToLower(s)) {
+		t := safeChars.ReplaceAllString(f, "")
+		if t != "" {
+			r = append(r, t)
+		}
+	}
+	return r
+}
 
 func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message) {
 	target := m.ChatID
@@ -29,7 +43,7 @@ func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message)
 		bot.ScriptKillTimeout,
 		bot.ScriptWaitTimeout,
 		bot.Script,
-		strings.Fields(strings.ToLower(m.Text)), // TODO config
+		argsSafe(m.Text),
 		hps.Env(
 			"BOT_NAME",
 			m.BotName,
@@ -40,7 +54,9 @@ func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message)
 			"BOT_CHAT",
 			strconv.Itoa(m.ChatID),
 			"BOT_SERVER",
-			bot.BindAddress),
+			bot.BindAddress,
+			"BOT_TEXT",
+			m.Text),
 		bot.WorkingDir)
 	if err != nil {
 		hps.Log(ctx, err)
