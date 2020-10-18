@@ -22,7 +22,7 @@ that is complying with extremely simple contract.
 
 - Extremely simple scripting
   - One request - one run (like CGI)
-  - Using simply `stdin` and `stdout`
+  - Using simply command line arguments, environment variables and `stdout`
   - You can just throw to `stdout` text or image, `cnbot` will distinguish what it is
   - `cnbot` handles incoming messages strictly one after another. So you don't need to care about concurrency and race conditions in your scripts
 - Possibility to drive multiply bots by one process
@@ -41,8 +41,9 @@ that is complying with extremely simple contract.
 ### Disadvantages and oversimplifications
 
 - This bot is not design for high load
-- Throttling was not implemented
-- Retries was not implemented
+- Throttling is not implemented
+- Retries is not implemented
+- Inline keyboard, custom reply keyboard, messages editing are not supported
 
 ## :airplane: Quick start
 
@@ -388,7 +389,7 @@ You can configure reading and writing timeouts. Default values are 10s and 10s.
 You can specify build version
 
 ```sh
-go build -ldflags "-X github.com/michurin/cnbot/pkg/bot.Build=`date +%F`-`git rev-parse --short HEAD`" ./cmd/...
+go build -ldflags "-s -w -X github.com/michurin/cnbot/pkg/bot.Build=`date +%F`-`git rev-parse --short HEAD`" ./cmd/...
 ```
 
 ### Startup: modern `systemd` fashion
