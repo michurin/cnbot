@@ -1,8 +1,12 @@
 #!/bin/sh -e
 
+# setup environment
+
 PATH=/usr/local/bin:/bin:/usr/bin
 
-for c in echo date uname uptime env sort curl tail awk grep sed cal
+# check if binaries exist
+
+for c in awk cal curl date df echo env grep sed sort tail test uname uptime
 do
   if ! command -v $c >/dev/null
   then
@@ -11,7 +15,10 @@ do
   fi
 done
 
-case "CMD_$1" in # We are to say NOCMD here. See "help" section.
+# commands
+# we use magic CMD marker to build help-message automatically
+
+case "CMD_$1" in
     CMD_sup)
         echo 'Hi there! 👋'
         ;;
@@ -85,8 +92,8 @@ case "CMD_$1" in # We are to say NOCMD here. See "help" section.
         ;;
     CMD_help)
         echo '%!MARKDOWN'
-        echo '*Available commands:*' # We use "CMD"/"NOCMD" substrings to build help message automatically
-        grep CMD_ $0 | grep -v NOCMD | sed 's-.*CMD_-• \\/-;s-.$--'
+        echo '*Available commands:*'
+        grep CMD_ $0 | grep -v case | sed 's-.*CMD_-• \\/-;s-.$--'
         ;;
     *)
         cmd="$(echo $1 | sed 's/[-.]/\\&/g')" # we have to care about [-.] only because other must-escaped-chars are disallowed by bot
