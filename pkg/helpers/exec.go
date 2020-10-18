@@ -9,6 +9,22 @@ import (
 	"time"
 )
 
+func killGrp(ctx context.Context, pid int, sig syscall.Signal) {
+	// We do not consider error as critical because the process could
+	// disappear by its own. It is not easy to identify error in this case.
+	// For example you can get ESRCH (0x3) that doesn't support by syscall.Errno.Is().
+	pgid, err := syscall.Getpgid(pid) // not cmd.SysProcAttr.Pgid
+	if err != nil {
+		Log(ctx, err)
+		return
+	}
+	err = syscall.Kill(-pgid, sig) // minus
+	if err != nil {
+		Log(ctx, err)
+		return
+	}
+}
+
 // Note: don't use ctx for timeouts
 func Exec(
 	ctx context.Context,
@@ -46,12 +62,6 @@ func Exec(
 	go func() {
 		sync <- cmd.Wait()
 	}()
-	pgid, err := syscall.Getpgid(cmd.Process.Pid) // not cmd.SysProcAttr.Pgid
-	if err != nil {
-		Log(ctx, err)
-		return nil, err
-	}
-	pgid = -pgid // minus!
 	termBound := time.After(termTimeout)
 	killBound := time.After(termTimeout + killTimeout)
 	waitBound := time.After(termTimeout + killTimeout + waitTimeout)
@@ -71,25 +81,15 @@ func Exec(
 			return outBuffer.Bytes(), nil
 		case <-ctx.Done(): // urgent exit, we doesn't even wait for process finalization
 			Log(ctx, "Exec terminated by context")
-			err = syscall.Kill(pgid, syscall.SIGKILL)
-			if err != nil {
-				Log(ctx, err)
-				return nil, err
-			}
-			return nil, errors.New("aborted by context")
+			killGrp(ctx, cmd.Process.Pid, syscall.SIGKILL)
+			return nil, nil
 		case <-termBound:
-			err = syscall.Kill(pgid, syscall.SIGTERM)
-			if err != nil {
-				Log(ctx, err)
-				return nil, err
-			}
+			killGrp(ctx, cmd.Process.Pid, syscall.SIGTERM)
 		case <-killBound:
-			err = syscall.Kill(pgid, syscall.SIGKILL)
-			if err != nil {
-				Log(ctx, err)
-				return nil, err
-			}
+			killGrp(ctx, cmd.Process.Pid, syscall.SIGKILL)
 		case <-waitBound:
+			// Very bad case, we gave up, we leave goroutine with cmd.Wait running...
+			// I hope it will never happen.
 			err := errors.New("can't wait anymore")
 			Log(ctx, err)
 			return nil, err
