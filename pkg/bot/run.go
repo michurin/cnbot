@@ -68,7 +68,6 @@ func Run(rootCtx context.Context) {
 		go func() {
 			defer func() { done <- struct{}{} }()
 			MessageProcessor(ctx, msgQueue, bots)
-			done <- struct{}{}
 		}()
 	}
 
@@ -76,7 +75,7 @@ func Run(rootCtx context.Context) {
 		<-done // waiting for at least one exit
 		doneCount--
 		cancel() // cancel all
-		for ; doneCount >= 0; doneCount-- {
+		for ; doneCount > 0; doneCount-- {
 			<-done
 		}
 	}
