@@ -18,7 +18,7 @@ func buildRequest(destUser int, stdout []byte) (req *tg.Request, err error) {
 		return
 	}
 	if ignore {
-		return nil, nil
+		return
 	}
 	req, err = tg.EncodeSendMessage(destUser, msg, isMarkdown)
 	if err != nil {
