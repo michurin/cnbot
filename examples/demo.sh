@@ -87,9 +87,6 @@ case "CMD_$1" in
         echo '%!PRE'
         cal -h
         ;;
-    CMD_one)
-        echo '%!MARKDOWN [go](tg://bot_command?command=one) \/one'
-        ;;
     CMD_help)
         echo '%!MARKDOWN'
         echo '*Available commands:*'
