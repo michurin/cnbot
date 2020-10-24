@@ -43,12 +43,20 @@ func MessageType(data []byte) (
 	if strings.HasPrefix(text, "%!PRE") {
 		isMarkdown = true
 		text = strings.TrimLeftFunc(text[5:], unicode.IsControl)
-		text = "```\n" + markDownEscaping.ReplaceAllString(text, "\\$1") + "\n```"
+		text = markDownEscaping.ReplaceAllString(text, "\\$1")
+		if text != "" {
+			text = "```\n" + text + "\n```"
+		} else {
+			text = "_empty \\(pre mode\\)_"
+		}
 		return
 	}
 	if strings.HasPrefix(text, "%!MARKDOWN") {
 		isMarkdown = true
 		text = strings.TrimLeftFunc(text[10:], unicode.IsControl)
+		if text == "" {
+			text = "_empty \\(markdown mode\\)_"
+		}
 		return
 	}
 	return
