@@ -186,7 +186,7 @@ You can send images and preformatted text as well.
 cat YOUR_IMAGE.jpeg | curl -qfsvX POST -o /dev/null --data-binary @- 'http://localhost:9090/${TARGET_USER_ID}'
 ```
 
-See more details bellow and in `examples/demo.sh`.
+See more details bellow and in [examples/demo.sh](examples/demo.sh).
 
 ## :pill: Troubleshooting
 
