@@ -78,7 +78,7 @@ You can start from simplest one like this with your token and user id.
 ```json
 {
   "bots": {
-    "simples_echo_bot": {
+    "simplest_echo_bot": {
       "token": "111:xxx",
       "script": "/bin/echo",
       "allowed_users": [153812628]
