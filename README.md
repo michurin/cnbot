@@ -71,7 +71,24 @@ your Telegram bot and get your bot **token**.
 
 #### Setup bot
 
-Create in the root of project the following file
+Create configuration file in the root of the project.
+
+You can start from simplest one like this with your token and user id.
+
+```json
+{
+  "bots": {
+    "simples_echo_bot": {
+      "token": "111:xxx",
+      "script": "/bin/echo",
+      "allowed_users": [153812628]
+    }
+  }
+}
+```
+
+This bot just echoes your messages. However, let's consider full configuration
+file and full-futured [demo script](examples/demo.sh):
 
 ```json
 {
@@ -79,9 +96,7 @@ Create in the root of project the following file
     "bot_nickname": {
       "token": "111:xxx",
       "script": "examples/demo.sh",
-      "allowed_users": [
-        153812628
-      ],
+      "allowed_users": [153812628],
       "working_dir": "/tmp",
       "term_timeout": 3,
       "kill_timeout": 1,
@@ -113,7 +128,7 @@ The details are given below.
 ### Check configuration file
 
 ```sh
-./cnbot -i -c $PWD/config.json
+./cnbot -i -c config.json
 ```
 
 Note that the path to the configuration file must be absolute.
@@ -148,7 +163,7 @@ REPORT
 ### Run
 
 ```sh
-./cnbot -c $PWD/config.json
+./cnbot -c config.json
 ```
 
 If you faced problems, read no.
