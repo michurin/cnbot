@@ -295,11 +295,14 @@ It's very similar to CGI-scripts approach.
 `cnbot`
 
 - casts message to lower case
-- removes all characters except letters, digits, dot and minus (valid chars are `[a-z0-9._-]`)
-- split message by whitespaces to arguments list
+- split message by disallowed characters to arguments list. Allowed characters:
+  - Letters: `a`–`z`
+  - Digits: `0`–`9`
+  - Dot, underscore, minus: `.`, `_`, `-`
 
 For example, the message `Hello world! ` will be represented
 by two arguments: `hello` and `world`.
+Message `/go@bot run!` will turn to three arguments `go`, `bot` and `run`.
 
 Original text of message is still available in `$BOT_TEXT`. See below.
 

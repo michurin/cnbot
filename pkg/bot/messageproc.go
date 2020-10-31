@@ -11,17 +11,10 @@ import (
 	"github.com/michurin/cnbot/pkg/tg"
 )
 
-var /* const */ safeChars = regexp.MustCompile(`[^a-zA-Z0-9._-]`)
+var /* const */ safeChars = regexp.MustCompile("[a-zA-Z0-9._-]+")
 
 func argsSafe(s string) []string {
-	r := []string(nil)
-	for _, f := range strings.Fields(strings.ToLower(s)) {
-		t := safeChars.ReplaceAllString(f, "")
-		if t != "" {
-			r = append(r, t)
-		}
-	}
-	return r
+	return safeChars.FindAllString(strings.ToLower(s), -1)
 }
 
 func envList(m tg.Message, target int, server string) []string {
