@@ -1,13 +1,14 @@
 package helpers
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
+
+	"gopkg.in/yaml.v3"
 )
 
 type BotConfig struct {
@@ -24,20 +25,20 @@ type BotConfig struct {
 }
 
 type config struct {
-	Bots map[string]botConfig `json:"bots"`
+	Bots map[string]botConfig `yaml:"bots"`
 }
 
 type botConfig struct {
-	Token          string   `json:"token"`
-	AllowedUsers   []int    `json:"allowed_users"`
-	Script         string   `json:"script"`
-	WorkingDir     string   `json:"working_dir"`
-	TermTimeout    *float64 `json:"term_timeout"`
-	KillTimeout    *float64 `json:"kill_timeout"`
-	WaitTimeout    *float64 `json:"wait_timeout"`
-	BindingAddress string   `json:"bind_address"`
-	ReadingTimeout *float64 `json:"read_timeout"`
-	WritingTimeout *float64 `json:"write_timeout"`
+	Token          string   `yaml:"token"`
+	AllowedUsers   []int    `yaml:"allowed_users"`
+	Script         string   `yaml:"script"`
+	WorkingDir     string   `yaml:"working_dir"`
+	TermTimeout    *float64 `yaml:"term_timeout"`
+	KillTimeout    *float64 `yaml:"kill_timeout"`
+	WaitTimeout    *float64 `yaml:"wait_timeout"`
+	BindingAddress string   `yaml:"bind_address"`
+	ReadingTimeout *float64 `yaml:"read_timeout"`
+	WritingTimeout *float64 `yaml:"write_timeout"`
 }
 
 func allowedUsers(uu []int) (map[int]struct{}, error) {
@@ -67,7 +68,7 @@ func ReadConfig(configFile string) (map[string]BotConfig, error) {
 		return nil, err
 	}
 	cfg := new(config)
-	err = json.Unmarshal(data, cfg)
+	err = yaml.Unmarshal(data, cfg)
 	if err != nil {
 		return nil, err
 	}

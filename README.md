@@ -77,38 +77,30 @@ Create configuration file in the root of the project.
 
 You can start from simplest one like this with your token and user id.
 
-```json
-{
-  "bots": {
-    "simplest_echo_bot": {
-      "token": "111:xxx",
-      "script": "/bin/echo",
-      "allowed_users": [153812628]
-    }
-  }
-}
+```yaml
+bots:
+  simplest_echo_bot:
+    token: "111:xxx"
+    script: /bin/echo
+    allowed_users: [153812628]
 ```
 
 This bot just echoes your messages. However, let's consider full configuration
 file and full-futured [demo script](examples/demo.sh):
 
-```json
-{
-  "bots": {
-    "bot_nickname": {
-      "token": "111:xxx",
-      "script": "examples/demo.sh",
-      "allowed_users": [153812628],
-      "working_dir": "/tmp",
-      "term_timeout": 3,
-      "kill_timeout": 1,
-      "wait_timeout": 1,
-      "bind_address": ":9090",
-      "read_timeout": 2,
-      "write_timeout": 2
-    }
-  }
-}
+```yaml
+bots:
+  bot_nickname:
+    token: "111:xxx"
+    script: "examples/demo.sh"
+    allowed_users: [153812628]
+    working_dir: "/tmp"
+    term_timeout: 3
+    kill_timeout: 1
+    wait_timeout: 1
+    bind_address: ":9090"
+    read_timeout: 2
+    write_timeout: 2
 ```
 
 Quick glance over it:
@@ -130,7 +122,7 @@ The details are given below.
 ### Check configuration file
 
 ```sh
-./cnbot -i -c config.json
+./cnbot -i -c config.yaml
 ```
 
 Note that the path to the configuration file must be absolute.
@@ -165,7 +157,7 @@ REPORT
 ### Run
 
 ```sh
-./cnbot -c config.json
+./cnbot -c config.yaml
 ```
 
 If you faced problems, read no.
@@ -279,7 +271,7 @@ curl 'https://api.telegram.org/bot$TOKEN/deleteWebhook'
 
 Use `HTTPS_PROXY` environment
 ```sh
-HTTPS_PROXY=socks5://localhost:8888 ./cnbot -c $PWD/config.json
+HTTPS_PROXY=socks5://localhost:8888 ./cnbot -c config.yaml
 ```
 
 ## :wrench: Writing your own bot scenarios in details
@@ -432,7 +424,7 @@ Type=simple
 Restart=always
 RestartSec=1
 User=nobody
-ExecStart=/usr/bin/cnbot -c /etc/cnbot-config.json
+ExecStart=/usr/bin/cnbot -c /etc/cnbot-config.yaml
 
 [Install]
 WantedBy=multi-user.target
