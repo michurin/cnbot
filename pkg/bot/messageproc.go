@@ -24,6 +24,34 @@ func argsSafe(s string) []string {
 	return r
 }
 
+func envList(m tg.Message, target int, server string) []string {
+	e := []string{
+		"BOT_NAME",
+		m.BotName,
+		"BOT_FROM",
+		strconv.Itoa(target),
+		"BOT_FROM_FIRSTNAME",
+		m.FromFirstName,
+		"BOT_CHAT",
+		strconv.Itoa(m.ChatID),
+		"BOT_SERVER",
+		server,
+		"BOT_TEXT",
+		m.Text,
+	}
+	if m.SideType != "" {
+		e = append(e,
+			"BOT_SIDE_TYPE",
+			m.SideType,
+			"BOT_SIDE_ID",
+			strconv.Itoa(m.SideID),
+			"BOT_SIDE_NAME",
+			m.SideName,
+		)
+	}
+	return e
+}
+
 func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message) {
 	target := m.ChatID
 	ctx = hps.Label(ctx, hps.RandLabel(), m.BotName, target)
@@ -44,19 +72,7 @@ func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message)
 		bot.ScriptWaitTimeout,
 		bot.Script,
 		argsSafe(m.Text),
-		hps.Env(
-			"BOT_NAME",
-			m.BotName,
-			"BOT_FROM",
-			strconv.Itoa(target),
-			"BOT_FROM_FIRSTNAME",
-			m.FromFirstName,
-			"BOT_CHAT",
-			strconv.Itoa(m.ChatID),
-			"BOT_SERVER",
-			bot.BindAddress,
-			"BOT_TEXT",
-			m.Text),
+		hps.Env(envList(m, target, bot.BindAddress)...),
 		bot.WorkingDir)
 	if err != nil {
 		hps.Log(ctx, err)

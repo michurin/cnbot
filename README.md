@@ -314,6 +314,12 @@ to script:
 - `BOT_SERVER` — a real bind address for asynchronous communication
 - `BOT_TEXT` — raw message
 
+There are additional variables for forwarded messages and contacts:
+
+- `BOT_SIDE_TYPE` — type of data source: `user`, `bot`, `contact`, `channel`, `private`, `group` or `supergroup`
+- `BOT_SIDE_ID` — user id or chat id
+- `BOT_SIDE_NAME` — user name, bot name, channel title or contact name
+
 Be aware that all other variables are not passed,
 including `PATH`. See notes above.
 
