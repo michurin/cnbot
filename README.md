@@ -41,6 +41,7 @@ that is complying with extremely simple contract.
 ### Disadvantages and oversimplifications
 
 - This bot is not design for high load
+- The bot doesn't have persistent storage, therefore, it can lose messages on restart
 - Throttling is not implemented
 - Retries is not implemented
 - Inline keyboard, custom reply keyboard, messages editing are not supported
