@@ -14,6 +14,8 @@ import (
 	hps "github.com/michurin/cnbot/pkg/helpers"
 )
 
+const gracefulShutdownInterval = time.Second
+
 type Handler struct {
 	BotName      string
 	Token        string
@@ -83,7 +85,7 @@ func RunHTTPServer(ctx context.Context, addr string, writeTimeout time.Duration,
 	go func() { // what if we shutdown before listen?
 		<-ctx.Done()
 		hps.Log(ctx, "Server is going to shutdown")
-		dCtx, cancel := context.WithTimeout(context.Background(), time.Second)
+		dCtx, cancel := context.WithTimeout(context.Background(), gracefulShutdownInterval)
 		defer cancel()
 		err := s.Shutdown(dCtx)
 		if err != nil {
