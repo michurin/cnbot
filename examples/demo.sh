@@ -15,6 +15,16 @@ do
   fi
 done
 
+# check if it forwarded message or contact
+
+if test -n "$BOT_SIDE_TYPE"
+then
+    echo "Message from $BOT_SIDE_TYPE"
+    echo "Name: $BOT_SIDE_NAME"
+    echo "ID: $BOT_SIDE_ID"
+    exit
+fi
+
 # commands
 # we use magic CMD marker to build help-message automatically
 
@@ -91,9 +101,12 @@ case "CMD_$1" in
         echo '%!MARKDOWN'
         echo '*Available commands:*'
         grep CMD_ $0 | grep -v case | sed 's-.*CMD_-• \\/-;s-.$--'
+        echo ''
+        echo '*And besides,*'
+        echo '• You can send to the bot contract of user or forward a message to figure out user/chat/channel ID'
         ;;
     *)
-        cmd="$(echo $1 | sed 's/[-.]/\\&/g')" # we have to care about [-.] only because other must-escaped-chars are disallowed by bot
+        cmd="$(echo $1 | sed 's/[-_.]/\\&/g')" # we have to care about [-.] only because other must-escaped-chars are disallowed by bot
         echo '%!MARKDOWN' "I didn't recognize your command '*$cmd*' Try to say '*help*' to me"
         ;;
 esac

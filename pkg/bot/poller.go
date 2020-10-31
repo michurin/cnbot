@@ -40,7 +40,7 @@ MainLoop:
 			sleep = true
 			continue
 		}
-		mm, offset, err = tg.DecodeGetUpdate(out, offset, botName)
+		mm, offset, err = tg.DecodeGetUpdates(out, offset, botName)
 		if err != nil {
 			hps.Log(ctx, err)
 			sleep = true
