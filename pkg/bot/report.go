@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"runtime"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -17,27 +16,27 @@ const version = "1.0.0"
 
 var Build = "noBuildInfo" // go build -ldflags "-X github.com/michurin/cnbot/pkg/bot.Build=`date +%F`-`git rev-parse --short HEAD`" ./cmd/...
 
-func allowedUsersToString(a map[int]struct{}) string {
+func allowedUsersToString(a map[int64]struct{}) string {
 	if len(a) == 0 {
 		return "empty (nobody can use this bot)"
 	}
-	v := make([]int, len(a))
+	v := make([]int64, len(a))
 	i := 0
 	for k := range a {
 		v[i] = k
 		i++
 	}
-	sort.Ints(v)
+	sort.Slice(v, func(i, j int) bool { return v[i] < v[j] })
 	w := make([]string, len(v))
 	sep := ""
 	if len(v) < 10 {
 		for i, u := range v {
-			w[i] = " " + strconv.Itoa(u)
+			w[i] = " " + hps.Itoa(u)
 		}
 		sep = ","
 	} else {
 		for i, u := range v {
-			w[i] = "\n      - " + strconv.Itoa(u)
+			w[i] = "\n      - " + hps.Itoa(u)
 		}
 	}
 	return strings.Join(w, sep)

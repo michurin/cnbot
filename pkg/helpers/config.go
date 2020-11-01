@@ -13,7 +13,7 @@ import (
 
 type BotConfig struct {
 	Token             string
-	AllowedUsers      map[int]struct{}
+	AllowedUsers      map[int64]struct{}
 	Script            string
 	WorkingDir        string
 	ScriptTermTimeout time.Duration
@@ -30,7 +30,7 @@ type config struct {
 
 type botConfig struct {
 	Token          string   `yaml:"token"`
-	AllowedUsers   []int    `yaml:"allowed_users"`
+	AllowedUsers   []int64  `yaml:"allowed_users"`
 	Script         string   `yaml:"script"`
 	WorkingDir     string   `yaml:"working_dir"`
 	TermTimeout    *float64 `yaml:"term_timeout"`
@@ -41,8 +41,8 @@ type botConfig struct {
 	WritingTimeout *float64 `yaml:"write_timeout"`
 }
 
-func allowedUsers(uu []int) (map[int]struct{}, error) {
-	m := map[int]struct{}{}
+func allowedUsers(uu []int64) (map[int64]struct{}, error) {
+	m := map[int64]struct{}{}
 	for _, u := range uu {
 		if _, ok := m[u]; ok {
 			return nil, fmt.Errorf("user %d is allowed twice", u)

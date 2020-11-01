@@ -10,13 +10,13 @@ import (
 var markdownMode = hps.StrPtr("MarkdownV2")
 
 type sendMessageRequest struct {
-	ChatID                int     `json:"chat_id"`
+	ChatID                int64   `json:"chat_id"`
 	Text                  string  `json:"text"`
 	ParseMode             *string `json:"parse_mode,omitempty"`
 	DisableWebPagePreview bool    `json:"disable_web_page_preview"`
 }
 
-func EncodeSendMessage(to int, text string, isMarkdown bool) (*Request, error) {
+func EncodeSendMessage(to int64, text string, isMarkdown bool) (*Request, error) {
 	// In fact text must not be empty and must not be longer then 4K
 	// however, 4K *after* parsing. So, we perform this check earlier.
 	mode := (*string)(nil)

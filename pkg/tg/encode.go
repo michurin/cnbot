@@ -1,6 +1,8 @@
 package tg
 
-import "github.com/michurin/cnbot/pkg/helpers"
+import (
+	hps "github.com/michurin/cnbot/pkg/helpers"
+)
 
 const tgPrefixURL = "https://api.telegram.org/bot"
 
@@ -10,15 +12,15 @@ type Request struct {
 	Body        []byte
 }
 
-func Encode(token string, r *Request) helpers.Request {
+func Encode(token string, r *Request) hps.Request {
 	url := tgPrefixURL + token + "/" + r.Method
 	if r.Body == nil {
-		return helpers.Request{
+		return hps.Request{
 			Method: "GET",
 			URL:    url,
 		}
 	}
-	return helpers.Request{
+	return hps.Request{
 		Method:      "POST",
 		URL:         url,
 		ContentType: r.ContentType,

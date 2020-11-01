@@ -220,30 +220,30 @@ func TestDecodeGetUpdates(t *testing.T) {
 	t.Run("invalid_payload", func(t *testing.T) {
 		mm, u, err := tg.DecodeGetUpdates([]byte("}"), 10, "one")
 		assert.NotNil(t, err)
-		assert.Equal(t, 10, u)
+		assert.Equal(t, int64(10), u)
 		assert.Len(t, mm, 0)
 	})
 	t.Run("not_ok", func(t *testing.T) {
 		mm, u, err := tg.DecodeGetUpdates([]byte("{}"), 10, "one")
 		assert.NotNil(t, err)
-		assert.Equal(t, 10, u)
+		assert.Equal(t, int64(10), u)
 		assert.Len(t, mm, 0)
 	})
 	t.Run("no_result", func(t *testing.T) {
 		mm, u, err := tg.DecodeGetUpdates([]byte(`{"ok": true}`), 10, "one")
 		assert.Nil(t, err)
-		assert.Equal(t, 10, u)
+		assert.Equal(t, int64(10), u)
 		assert.Len(t, mm, 0)
 	})
 	t.Run("max_update_id", func(t *testing.T) {
 		mm, u, err := tg.DecodeGetUpdates([]byte(`{"ok": true, "result": [{"update_id": 50}, {"update_id": 100}, {"update_id": 40}]}`), 10, "one")
 		assert.Nil(t, err)
-		assert.Equal(t, 101, u)
+		assert.Equal(t, int64(101), u)
 		assert.Len(t, mm, 3)
 	})
 	for _, cs := range []struct {
 		name, body, text, stype, sname string
-		sid                            int
+		sid                            int64
 	}{
 		{"ordinary_message", ordinaryMessage, "Text", "", "", 0},
 		{"forward_from_user", forwardFromUser, "Text", "user", "user", 500},
@@ -256,7 +256,7 @@ func TestDecodeGetUpdates(t *testing.T) {
 		t.Run(cs.name, func(t *testing.T) {
 			mm, u, err := tg.DecodeGetUpdates([]byte(cs.body), 10, "one")
 			assert.Nil(t, err)
-			assert.Equal(t, 51, u)
+			assert.Equal(t, int64(51), u)
 			assert.Len(t, mm, 1)
 			assert.Equal(t, tg.Message{
 				BotName:       "one",

@@ -12,7 +12,7 @@ const pollingRequestTimeOutSeconds = 30
 const errorSleepDuration = time.Second * 10
 
 func Poller(baseCtx context.Context, botName string, bot hps.BotConfig, msgQueue chan<- tg.Message) {
-	var offset int
+	var offset int64
 	var mm []tg.Message
 	var sleep bool
 	hps.Log(hps.Label(baseCtx, botName), "Poller runs")
