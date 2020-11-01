@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -19,10 +18,10 @@ const gracefulShutdownInterval = time.Second
 type Handler struct {
 	BotName      string
 	Token        string
-	AllowedUsers map[int]struct{}
+	AllowedUsers map[int64]struct{}
 }
 
-func (h *Handler) pathDecode(ctx context.Context, path string) (destUser int, err error) {
+func (h *Handler) pathDecode(ctx context.Context, path string) (destUser int64, err error) {
 	urlParts := strings.Split(strings.Trim(path, "/"), "/")
 	if len(urlParts) != 1 {
 		err = errors.New("invalid path")
@@ -30,7 +29,7 @@ func (h *Handler) pathDecode(ctx context.Context, path string) (destUser int, er
 		return
 	}
 	user := urlParts[len(urlParts)-1]
-	destUser, err = strconv.Atoi(user)
+	destUser, err = hps.Atoi(user)
 	if err != nil {
 		hps.Log(ctx, user, err)
 		return

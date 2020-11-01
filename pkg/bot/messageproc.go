@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"strconv"
 	"strings"
 
 	hps "github.com/michurin/cnbot/pkg/helpers"
@@ -17,16 +16,16 @@ func argsSafe(s string) []string {
 	return safeChars.FindAllString(strings.ToLower(s), -1)
 }
 
-func envList(m tg.Message, target int, server string) []string {
+func envList(m tg.Message, target int64, server string) []string {
 	e := []string{
 		"BOT_NAME",
 		m.BotName,
 		"BOT_FROM",
-		strconv.Itoa(target),
+		hps.Itoa(target),
 		"BOT_FROM_FIRSTNAME",
 		m.FromFirstName,
 		"BOT_CHAT",
-		strconv.Itoa(m.ChatID),
+		hps.Itoa(m.ChatID),
 		"BOT_SERVER",
 		server,
 		"BOT_TEXT",
@@ -37,7 +36,7 @@ func envList(m tg.Message, target int, server string) []string {
 			"BOT_SIDE_TYPE",
 			m.SideType,
 			"BOT_SIDE_ID",
-			strconv.Itoa(m.SideID),
+			hps.Itoa(m.SideID),
 			"BOT_SIDE_NAME",
 			m.SideName,
 		)

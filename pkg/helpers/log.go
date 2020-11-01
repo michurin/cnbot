@@ -64,6 +64,8 @@ func fmtMessage(sep string, messages ...interface{}) (label, msg string) {
 			}
 		case int:
 			msg = fmt.Sprintf("%d", m)
+		case int64:
+			msg = Itoa(m)
 		case time.Duration:
 			msg = m.String()
 		case []string:

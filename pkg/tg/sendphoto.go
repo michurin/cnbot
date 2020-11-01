@@ -2,14 +2,15 @@ package tg
 
 import (
 	"bytes"
-	"fmt"
 	"mime/multipart"
+
+	hps "github.com/michurin/cnbot/pkg/helpers"
 )
 
-func EncodeSendPhoto(to int, tp string, data []byte) (*Request, error) {
+func EncodeSendPhoto(to int64, tp string, data []byte) (*Request, error) {
 	var body bytes.Buffer
 	w := multipart.NewWriter(&body)
-	err := w.WriteField("chat_id", fmt.Sprintf("%d", to))
+	err := w.WriteField("chat_id", hps.Itoa(to))
 	if err != nil {
 		return nil, err
 	}

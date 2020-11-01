@@ -6,12 +6,12 @@ import (
 )
 
 type getUpdateRequest struct {
-	Offset         *int     `json:"offset,omitempty"`
+	Offset         *int64   `json:"offset,omitempty"`
 	Timeout        int      `json:"timeout"`
 	AllowedUpdates []string `json:"allowed_updates"`
 }
 
-func EncodeGetUpdates(offset int, timeout int) (*Request, error) {
+func EncodeGetUpdates(offset int64, timeout int) (*Request, error) {
 	if timeout <= 0 {
 		return nil, errors.New("timeout have to be greater then zero")
 	}
@@ -36,22 +36,22 @@ func EncodeGetUpdates(offset int, timeout int) (*Request, error) {
 type Message struct {
 	BotName       string
 	Text          string
-	FromID        int
+	FromID        int64
 	FromFirstName string
-	ChatID        int
+	ChatID        int64
 	SideType      string
-	SideID        int
+	SideID        int64
 	SideName      string
 }
 
 type user struct {
-	ID        int    `json:"id"`
+	ID        int64  `json:"id"`
 	FirstName string `json:"first_name"`
 	IsBot     bool   `json:"is_bot"`
 }
 
 type chat struct {
-	ID    int    `json:"id"`
+	ID    int64  `json:"id"`
 	Type  string `json:"type"`
 	Title string `json:"title"` // optional
 }
@@ -60,7 +60,7 @@ type contact struct {
 	PhoneNumber string  `json:"phone_number"` // TODO not used yet
 	FirstName   string  `json:"first_name"`
 	LastName    *string `json:"last_name"` // TODO not used yet
-	UserID      *int    `json:"user_id"`
+	UserID      *int64  `json:"user_id"`
 	Vcard       *string `json:"vcard"` // TODO not used yet
 }
 
@@ -76,14 +76,14 @@ type message struct {
 type getUpdateResponse struct {
 	Ok     bool `json:"ok"`
 	Result []struct {
-		UpdateID int     `json:"update_id"`
+		UpdateID int64   `json:"update_id"`
 		Message  message `json:"message"`
 	} `json:"result"`
 }
 
 // Slightly magically cares about offset. It return previous offset if no
 // messages or errors.
-func DecodeGetUpdates(body []byte, offset int, botName string) ([]Message, int, error) {
+func DecodeGetUpdates(body []byte, offset int64, botName string) ([]Message, int64, error) {
 	data := getUpdateResponse{}
 	err := json.Unmarshal(body, &data)
 	if err != nil {
@@ -115,7 +115,7 @@ func DecodeGetUpdates(body []byte, offset int, botName string) ([]Message, int, 
 	return m, u + 1, nil
 }
 
-func extractSideUser(msg message) (tp string, id int, name string) {
+func extractSideUser(msg message) (tp string, id int64, name string) {
 	if msg.ForwardFromChat != nil {
 		tp = msg.ForwardFromChat.Type
 		id = msg.ForwardFromChat.ID
