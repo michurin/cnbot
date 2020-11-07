@@ -35,6 +35,7 @@ func TestMessageType(t *testing.T) {
 		{"md_space_same_line", "%!MARKDOWN \n \n", false, " \n \n", true},
 		{"md_one_line", "%!MARKDOWN ONE", false, " ONE", true},
 	} {
+		c := c
 		t.Run(c.name, func(t *testing.T) {
 			ig, txt, md, err := helpers.MessageType([]byte(c.b))
 			assert.Nil(t, err)
@@ -50,6 +51,7 @@ func TestMessageType(t *testing.T) {
 		{"err_too_long", bytes.Repeat([]byte{32}, 5000)},
 		{"err_utf8", []byte{255}},
 	} {
+		c := c
 		t.Run(c.name, func(t *testing.T) {
 			ig, txt, md, err := helpers.MessageType(c.b)
 			assert.NotNil(t, err)

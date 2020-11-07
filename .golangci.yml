@@ -5,7 +5,7 @@ linters-settings:
     lines: 100
     statements: 50
   nakedret:
-    max-func-lines: 50
+    max-func-lines: 60
 linters:
   disable-all: true
   enable:
