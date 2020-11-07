@@ -26,10 +26,14 @@ func envList(m tg.Message, target int64, server string) []string {
 		m.FromFirstName,
 		"BOT_CHAT",
 		hps.Itoa(m.ChatID),
-		"BOT_SERVER",
-		server,
 		"BOT_TEXT",
 		m.Text,
+	}
+	if server != "" {
+		e = append(e,
+			"BOT_SERVER",
+			server,
+		)
 	}
 	if m.SideType != "" {
 		e = append(e,
