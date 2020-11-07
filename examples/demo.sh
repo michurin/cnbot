@@ -63,7 +63,8 @@ case "CMD_$1" in
     CMD_calc)
         if test "$#" = '1'
         then
-          echo '%!MARKDOWN *Usage:* calc _expression_'
+          echo '%!MARKDOWN'
+          echo '*Usage:* calc _expression_'
           echo 'For example:'
           echo '`calc 1\+1`'
           echo '`calc atan2(1, 0) * 2`'
@@ -79,7 +80,7 @@ case "CMD_$1" in
         d="$(df -P -m / | tail -1 | awk '{gsub("[^0-9]", "", $5); print $5","(100-$5)}')"
         # This old fashioned API is deprecated in 2012, however, it is still working
         # https://developers.google.com/chart/image/docs/making_charts
-        u="https://chart.googleapis.com/chart?cht=p&chd=t:$d&chs=300x200&chl=Used|Available&chtt=Disk%20usage"
+        u="https://chart.googleapis.com/chart?cht=p&chd=t:$d&chs=300x200&chl=Available|Used&chtt=Disk%20usage"
         curl -qfs "$u"
         ;;
     CMD_gologo)
@@ -88,9 +89,9 @@ case "CMD_$1" in
         ;;
     CMD_async)
         u="http://$BOT_SERVER/$BOT_FROM"
-        echo '%!MARKDOWN' "_I'll send you *random* image\.\.\._" | curl -qfsX POST -o /dev/null --data-binary @- "$u"
+        echo '%!MARKDOWN'"_I'll send you *random* image\.\.\._" | curl -qfsX POST -o /dev/null --data-binary @- "$u"
         curl -qfsL https://source.unsplash.com/random/600x400 | curl -qfsX POST -o /dev/null --data-binary @- "$u"
-        echo '%!MARKDOWN' '_Are you happy now?_' | curl -qfsX POST -o /dev/null --data-binary @- "$u"
+        echo '%!MARKDOWN''_Are you happy now?_' | curl -qfsX POST -o /dev/null --data-binary @- "$u"
         echo '.'
         ;;
     CMD_cal)
@@ -107,6 +108,6 @@ case "CMD_$1" in
         ;;
     *)
         cmd="$(echo $1 | sed 's/[-_.]/\\&/g')" # we have to care about [-.] only because other must-escaped-chars are disallowed by bot
-        echo '%!MARKDOWN' "I didn't recognize your command '*$cmd*' Try to say '*help*' to me"
+        echo '%!MARKDOWN'"I didn't recognize your command '*$cmd*' Try to say '*help*' to me"
         ;;
 esac
