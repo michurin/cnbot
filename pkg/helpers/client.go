@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"io"
 	"io/ioutil"
 	"net/http"
 )
@@ -26,16 +27,26 @@ func Do(ctx context.Context, req Request) ([]byte, error) {
 	}
 	Log(ctx, httpReq.Method, httpReq.URL.String(), req.Body)
 	resp, err := http.DefaultClient.Do(httpReq)
+	if resp != nil && resp.Body != nil {
+		defer func() {
+			// in go 1.5 we have to read all the rest data from buffer if any to be able to reuse connection
+			_, err := io.Copy(ioutil.Discard, resp.Body)
+			if err != nil {
+				Log(ctx, err)
+			}
+			err = resp.Body.Close()
+			if err != nil {
+				Log(ctx, err)
+			}
+		}()
+	}
 	if err != nil {
 		Log(ctx, err)
 		return nil, err
 	}
-	defer func() {
-		err = resp.Body.Close()
-		if err != nil {
-			Log(ctx, err)
-		}
-	}()
+	if resp.Body == nil {
+		return nil, nil
+	}
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		Log(ctx, err)
