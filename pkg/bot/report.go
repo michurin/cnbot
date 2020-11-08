@@ -14,7 +14,7 @@ import (
 
 const version = "1.0.0"
 
-var Build = "noBuildInfo" // go build -ldflags "-X github.com/michurin/cnbot/pkg/bot.Build=`date +%F`-`git rev-parse --short HEAD`" ./cmd/...
+var /* const */ Build = "noBuildInfo" // go build -ldflags "-X github.com/michurin/cnbot/pkg/bot.Build=`date +%F`-`git rev-parse --short HEAD`" ./cmd/...
 
 func allowedUsersToString(a map[int64]struct{}) string {
 	if len(a) == 0 {
