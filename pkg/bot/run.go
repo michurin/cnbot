@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"syscall"
+	"time"
 
 	hps "github.com/michurin/cnbot/pkg/helpers"
 	"github.com/michurin/cnbot/pkg/tg"
@@ -27,7 +28,7 @@ func Run(rootCtx context.Context) {
 		return
 	}
 
-	bots, err := hps.ReadConfig(configFile)
+	bots, aliveAddr, err := hps.ReadConfig(configFile)
 	if err != nil {
 		hps.Log(ctx, configFile, err)
 		return
@@ -68,6 +69,14 @@ func Run(rootCtx context.Context) {
 		go func() {
 			defer func() { done <- struct{}{} }()
 			MessageProcessor(ctx, msgQueue, bots)
+		}()
+	}
+
+	if aliveAddr != "" {
+		doneCount++
+		go func() {
+			defer func() { done <- struct{}{} }()
+			RunHTTPServer(ctx, aliveAddr, time.Second, time.Second, &AliveHandler{})
 		}()
 	}
 
