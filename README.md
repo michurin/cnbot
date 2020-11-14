@@ -388,8 +388,8 @@ Due to security reasons, each bot has its own server.
 
 If `"server"` key is present in bot's configuration, `cnbot` starts for that bot simple HTTP server.
 
-It accepts the `POST` method and paths like `/${TARGET_USER}`. `cnbot` threats
-the body of request in the same way as output of scripts. So you can send text, preformatted text
+The server threats
+messages in the same way as output of scripts. So you can send text, preformatted text
 and images in PNG, JPEG and GIF formats.
 
 Using this mechanism you can:
@@ -399,6 +399,22 @@ Using this mechanism you can:
 - Even send messages from another bots
 
 You can configure reading and writing timeouts. Default values are 10s and 10s.
+
+There are two similar ways to send messages asynchronously.
+
+#### `multipart/form-data` request with `to` and `msg` params (`POST`)
+
+```sh
+curl -F to=$BOT_FROM -F msg=text $BOT_SERVER
+```
+
+#### Raw `POST` with message in body and target user in URL
+
+```sh
+curl --data-binary text "http://$BOT_SERVER/$BOT_FROM"
+```
+
+See examples in [demo script](examples/demo.sh).
 
 ## :pizza: System administration topics
 
