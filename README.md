@@ -410,6 +410,26 @@ You can specify build version
 go build -ldflags "-s -w -X github.com/michurin/cnbot/pkg/bot.Build=`date +%F`-`git rev-parse --short HEAD`" ./cmd/...
 ```
 
+### Monitoring and health checking
+
+You can turn on alive handler, mentioning it in configuration file like that:
+
+```yaml
+bot: ...
+alive:
+  bind_address: ":9999"
+```
+
+After that you can fetch current state of process from this handler: version, start time, memory utilisation details, current number of goroutines...
+All this information is available in json format, so you can use tools like `jq` to manage it. For example, it is easy to make input string for
+simple RRDtools based monitoring:
+
+```sh
+curl -s localhost:9999 | jq -r '"N:\(.num_goroutine):\(.mem_status.Alloc):\(.mem_status.HeapObjects)"'
+```
+
+It will return string like `N:16:1365296:10822` suitable for `rrdtool update`.
+
 ### Startup: modern `systemd` fashion
 
 As usual create service file like this `/etc/systemd/system/cnbot.service`:
