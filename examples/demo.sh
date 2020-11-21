@@ -88,11 +88,12 @@ case "CMD_$1" in
         # curl -qfs https://www.telegram.org/img/t_logo.png # try this if footer-gopher.jpg disappear
         ;;
     CMD_async)
-        u="http://$BOT_SERVER/$BOT_FROM"
-        echo '%!MARKDOWN'"_I'll send you *random* image\.\.\._" | curl -qfsX POST -o /dev/null --data-binary @- "$u"
-        curl -qfsL https://source.unsplash.com/random/600x400 | curl -qfsX POST -o /dev/null --data-binary @- "$u"
-        echo '%!MARKDOWN''_Are you happy now?_' | curl -qfsX POST -o /dev/null --data-binary @- "$u"
-        echo '.'
+        # the first way to send async message: multipart/form-data
+        curl -qfsX POST -o /dev/null -F to=$BOT_FROM -F msg='%!MARKDOWN'"_I'll send you_ *random* _image\.\.\._" $BOT_SERVER
+        curl -qfsL https://source.unsplash.com/random/600x400 | curl -qfsX POST -o /dev/null -F to=$BOT_FROM -F msg=@- $BOT_SERVER
+        # the second way to send async message: raw data + user_id at the end of url
+        echo '%!MARKDOWN''_Are you happy now?_' | curl -qfsX POST -o /dev/null --data-binary @- "http://$BOT_SERVER/$BOT_FROM"
+        echo '.' # suppress output processing
         ;;
     CMD_cal)
         echo '%!PRE'
