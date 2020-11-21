@@ -25,7 +25,8 @@ type BotConfig struct {
 }
 
 type config struct {
-	Bots map[string]botConfig `yaml:"bots"`
+	Bots  map[string]botConfig `yaml:"bots"`
+	Alive aliveConfig          `yaml:"alive"`
 }
 
 type botConfig struct {
@@ -39,6 +40,10 @@ type botConfig struct {
 	BindingAddress string   `yaml:"bind_address"`
 	ReadingTimeout *float64 `yaml:"read_timeout"`
 	WritingTimeout *float64 `yaml:"write_timeout"`
+}
+
+type aliveConfig struct {
+	BindingAddress string `yaml:"bind_address"`
 }
 
 func allowedUsers(uu []int64) (map[int64]struct{}, error) {
@@ -59,44 +64,44 @@ func toAbsPath(baseDir string, path string) string {
 	return filepath.Join(baseDir, path)
 }
 
-func ReadConfig(configFile string) (map[string]BotConfig, error) {
+func ReadConfig(configFile string) (map[string]BotConfig, string, error) {
 	if !filepath.IsAbs(configFile) {
-		return nil, errors.New("path to config file must be absolute")
+		return nil, "", errors.New("path to config file must be absolute")
 	}
 	data, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	cfg := new(config)
 	err = yaml.Unmarshal(data, cfg)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	baseDir := filepath.Dir(configFile)
 	botCfg := map[string]BotConfig{}
 	for nick, b := range cfg.Bots {
 		au, err := allowedUsers(b.AllowedUsers)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 		script := toAbsPath(baseDir, b.Script)
 		stat, err := os.Stat(script)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 		if !stat.Mode().IsRegular() {
-			return nil, fmt.Errorf("script file %s is not regular", script)
+			return nil, "", fmt.Errorf("script file %s is not regular", script)
 		}
 		if stat.Mode()&0111 == 0 { // slightly weird. just mimic exec.findExecutable
-			return nil, fmt.Errorf("script file %s is not permited", script)
+			return nil, "", fmt.Errorf("script file %s is not permited", script)
 		}
 		pwd := toAbsPath(baseDir, b.WorkingDir)
 		stat, err = os.Stat(pwd)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 		if !stat.Mode().IsDir() {
-			return nil, fmt.Errorf("working dir %s is not a dirrectory", pwd)
+			return nil, "", fmt.Errorf("working dir %s is not a dirrectory", pwd)
 		}
 		botCfg[nick] = BotConfig{
 			Token:             b.Token, // TODO check not empty? some format?
@@ -111,7 +116,7 @@ func ReadConfig(configFile string) (map[string]BotConfig, error) {
 			WriteTimeout:      defaultDuration(b.WritingTimeout, 10*time.Second),
 		}
 	}
-	return botCfg, nil
+	return botCfg, cfg.Alive.BindingAddress, nil
 }
 
 func defaultDuration(dur *float64, def time.Duration) time.Duration {
