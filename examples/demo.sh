@@ -10,8 +10,7 @@ for c in awk cal curl date df echo env grep sed sort tail test uname uptime
 do
   if ! command -v $c >/dev/null
   then
-    echo "Command $c not found, check PATH ($PATH)"
-    exit
+    echo "WARNING: Command $c not found, check PATH ($PATH)" >&2
   fi
 done
 
@@ -38,15 +37,12 @@ case "CMD_$1" in
         echo '.' # Single dot is marker of silence. The bot will reply nothing.
         ;;
     CMD_date)
-        echo '%!PRE'
         date
         ;;
     CMD_uname)
-        echo '%!PRE'
         uname -a
         ;;
     CMD_uptime)
-        echo '%!PRE'
         uptime
         ;;
     CMD_args)
@@ -104,8 +100,10 @@ case "CMD_$1" in
         echo '*Available commands:*'
         grep CMD_ $0 | grep -v case | sed 's-.*CMD_-• \\/-;s-.$--'
         echo ''
-        echo '*And besides,*'
-        echo '• You can send to the bot contract of user or forward a message to figure out user/chat/channel ID'
+        echo '*And besides, the bot accespts*'
+        echo '• contacts and'
+        echo '• forwarded a messages'
+        echo 'to figure out user/chat/channel ID'
         ;;
     *)
         cmd="$(echo $1 | sed 's/[-_.]/\\&/g')" # we have to care about [-.] only because other must-escaped-chars are disallowed by bot
