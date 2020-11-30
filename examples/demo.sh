@@ -102,7 +102,7 @@ case "CMD_$1" in
         echo ''
         echo '*And besides, the bot accespts*'
         echo '• contacts and'
-        echo '• forwarded a messages'
+        echo '• forwarded messages'
         echo 'to figure out user/chat/channel ID'
         ;;
     *)
