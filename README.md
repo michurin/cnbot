@@ -35,17 +35,16 @@ that is complying with extremely simple contract.
 
 ### Basic values
 
-- Simplicity: functions better them methods, concrete types better then interfaces
-- Clear logs: caller, labels
-- Security: restrict access by users white list, pass only certain environment variables to script
+- Simplicity of contract: you have know only a few simple ideas to write your own bot
+- Simplicity of code: functions better them methods, concrete types better then interfaces and so on
+- Clear logs: caller, labels, clear logging levels
+- Security: restrict access by users white list, pass only certain environment variables to script, force working directory, timeouts, kill whole process group and so on
 
 ### Disadvantages and oversimplifications
 
 - This bot is not design for high load
-- The bot doesn't have persistent storage, therefore, it can lose messages on restart
-- Throttling is not implemented
-- Retries is not implemented
-- Inline keyboard, custom reply keyboard, messages editing are not supported
+- The bot doesn't have persistent storage: it can lose messages on restart, no throttling, no retries
+- Inline keyboard, custom reply keyboard, messages editing and other features are not supported
 
 ## :airplane: Quick start
 
@@ -386,7 +385,7 @@ implement.
 
 Due to security reasons, each bot has its own server.
 
-If `"server"` key is present in bot's configuration, `cnbot` starts for that bot simple HTTP server.
+If `bind_address` key is present in bot's configuration, `cnbot` starts a simple HTTP server for that bot.
 
 The server threats
 messages in the same way as output of scripts. So you can send text, preformatted text
