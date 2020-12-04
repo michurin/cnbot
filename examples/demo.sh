@@ -14,7 +14,7 @@ do
   fi
 done
 
-# check if it forwarded message or contact
+# check if it is forwarded message or contact
 
 if test -n "$BOT_SIDE_TYPE"
 then
@@ -98,7 +98,7 @@ case "CMD_$1" in
     CMD_help)
         echo '%!MARKDOWN'
         echo '*Available commands:*'
-        grep CMD_ $0 | grep -v case | sed 's-.*CMD_-• \\/-;s-.$--'
+        grep CMD_ "$0" | grep -v case | sed 's-.*CMD_-• \\/-;s-.$--'
         echo ''
         echo '*And besides, the bot accespts*'
         echo '• contacts and'
@@ -106,7 +106,7 @@ case "CMD_$1" in
         echo 'to figure out user/chat/channel ID'
         ;;
     *)
-        cmd="$(echo $1 | sed 's/[-_.]/\\&/g')" # we have to care about [-.] only because other must-escaped-chars are disallowed by bot
+        cmd="$(echo $1 | sed 's/[-_.]/\\&/g')" # we have to care about [-_.] only because other must-escaped-chars are disallowed by bot
         echo '%!MARKDOWN'"I didn't recognize your command '*$cmd*' Try to say '*help*' to me"
         ;;
 esac
