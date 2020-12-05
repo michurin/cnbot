@@ -13,14 +13,14 @@ func buildRequest(destUser int64, stdout []byte) (req *tg.Request, err error) {
 		req, err = tg.EncodeSendPhoto(destUser, imgExt, stdout)
 		return
 	}
-	ignore, msg, isMarkdown, err := hps.MessageType(stdout)
+	ignore, msg, isMarkdown, markup, err := hps.MessageType(stdout)
 	if err != nil {
 		return
 	}
 	if ignore {
 		return
 	}
-	req, err = tg.EncodeSendMessage(destUser, msg, isMarkdown)
+	req, err = tg.EncodeSendMessage(destUser, msg, isMarkdown, markup)
 	if err != nil {
 		return
 	}

@@ -13,11 +13,17 @@ var /* const */ markDownEscaping = regexp.MustCompile("([_*[\\]()~`>#+\\-=|{}.!\
 // It is slightly ugly mix of processor, validator... not just pure type detector (as ImageType is)
 // It has to be rewritten if it grow.
 //
-// Recognize %!PRE, %!MARKDOWN. TODO: %!JSON
+// Recognize %!PRE, %!MARKDOWN, %!CALLBACK
+//
+// The structure of message is to be:
+// - Zero or more %!CALLBACK lines
+// - Optional %!PRE or %!MARKDOWN
+// - message
 func MessageType(data []byte) (
 	ignoreIt bool,
 	text string,
 	isMarkdown bool,
+	markup [][][2]string,
 	err error,
 ) {
 	if !utf8.Valid(data) {
@@ -45,6 +51,45 @@ func MessageType(data []byte) (
 	if trimmed == "." {
 		ignoreIt = true
 		text = ""
+		return
+	}
+	m := [][2]string(nil)
+	for {
+		if strings.HasPrefix(text, "%!CALLBACK") {
+			var a string
+			idx := strings.IndexFunc(text, unicode.IsControl)
+			if idx > 0 {
+				a = text[:idx]
+				text = strings.TrimLeftFunc(text[idx:], unicode.IsControl)
+			} else {
+				a = text
+				text = ""
+			}
+			a = a[10:] // remove %!CALLBACK
+			a = strings.TrimSpace(a)
+			if len(a) == 0 {
+				if len(m) > 0 {
+					markup = append(markup, m)
+				}
+				m = [][2]string(nil)
+			} else {
+				idx := strings.IndexFunc(a, unicode.IsSpace)
+				if idx <= 0 {
+					m = append(m, [2]string{a, a})
+				} else {
+					m = append(m, [2]string{a[:idx], strings.TrimSpace(a[idx:])})
+				}
+			}
+		} else {
+			break
+		}
+	}
+	if len(m) > 0 {
+		markup = append(markup, m)
+	}
+	if text == "" {
+		isMarkdown = true
+		text = "_empty \\(callback mode\\)_"
 		return
 	}
 	if strings.HasPrefix(text, "%!PRE") {

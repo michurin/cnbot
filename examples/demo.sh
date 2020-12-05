@@ -95,6 +95,16 @@ case "CMD_$1" in
         echo '%!PRE'
         cal -h
         ;;
+    CMD_btn)
+        echo '%!CALLBACK env do env'
+        echo '%!CALLBACK date do date'
+        echo '%!CALLBACK'
+        echo '%!CALLBACK uname do uname'
+        echo '%!CALLBACK'
+        echo '%!CALLBACK async get random image'
+        echo '%!CALLBACK gologo show golang logo'
+        echo 'Try buttons'
+        ;;
     CMD_help)
         echo '%!MARKDOWN'
         echo '*Available commands:*'
