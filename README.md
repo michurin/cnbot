@@ -84,6 +84,11 @@ bots:
     allowed_users: [153812628]
 ```
 
+You can find out your user id in several ways:
+
+- You can use bot like [@userinfobot](https://t.me/userinfobot)
+- You can just start cnbot with empty `allowed_users`, try to add the bot in your Telegram client, find out your user id from bot's error message `user [your id] is not allowed`
+
 This bot just echoes your messages. However, let's consider full configuration
 file and full-futured [demo script](examples/demo.sh):
 
