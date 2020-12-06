@@ -45,8 +45,9 @@ func TestMessageType(t *testing.T) {
 	} {
 		c := c
 		t.Run(c.name, func(t *testing.T) {
-			ig, txt, md, mu, err := helpers.MessageType([]byte(c.b))
+			ig, txt, md, up, mu, err := helpers.MessageType([]byte(c.b))
 			assert.Nil(t, err)
+			assert.False(t, up) // TODO
 			assert.Equal(t, c.mu, mu)
 			assert.Equal(t, c.ig, ig)
 			assert.Equal(t, c.txt, txt)
@@ -62,9 +63,10 @@ func TestMessageType(t *testing.T) {
 	} {
 		c := c
 		t.Run(c.name, func(t *testing.T) {
-			ig, txt, md, mu, err := helpers.MessageType(c.b)
+			ig, txt, md, up, mu, err := helpers.MessageType(c.b)
 			assert.NotNil(t, err)
 			assert.Nil(t, mu)
+			assert.False(t, up)
 			assert.Equal(t, true, ig)
 			assert.Equal(t, "", txt)
 			assert.Equal(t, false, md)

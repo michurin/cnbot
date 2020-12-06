@@ -34,14 +34,15 @@ func EncodeGetUpdates(offset int64, timeout int) (*Request, error) {
 }
 
 type Message struct {
-	BotName       string
-	Text          string
-	FromID        int64
-	FromFirstName string
-	ChatID        int64
-	SideType      string
-	SideID        int64
-	SideName      string
+	BotName         string
+	Text            string
+	FromID          int64
+	FromFirstName   string
+	ChatID          int64
+	UpdateMessageID int64
+	SideType        string
+	SideID          int64
+	SideName        string
 }
 
 type user struct {
@@ -65,6 +66,7 @@ type contact struct {
 }
 
 type message struct {
+	MessageID       int64    `json:"message_id"`
 	Text            string   `json:"text"`
 	From            user     `json:"from"`
 	Chat            chat     `json:"chat"`
@@ -121,6 +123,7 @@ func DecodeGetUpdates(body []byte, offset int64, botName string) ([]Message, int
 			m[i].FromID = cb.From.ID
 			m[i].FromFirstName = cb.From.FirstName
 			m[i].ChatID = cb.Message.Chat.ID
+			m[i].UpdateMessageID = cb.Message.MessageID
 			m[i].Text = cb.Data
 		}
 		if e.UpdateID > u {

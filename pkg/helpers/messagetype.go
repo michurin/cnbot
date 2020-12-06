@@ -13,9 +13,10 @@ var /* const */ markDownEscaping = regexp.MustCompile("([_*[\\]()~`>#+\\-=|{}.!\
 // It is slightly ugly mix of processor, validator... not just pure type detector (as ImageType is)
 // It has to be rewritten if it grow.
 //
-// Recognize %!PRE, %!MARKDOWN, %!CALLBACK
+// Recognize %!PRE, %!MARKDOWN, %!CALLBACK, %!UPDATE
 //
 // The structure of message is to be:
+// - Optional %!UPDATE
 // - Zero or more %!CALLBACK lines
 // - Optional %!PRE or %!MARKDOWN
 // - message
@@ -23,6 +24,7 @@ func MessageType(data []byte) (
 	ignoreIt bool,
 	text string,
 	isMarkdown bool,
+	forUpdate bool,
 	markup [][][2]string,
 	err error,
 ) {
@@ -52,6 +54,11 @@ func MessageType(data []byte) (
 		ignoreIt = true
 		text = ""
 		return
+	}
+	if strings.HasPrefix(text, "%!UPDATE") {
+		forUpdate = true
+		idx := strings.IndexFunc(text, unicode.IsControl)
+		text = strings.TrimLeftFunc(text[idx:], unicode.IsControl)
 	}
 	m := [][2]string(nil)
 	for {

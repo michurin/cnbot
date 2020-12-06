@@ -33,7 +33,24 @@ func EncodeSendMessage(to int64, text string, isMarkdown bool, markup [][][2]str
 	if isMarkdown {
 		mode = markdownMode
 	}
-	var mup *inlineKeyboardMarkup
+	body, err := json.Marshal(sendMessageRequest{
+		ChatID:                to,
+		Text:                  text,
+		ParseMode:             mode,
+		DisableWebPagePreview: true,
+		ReplyMarkup:           makeInlineKeyboardMarkup(markup),
+	})
+	if err != nil {
+		return nil, err // in fact, it is the reason for panic
+	}
+	return &Request{
+		Method:      "sendMessage",
+		ContentType: "application/json",
+		Body:        body,
+	}, nil
+}
+
+func makeInlineKeyboardMarkup(markup [][][2]string) (mup *inlineKeyboardMarkup) {
 	if len(markup) > 0 {
 		kbd := [][]inlineKeyboardButton(nil)
 		for _, a := range markup {
@@ -48,21 +65,7 @@ func EncodeSendMessage(to int64, text string, isMarkdown bool, markup [][][2]str
 		}
 		mup = &inlineKeyboardMarkup{InlineKeyboard: kbd}
 	}
-	body, err := json.Marshal(sendMessageRequest{
-		ChatID:                to,
-		Text:                  text,
-		ParseMode:             mode,
-		DisableWebPagePreview: true,
-		ReplyMarkup:           mup,
-	})
-	if err != nil {
-		return nil, err // in fact, it is the reason for panic
-	}
-	return &Request{
-		Method:      "sendMessage",
-		ContentType: "application/json",
-		Body:        body,
-	}, nil
+	return
 }
 
 type sendMessageResponse struct {

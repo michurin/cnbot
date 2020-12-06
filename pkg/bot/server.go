@@ -140,7 +140,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx = hps.Label(ctx, destUser)
-	err = SmartSend(ctx, h.Token, destUser, body)
+	err = SmartSend(ctx, h.Token, destUser, 0, body) // TODO what to do with it?? We can not edit message asyc?
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		hps.Log(ctx, body, err)

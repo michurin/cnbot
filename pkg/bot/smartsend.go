@@ -7,17 +7,24 @@ import (
 	"github.com/michurin/cnbot/pkg/tg"
 )
 
-func buildRequest(destUser int64, stdout []byte) (req *tg.Request, err error) {
+func buildRequest(destUser, callbackMessageID int64, stdout []byte) (req *tg.Request, err error) {
 	imgExt := hps.ImageType(stdout)
 	if imgExt != "" {
 		req, err = tg.EncodeSendPhoto(destUser, imgExt, stdout)
 		return
 	}
-	ignore, msg, isMarkdown, markup, err := hps.MessageType(stdout)
+	ignore, msg, isMarkdown, forUpdate, markup, err := hps.MessageType(stdout)
 	if err != nil {
 		return
 	}
 	if ignore {
+		return
+	}
+	if forUpdate && callbackMessageID > 0 {
+		req, err = tg.EncodeEditMessage(destUser, callbackMessageID, msg, isMarkdown, markup)
+		if err != nil {
+			return
+		}
 		return
 	}
 	req, err = tg.EncodeSendMessage(destUser, msg, isMarkdown, markup)
@@ -27,8 +34,8 @@ func buildRequest(destUser int64, stdout []byte) (req *tg.Request, err error) {
 	return
 }
 
-func SmartSend(ctx context.Context, token string, destUser int64, stdout []byte) error {
-	req, err := buildRequest(destUser, stdout)
+func SmartSend(ctx context.Context, token string, destUser, callbackMessageID int64, stdout []byte) error {
+	req, err := buildRequest(destUser, callbackMessageID, stdout)
 	if err != nil {
 		hps.Log(ctx, err)
 		return err

@@ -102,8 +102,19 @@ case "CMD_$1" in
         echo '%!CALLBACK uname do uname'
         echo '%!CALLBACK'
         echo '%!CALLBACK async get random image'
-        echo '%!CALLBACK gologo show golang logo'
+        echo '%!CALLBACK edit edit it!'
         echo 'Try buttons'
+        ;;
+    CMD_edit)
+        echo '%!UPDATE'
+        echo '%!CALLBACK env do env'
+        echo '%!CALLBACK date do date'
+        echo '%!CALLBACK'
+        echo '%!CALLBACK uname do uname'
+        echo '%!CALLBACK'
+        echo '%!CALLBACK async get random image'
+        echo '%!CALLBACK edit edit it!'
+        date
         ;;
     CMD_help)
         echo '%!MARKDOWN'
