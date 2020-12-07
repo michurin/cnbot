@@ -10,15 +10,59 @@ import (
 
 var /* const */ markDownEscaping = regexp.MustCompile("([_*[\\]()~`>#+\\-=|{}.!\\\\])")
 
+var /* const */ labels = []struct {
+	label string
+	len   int
+	re    *regexp.Regexp
+}{
+	{"markdown", 10, regexp.MustCompile(`^%!MARKDOWN[^\r\n]*([\r\n]+|$)`)},
+	{"pre", 5, regexp.MustCompile(`^%!PRE[^\r\n]*([\r\n]+|$)`)},
+	{"update", 8, regexp.MustCompile(`^%!UPDATE[^\r\n]*([\r\n]+|$)`)},
+	{"callback", 10, regexp.MustCompile(`^%!CALLBACK[^\r\n]*([\r\n]+|$)`)},
+}
+
+func extractLabels(a string) ([][2]string, string) {
+	lbs := [][2]string(nil)
+	for {
+		stop := true
+		for _, d := range labels {
+			x := d.re.FindString(a)
+			l := len(x)
+			if l > 0 {
+				lbs = append(lbs, [2]string{d.label, strings.TrimSpace(a[d.len:l])})
+				a = a[l:]
+				stop = false
+				break
+			}
+		}
+		if stop {
+			break
+		}
+	}
+	return lbs, a
+}
+
+func appendNotEmpty(a [][][2]string, b [][2]string) [][][2]string {
+	if len(b) > 0 {
+		return append(a, b)
+	}
+	return a
+}
+
+func callbackPair(s string) [2]string {
+	idx := strings.IndexFunc(s, unicode.IsSpace)
+	if idx <= 0 {
+		return [2]string{s, s}
+	}
+	return [2]string{s[:idx], strings.TrimSpace(s[idx:])}
+}
+
 // It is slightly ugly mix of processor, validator... not just pure type detector (as ImageType is)
-// It has to be rewritten if it grow.
 //
 // Recognize %!PRE, %!MARKDOWN, %!CALLBACK, %!UPDATE
 //
 // The structure of message is to be:
-// - Optional %!UPDATE
-// - Zero or more %!CALLBACK lines
-// - Optional %!PRE or %!MARKDOWN
+// - "%!XXX"-labels in any order
 // - message
 func MessageType(data []byte) (
 	ignoreIt bool,
@@ -44,79 +88,39 @@ func MessageType(data []byte) (
 		err = errors.New("message too long")
 		return
 	}
-	trimmed := strings.TrimSpace(text)
-	if trimmed == "" {
-		isMarkdown = true
-		text = "_empty_"
-		return
-	}
-	if trimmed == "." {
+	if strings.TrimSpace(text) == "." {
 		ignoreIt = true
 		text = ""
 		return
 	}
-	if strings.HasPrefix(text, "%!UPDATE") {
-		forUpdate = true
-		idx := strings.IndexFunc(text, unicode.IsControl)
-		text = strings.TrimLeftFunc(text[idx:], unicode.IsControl)
+	labels, text := extractLabels(text)
+	if strings.TrimSpace(text) == "" {
+		// TODO be careful with markdown, empty message can be represented by nonempty markdown string
+		isMarkdown = true
+		text = "_empty_"
+		return
 	}
 	m := [][2]string(nil)
-	for {
-		if strings.HasPrefix(text, "%!CALLBACK") {
-			var a string
-			idx := strings.IndexFunc(text, unicode.IsControl)
-			if idx > 0 {
-				a = text[:idx]
-				text = strings.TrimLeftFunc(text[idx:], unicode.IsControl)
+	for _, l := range labels {
+		switch l[0] {
+		case "pre":
+			isMarkdown = true
+			text = "```\n" + markDownEscaping.ReplaceAllString(text, "\\$1") + "\n```"
+		case "markdown":
+			isMarkdown = true
+		case "update":
+			forUpdate = true
+		case "callback":
+			if len(l[1]) == 0 {
+				markup = appendNotEmpty(markup, m)
+				m = nil
 			} else {
-				a = text
-				text = ""
+				m = append(m, callbackPair(l[1]))
 			}
-			a = a[10:] // remove %!CALLBACK
-			a = strings.TrimSpace(a)
-			if len(a) == 0 {
-				if len(m) > 0 {
-					markup = append(markup, m)
-				}
-				m = [][2]string(nil)
-			} else {
-				idx := strings.IndexFunc(a, unicode.IsSpace)
-				if idx <= 0 {
-					m = append(m, [2]string{a, a})
-				} else {
-					m = append(m, [2]string{a[:idx], strings.TrimSpace(a[idx:])})
-				}
-			}
-		} else {
-			break
+		default:
+			panic("Unknown label " + l[0])
 		}
 	}
-	if len(m) > 0 {
-		markup = append(markup, m)
-	}
-	if text == "" {
-		isMarkdown = true
-		text = "_empty \\(callback mode\\)_"
-		return
-	}
-	if strings.HasPrefix(text, "%!PRE") {
-		isMarkdown = true
-		text = strings.TrimLeftFunc(text[5:], unicode.IsControl)
-		text = markDownEscaping.ReplaceAllString(text, "\\$1")
-		if text != "" {
-			text = "```\n" + text + "\n```"
-		} else {
-			text = "_empty \\(pre mode\\)_"
-		}
-		return
-	}
-	if strings.HasPrefix(text, "%!MARKDOWN") {
-		isMarkdown = true
-		text = strings.TrimLeftFunc(text[10:], unicode.IsControl)
-		if text == "" {
-			text = "_empty \\(markdown mode\\)_"
-		}
-		return
-	}
+	markup = appendNotEmpty(markup, m)
 	return
 }

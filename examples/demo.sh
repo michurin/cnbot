@@ -84,11 +84,12 @@ case "CMD_$1" in
         # curl -qfs https://www.telegram.org/img/t_logo.png # try this if footer-gopher.jpg disappear
         ;;
     CMD_async)
+        mark='%!MARKDOWN'$'\n' # it may surprise you, how we get newline in sh
         # the first way to send async message: multipart/form-data
-        curl -qfsX POST -o /dev/null -F to=$BOT_FROM -F msg='%!MARKDOWN'"_I'll send you_ *random* _image\.\.\._" $BOT_SERVER
+        curl -qfsX POST -o /dev/null -F to=$BOT_FROM -F msg="${mark}_I'll send you_ *random* _image\.\.\._" $BOT_SERVER
         curl -qfsL https://source.unsplash.com/random/600x400 | curl -qfsX POST -o /dev/null -F to=$BOT_FROM -F msg=@- $BOT_SERVER
         # the second way to send async message: raw data + user_id at the end of url
-        echo '%!MARKDOWN''_Are you happy now?_' | curl -qfsX POST -o /dev/null --data-binary @- "http://$BOT_SERVER/$BOT_FROM"
+        echo "${mark}_Are you happy now?_" | curl -qfsX POST -o /dev/null --data-binary @- "http://$BOT_SERVER/$BOT_FROM"
         echo '.' # suppress output processing
         ;;
     CMD_cal)
@@ -114,7 +115,8 @@ case "CMD_$1" in
         echo '%!CALLBACK'
         echo '%!CALLBACK async get random image'
         echo '%!CALLBACK edit edit it!'
-        date
+        #curl -qfsL 'http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en' | jq -r '"\(.quoteText) -- \(.quoteAuthor)"'
+        curl -qfsL 'http://api.forismatic.com/api/1.0/?method=getQuote&format=text&lang=en'
         ;;
     CMD_help)
         echo '%!MARKDOWN'
@@ -128,6 +130,7 @@ case "CMD_$1" in
         ;;
     *)
         cmd="$(echo $1 | sed 's/[-_.]/\\&/g')" # we have to care about [-_.] only because other must-escaped-chars are disallowed by bot
-        echo '%!MARKDOWN'"I didn't recognize your command '*$cmd*' Try to say '*help*' to me"
+        echo '%!MARKDOWN'
+        echo "I didn't recognize your command '*$cmd*' Try to say '*help*' to me"
         ;;
 esac
