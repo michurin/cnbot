@@ -78,6 +78,12 @@ func MessageType(data []byte) (
 		return
 	}
 	text = string(data)
+	if strings.TrimSpace(text) == "." {
+		ignoreIt = true
+		text = ""
+		return
+	}
+	labels, text := extractLabels(text)
 	if len(text) > 4096 {
 		// TODO ugly check
 		// - according documentation this limit applies after entities parsing
@@ -88,12 +94,6 @@ func MessageType(data []byte) (
 		err = errors.New("message too long")
 		return
 	}
-	if strings.TrimSpace(text) == "." {
-		ignoreIt = true
-		text = ""
-		return
-	}
-	labels, text := extractLabels(text)
 	if strings.TrimSpace(text) == "" {
 		// TODO be careful with markdown, empty message can be represented by nonempty markdown string
 		isMarkdown = true
