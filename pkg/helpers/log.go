@@ -69,7 +69,7 @@ func fmtMessage(sep string, messages ...interface{}) (label, msg string) {
 		case time.Duration:
 			msg = m.String()
 		case []string:
-			msg = "[" + strings.Join(m, ", ") + "]"
+			msg = strings.Join(m, " ")
 		case nil:
 			msg = "<nil>"
 		case error:
