@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -104,7 +105,7 @@ func ReadConfig(configFile string) (map[string]BotConfig, string, error) {
 			return nil, "", fmt.Errorf("working dir %s is not a dirrectory", pwd)
 		}
 		botCfg[nick] = BotConfig{
-			Token:             b.Token, // TODO check not empty? some format?
+			Token:             substituteEnvironment(b.Token),
 			AllowedUsers:      au,
 			Script:            script,
 			WorkingDir:        pwd,
@@ -117,6 +118,15 @@ func ReadConfig(configFile string) (map[string]BotConfig, string, error) {
 		}
 	}
 	return botCfg, cfg.Alive.BindingAddress, nil
+}
+
+func substituteEnvironment(t string) string {
+	if strings.HasPrefix(t, "${") && strings.HasSuffix(t, "}") {
+		if v, ok := os.LookupEnv(t[2 : len(t)-1]); ok {
+			return v
+		}
+	}
+	return t
 }
 
 func defaultDuration(dur *float64, def time.Duration) time.Duration {
