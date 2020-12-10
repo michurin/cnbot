@@ -18,7 +18,7 @@ var /* const */ Build = "noBuildInfo" // go build -ldflags "-X github.com/michur
 
 func allowedUsersToString(a map[int64]struct{}) string {
 	if len(a) == 0 {
-		return "empty (nobody can use this bot)"
+		return " empty (nobody can use this bot)"
 	}
 	v := make([]int64, len(a))
 	i := 0
