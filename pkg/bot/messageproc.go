@@ -57,7 +57,7 @@ func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message)
 		hps.Log(ctx, fmt.Errorf("bot `%s` is not known", m.BotName))
 		return
 	}
-	if _, ok := bot.AllowedUsers[target]; !ok {
+	if !bot.Access.IsAllowed(target) {
 		hps.Log(ctx, fmt.Errorf("user %d is not allowed", target))
 		return
 	}
