@@ -19,6 +19,7 @@ func TestExtractLabels(t *testing.T) {
 		{"wrong_label", "%!ONE\nbody", nil, "%!ONE\nbody"},
 		{"pre_no_newline", "%!PRE", [][2]string{{"pre", ""}}, ""},
 		{"pre", "%!PRE\nbody", [][2]string{{"pre", ""}}, "body"},
+		{"wrong_no_newline", "%!PREbody", nil, "%!PREbody"},
 		{"pre_markdown", "%!PRE\n%!MARKDOWN\nbody", [][2]string{{"pre", ""}, {"markdown", ""}}, "body"},
 		{"pre_markdown_spaces", "%!PRE\n\n%!MARKDOWN\n\nbody", [][2]string{{"pre", ""}, {"markdown", ""}}, "body"},
 		{"pre_callback", "%!PRE\n%!CALLBACK A B C\nbody", [][2]string{{"pre", ""}, {"callback", "A B C"}}, "body"},

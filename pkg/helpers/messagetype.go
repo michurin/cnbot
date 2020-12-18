@@ -15,9 +15,9 @@ var /* const */ labels = []struct {
 	len   int
 	re    *regexp.Regexp
 }{
-	{"markdown", 10, regexp.MustCompile(`^%!MARKDOWN[^\r\n]*([\r\n]+|$)`)},
-	{"pre", 5, regexp.MustCompile(`^%!PRE[^\r\n]*([\r\n]+|$)`)},
-	{"update", 8, regexp.MustCompile(`^%!UPDATE[^\r\n]*([\r\n]+|$)`)},
+	{"markdown", 10, regexp.MustCompile(`^%!MARKDOWN([\r\n]+|$)`)},
+	{"pre", 5, regexp.MustCompile(`^%!PRE([\r\n]+|$)`)},
+	{"update", 8, regexp.MustCompile(`^%!UPDATE([\r\n]+|$)`)},
 	{"callback", 10, regexp.MustCompile(`^%!CALLBACK[^\r\n]*([\r\n]+|$)`)},
 }
 
