@@ -1,0 +1,10 @@
+%!MARKDOWN
+*Hi there\! 👋*
+
+This bot is to show what you can do with [cnbot](https://github.com/michurin/cnbot)\.
+
+[Cnbot](https://github.com/michurin/cnbot) is an engine that allows you to create your custom Telegram bots by writing simple scripts on any language\. This bot is driven by [shell script](https://github.com/michurin/cnbot/examples/public/script.sh)\.
+
+It is free and opensource project\. You can find more examples and instruction on the [project page](https://github.com/michurin/cnbot)\.
+
+Say /help to view list of available commands\.
