@@ -16,32 +16,6 @@ const version = "1.1.0"
 
 var /* const */ Build = "noBuildInfo" // go build -ldflags "-X github.com/michurin/cnbot/pkg/bot.Build=`date +%F`-`git rev-parse --short HEAD`" ./cmd/...
 
-func allowedUsersToString(a map[int64]struct{}) string {
-	if len(a) == 0 {
-		return "empty (nobody can use this bot)"
-	}
-	v := make([]int64, len(a))
-	i := 0
-	for k := range a {
-		v[i] = k
-		i++
-	}
-	sort.Slice(v, func(i, j int) bool { return v[i] < v[j] })
-	w := make([]string, len(v))
-	sep := ""
-	if len(v) < 10 {
-		for i, u := range v {
-			w[i] = " " + hps.Itoa(u)
-		}
-		sep = ","
-	} else {
-		for i, u := range v {
-			w[i] = "\n      - " + hps.Itoa(u)
-		}
-	}
-	return strings.Join(w, sep)
-}
-
 func serverConfigurationToString(addr string, w, r time.Duration) string {
 	if addr == "" {
 		return " server is not configured"
@@ -107,7 +81,7 @@ func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) string {
   - bot info:%s
     - web hook: %s
   - configuration:
-    - allowed users:%s
+    - allowed users: %s
     - script:
       - script: %q
       - working dir: %q
@@ -121,7 +95,7 @@ func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) string {
 			nick,
 			botInfo(ctx, c.Token),
 			botWebHook(ctx, c.Token),
-			allowedUsersToString(c.AllowedUsers),
+			c.Access.String(),
 			c.Script,
 			c.WorkingDir,
 			c.ScriptTermTimeout,
