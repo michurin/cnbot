@@ -11,7 +11,9 @@ import (
 	hps "github.com/michurin/cnbot/pkg/helpers"
 )
 
-var /* const */ startedAt = time.Now().Format(time.RFC3339)
+var /* const */ startedAtTime = time.Now()
+var /* const */ startedAt = startedAtTime.Format(time.RFC3339)
+var /* const */ startedAtUnix = startedAtTime.Unix()
 var /* const */ pid = os.Getpid()
 var /* const */ goVer = runtime.Version()
 
@@ -42,11 +44,12 @@ func (h *AliveHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			"goos":    runtime.GOOS,
 			"goarch":  runtime.GOARCH,
 		},
-		"started_at":    startedAt,
-		"pid":           pid,
-		"num_goroutine": runtime.NumGoroutine(),
-		"num_cpu":       runtime.NumCPU(),
-		"mem_status":    memMap(m),
+		"started_at":      startedAt,
+		"started_at_unix": startedAtUnix,
+		"pid":             pid,
+		"num_goroutine":   runtime.NumGoroutine(),
+		"num_cpu":         runtime.NumCPU(),
+		"mem_status":      memMap(m),
 	})
 	if err != nil {
 		hps.Log(r.Context(), err)
