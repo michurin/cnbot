@@ -171,7 +171,7 @@ case "CMD_$1" in
         mark='%!MARKDOWN'$'\n' # it may surprise you, how we get newline in sh
         # the first way to send async message: multipart/form-data
         curl -qfsX POST -o /dev/null -F to=$BOT_FROM -F msg="${mark}_I'll send you_ *random* _image\.\.\._" $BOT_SERVER
-        curl -qfsL https://source.unsplash.com/random/600x400 | curl -qfsX POST -o /dev/null -F to=$BOT_FROM -F msg=@- $BOT_SERVER
+        curl -qfskL https://source.unsplash.com/random/600x400 | curl -qfsX POST -o /dev/null -F to=$BOT_FROM -F msg=@- $BOT_SERVER
         # the second way to send async message: raw data + user_id at the end of url
         echo "${mark}_Are you happy now?_" | curl -qfsX POST -o /dev/null --data-binary @- "http://$BOT_SERVER/$BOT_FROM"
         echo '.' # suppress output processing

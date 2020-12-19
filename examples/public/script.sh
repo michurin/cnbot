@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-ALIVE_HANDLER='http://:9999'
+ALIVE_HANDLER='http://127.0.0.1:9999'
 
 dirname="$(dirname $0)"
 textdir="$dirname/texts"
@@ -54,7 +54,7 @@ case "CMD_$1" in
         done
         ;;
     CMD_image) # 🤪 Show random image
-        curl -qfsL https://source.unsplash.com/random/600x400
+        curl -qfskL https://source.unsplash.com/random/600x400
         ;;
     CMD_buttons) # 🌶️ Buttons
         echo '%!CALLBACK date'

@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash
 
 # This script is for processing "tasks" those are scheduled by script.sh
 #
@@ -6,7 +6,7 @@
 # For example, by crontab line:
 # * * * * * cron.sh
 
-BOTS_ASYNC_INTERFACE='http://:9092'
+BOTS_ASYNC_INTERFACE='http://127.0.0.1:9092'
 
 bound="$(( $(date +%s) - 100 ))"
 
