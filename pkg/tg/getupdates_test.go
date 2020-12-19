@@ -289,16 +289,16 @@ func TestDecodeGetUpdates(t *testing.T) {
 		assert.Len(t, mm, 3)
 	})
 	for _, cs := range []struct {
-		name, body, text, stype, sname string
-		sid, mid                       int64
+		name, body, text, stype, sname, cbid string
+		sid, mid                             int64
 	}{
-		{"ordinary_message", ordinaryMessage, "Text", "", "", 0, 0},
-		{"callback_message", callbackMessage, "Text", "", "", 0, 40},
-		{"forward_from_user", forwardFromUser, "Text", "user", "user", 500, 0},
-		{"forward_from_bot", forwardFromBot, "Text", "bot", "net", 500, 0},
-		{"forward_from_channel", forwardFromChannel, "Text", "channel", "Title", -500, 0},
-		{"contact_message", contactMessage, "", "contact", "Contact", 200, 0},
-		{"contact_message_without_user_id", contactMessageWithoutUserID, "", "", "", 0, 0},
+		{"ordinary_message", ordinaryMessage, "Text", "", "", "", 0, 0},
+		{"callback_message", callbackMessage, "Text", "", "", "123456789012345678", 0, 40},
+		{"forward_from_user", forwardFromUser, "Text", "user", "user", "", 500, 0},
+		{"forward_from_bot", forwardFromBot, "Text", "bot", "net", "", 500, 0},
+		{"forward_from_channel", forwardFromChannel, "Text", "channel", "Title", "", -500, 0},
+		{"contact_message", contactMessage, "", "contact", "Contact", "", 200, 0},
+		{"contact_message_without_user_id", contactMessageWithoutUserID, "", "", "", "", 0, 0},
 	} {
 		cs := cs
 		t.Run(cs.name, func(t *testing.T) {
@@ -307,6 +307,7 @@ func TestDecodeGetUpdates(t *testing.T) {
 			assert.Equal(t, int64(51), u)
 			assert.Len(t, mm, 1)
 			assert.Equal(t, tg.Message{
+				CallbackID:      cs.cbid,
 				UpdateMessageID: cs.mid,
 				BotName:         "one",
 				Text:            cs.text,

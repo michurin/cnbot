@@ -39,6 +39,7 @@ type Message struct {
 	FromID          int64
 	FromFirstName   string
 	ChatID          int64
+	CallbackID      string
 	UpdateMessageID int64
 	SideType        string
 	SideID          int64
@@ -76,6 +77,7 @@ type message struct {
 }
 
 type callbackQuery struct {
+	ID      string  `json:"id"`
 	From    user    `json:"from"`
 	Message message `json:"message"` // TODO it is optional
 	Data    string  `json:"data"`
@@ -123,6 +125,7 @@ func DecodeGetUpdates(body []byte, offset int64, botName string) ([]Message, int
 			m[i].FromID = cb.From.ID
 			m[i].FromFirstName = cb.From.FirstName
 			m[i].ChatID = cb.Message.Chat.ID
+			m[i].CallbackID = cb.ID
 			m[i].UpdateMessageID = cb.Message.MessageID
 			m[i].Text = cb.Data
 		}

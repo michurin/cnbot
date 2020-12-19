@@ -34,7 +34,26 @@ func buildRequest(destUser, callbackMessageID int64, stdout []byte) (req *tg.Req
 	return
 }
 
-func SmartSend(ctx context.Context, token string, destUser, callbackMessageID int64, stdout []byte) error {
+func SmartSend(ctx context.Context, token, callbackID string, destUser, callbackMessageID int64, stdout []byte) error {
+	if callbackID != "" {
+		// Slightly hackish. We have to make answerCallbackQuery call
+		// TODO: It is the simples kind of answer. Text can be added.
+		req, err := tg.EncodeAnswerCallbackQuery(callbackID)
+		if err != nil {
+			hps.Log(ctx, err)
+			return err
+		}
+		body, err := hps.Do(ctx, tg.Encode(token, req))
+		if err != nil {
+			hps.Log(ctx, err)
+			return err
+		}
+		err = tg.DecodeSendMessage(body)
+		if err != nil {
+			hps.Log(ctx, err)
+			return err
+		}
+	}
 	req, err := buildRequest(destUser, callbackMessageID, stdout)
 	if err != nil {
 		hps.Log(ctx, err)
