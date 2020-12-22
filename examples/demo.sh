@@ -52,10 +52,11 @@ fi
 # I use magic CMD marker to be able to build help-message automatically
 
 case "CMD_$1" in
-    CMD_sup)
+    CMD_start)
         # Simple text messages are sent as is
         #
         echo 'Hi there! 👋'
+        echo 'Say /help to get help 👈😎👈'
         ;;
     CMD_date)
         # You can run any command and get output in your Telegram client
