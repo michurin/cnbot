@@ -22,7 +22,7 @@ is to give you an idea of how it works. This bot is driven
 by `cnbot` and [this script](examples/public/script.sh).
 
 You can find more details out of comments in
-[demo script](examples/demo.sh) and [demo config](examples/config.json).
+[demo script](examples/demo.sh) and [demo config](examples/config.yaml).
 Read on "Quick start" section to learn how to run your own bot.
 
 ### Key features
