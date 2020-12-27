@@ -146,15 +146,17 @@ timeouts, paths and few other options.
 
 ### Project documentation
 
-- How to start demo.sh-based bot and write your own scripts for bots
+#### How to start demo.sh-based bot and write your own scripts for bots
 
 - All configuration options with comments: [configuration file example](examples/config.yaml)
 - How to format messages and create inline keyboards: [example of script](examples/demo.sh)
 
+#### Useful topics
+
 - [Troubleshooting](doc/troubleshooting.md)
 - [System administration topics](doc/system-administration.md): build for production, monitoring, startup scripts
 
-- Please feel free to email me at `a.michurin@gmail.com`
+Please feel free to email me at `a.michurin@gmail.com`
 
 ### References
 
