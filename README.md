@@ -32,8 +32,10 @@ Read on "Quick start" section to learn how to run your own bot.
   - Using simply command line arguments, environment variables and `stdout`
   - You can just throw to `stdout` text or image, `cnbot` will distinguish what it is
   - `cnbot` keeps the queue of incoming messages and runs scripts strictly one after another. So you don't need to care about concurrent execution, locks and race conditions in your scripts
-- Possibility to drive multiply bots by one process
-- Supports JPEG, PNG and GIF formats
+- Supports images
+  - JPEG
+  - PNG
+  - GIF
 - Supports
   - plain text messages
   - of preformatted text
@@ -43,6 +45,7 @@ Read on "Quick start" section to learn how to run your own bot.
   Message could be emitted by the bot, not in reply only.
   You are free to send messages from `cron` scripts or
   other similar places
+- Possibility to drive multiply bots by one process
 - It's based on long polling. It means you don't have to have
   dedicated server, domain, SSL certificate, public IP or DMZ...
   You can run/develop/debug your bot straight from your laptop even behind NATs and firewalls
@@ -141,12 +144,21 @@ timeouts, paths and few other options.
 
 ## Further reading
 
+### Project documentation
+
+- How to start demo.sh-based bot and write your own scripts for bots
+
 - All configuration options with comments: [configuration file example](examples/config.yaml)
 - How to format messages and create inline keyboards: [example of script](examples/demo.sh)
+
 - [Troubleshooting](doc/troubleshooting.md)
 - [System administration topics](doc/system-administration.md): build for production, monitoring, startup scripts
-- [Telegram Bot API](https://core.telegram.org/bots/api)
+
 - Please feel free to email me at `a.michurin@gmail.com`
+
+### References
+
+- [Telegram Bot API](https://core.telegram.org/bots/api)
 - Demo bot's icon made by [Smashicons](https://smashicons.com/) from [Flaticon](https://www.flaticon.com/)
 
 ## TODO
