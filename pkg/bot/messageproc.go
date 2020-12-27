@@ -57,7 +57,7 @@ func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message)
 		hps.Log(ctx, fmt.Errorf("bot `%s` is not known", m.BotName))
 		return
 	}
-	if _, ok := bot.AllowedUsers[target]; !ok {
+	if !bot.Access.IsAllowed(target) {
 		hps.Log(ctx, fmt.Errorf("user %d is not allowed", target))
 		return
 	}
@@ -75,7 +75,7 @@ func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message)
 		return
 	}
 	hps.Log(ctx, "script output:", stdout)
-	err = SmartSend(ctx, bot.Token, target, stdout)
+	err = SmartSend(ctx, bot.Token, m.CallbackID, target, m.UpdateMessageID, stdout)
 	if err != nil {
 		hps.Log(ctx, err)
 		return

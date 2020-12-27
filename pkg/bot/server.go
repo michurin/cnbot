@@ -19,9 +19,9 @@ import (
 const gracefulShutdownInterval = time.Second
 
 type Handler struct {
-	BotName      string
-	Token        string
-	AllowedUsers map[int64]struct{}
+	BotName   string
+	Token     string
+	AccessCtl hps.AccessCtl
 }
 
 func pathDecode(path string) (int64, error) {
@@ -134,13 +134,13 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		hps.Log(ctx, r.URL.String(), err)
 		return
 	}
-	if _, ok := h.AllowedUsers[destUser]; !ok {
+	if !h.AccessCtl.IsAllowed(destUser) {
 		w.WriteHeader(http.StatusForbidden)
 		hps.Log(ctx, destUser, errors.New("user is not allowed"))
 		return
 	}
 	ctx = hps.Label(ctx, destUser)
-	err = SmartSend(ctx, h.Token, destUser, body)
+	err = SmartSend(ctx, h.Token, "", destUser, 0, body) // TODO what to do with it?? We can not edit message asyc?
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		hps.Log(ctx, body, err)

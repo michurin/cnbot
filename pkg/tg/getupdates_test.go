@@ -7,8 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const ordinaryMessage = `
-{
+const ordinaryMessage = `{
   "ok": true,
   "result": [
     {
@@ -32,6 +31,56 @@ const ordinaryMessage = `
         },
         "date": 1600000000,
         "text": "Text"
+      }
+    }
+  ]
+}`
+
+const callbackMessage = `{
+  "ok": true,
+  "result": [
+    {
+      "update_id": 50,
+      "callback_query": {
+        "id": "123456789012345678",
+        "from": {
+          "id": 100,
+          "is_bot": false,
+          "first_name": "Alexey",
+          "last_name": "Michurin",
+          "username": "AlexeyMichurin",
+          "language_code": "en"
+        },
+        "message": {
+          "message_id": 40,
+          "from": {
+            "id": 103,
+            "is_bot": true,
+            "first_name": "Test1",
+            "username": "test_bot"
+          },
+          "chat": {
+            "id": 101,
+            "first_name": "Alexey2",
+            "last_name": "Michurin2",
+            "username": "AlexeyMichurin2",
+            "type": "private"
+          },
+          "date": 1600000000,
+          "text": "message",
+          "reply_markup": {
+            "inline_keyboard": [
+              [
+                {
+                  "text": "text",
+                  "callback_data": "env"
+                }
+              ]
+            ]
+          }
+        },
+        "chat_instance": "123456789012345679",
+        "data": "Text"
       }
     }
   ]
@@ -146,8 +195,7 @@ const forwardFromChannel = `{
   ]
 }`
 
-const contactMessage = `
-{
+const contactMessage = `{
   "ok": true,
   "result": [
     {
@@ -181,8 +229,7 @@ const contactMessage = `
   ]
 }`
 
-const contactMessageWithoutUserID = `
-{
+const contactMessageWithoutUserID = `{
   "ok": true,
   "result": [
     {
@@ -242,15 +289,16 @@ func TestDecodeGetUpdates(t *testing.T) {
 		assert.Len(t, mm, 3)
 	})
 	for _, cs := range []struct {
-		name, body, text, stype, sname string
-		sid                            int64
+		name, body, text, stype, sname, cbid string
+		sid, mid                             int64
 	}{
-		{"ordinary_message", ordinaryMessage, "Text", "", "", 0},
-		{"forward_from_user", forwardFromUser, "Text", "user", "user", 500},
-		{"forward_from_bot", forwardFromBot, "Text", "bot", "net", 500},
-		{"forward_from_channel", forwardFromChannel, "Text", "channel", "Title", -500},
-		{"contact_message", contactMessage, "", "contact", "Contact", 200},
-		{"contact_message_without_user_id", contactMessageWithoutUserID, "", "", "", 0},
+		{"ordinary_message", ordinaryMessage, "Text", "", "", "", 0, 0},
+		{"callback_message", callbackMessage, "Text", "", "", "123456789012345678", 0, 40},
+		{"forward_from_user", forwardFromUser, "Text", "user", "user", "", 500, 0},
+		{"forward_from_bot", forwardFromBot, "Text", "bot", "net", "", 500, 0},
+		{"forward_from_channel", forwardFromChannel, "Text", "channel", "Title", "", -500, 0},
+		{"contact_message", contactMessage, "", "contact", "Contact", "", 200, 0},
+		{"contact_message_without_user_id", contactMessageWithoutUserID, "", "", "", "", 0, 0},
 	} {
 		cs := cs
 		t.Run(cs.name, func(t *testing.T) {
@@ -259,14 +307,16 @@ func TestDecodeGetUpdates(t *testing.T) {
 			assert.Equal(t, int64(51), u)
 			assert.Len(t, mm, 1)
 			assert.Equal(t, tg.Message{
-				BotName:       "one",
-				Text:          cs.text,
-				FromID:        100,
-				FromFirstName: "Alexey",
-				ChatID:        101,
-				SideType:      cs.stype,
-				SideID:        cs.sid,
-				SideName:      cs.sname,
+				CallbackID:      cs.cbid,
+				UpdateMessageID: cs.mid,
+				BotName:         "one",
+				Text:            cs.text,
+				FromID:          100,
+				FromFirstName:   "Alexey",
+				ChatID:          101,
+				SideType:        cs.stype,
+				SideID:          cs.sid,
+				SideName:        cs.sname,
 			}, mm[0])
 		})
 	}
@@ -285,7 +335,7 @@ func TestEncodeGetUpdates(t *testing.T) {
 		assert.Equal(t, &tg.Request{
 			Method:      "getUpdates",
 			ContentType: "application/json",
-			Body:        []byte(`{"timeout":10,"allowed_updates":["message"]}`),
+			Body:        []byte(`{"timeout":10,"allowed_updates":["message","callback_query"]}`),
 		}, req)
 	})
 	t.Run("none_zero_offset", func(t *testing.T) {
@@ -294,7 +344,7 @@ func TestEncodeGetUpdates(t *testing.T) {
 		assert.Equal(t, &tg.Request{
 			Method:      "getUpdates",
 			ContentType: "application/json",
-			Body:        []byte(`{"offset":100,"timeout":10,"allowed_updates":["message"]}`),
+			Body:        []byte(`{"offset":100,"timeout":10,"allowed_updates":["message","callback_query"]}`),
 		}, req)
 	})
 }

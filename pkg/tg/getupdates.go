@@ -17,7 +17,7 @@ func EncodeGetUpdates(offset int64, timeout int) (*Request, error) {
 	}
 	r := getUpdateRequest{
 		Timeout:        timeout,
-		AllowedUpdates: []string{"message"},
+		AllowedUpdates: []string{"message", "callback_query"},
 	}
 	if offset != 0 {
 		r.Offset = &offset
@@ -34,14 +34,16 @@ func EncodeGetUpdates(offset int64, timeout int) (*Request, error) {
 }
 
 type Message struct {
-	BotName       string
-	Text          string
-	FromID        int64
-	FromFirstName string
-	ChatID        int64
-	SideType      string
-	SideID        int64
-	SideName      string
+	BotName         string
+	Text            string
+	FromID          int64
+	FromFirstName   string
+	ChatID          int64
+	CallbackID      string
+	UpdateMessageID int64
+	SideType        string
+	SideID          int64
+	SideName        string
 }
 
 type user struct {
@@ -65,6 +67,7 @@ type contact struct {
 }
 
 type message struct {
+	MessageID       int64    `json:"message_id"`
 	Text            string   `json:"text"`
 	From            user     `json:"from"`
 	Chat            chat     `json:"chat"`
@@ -73,11 +76,19 @@ type message struct {
 	Contact         *contact `json:"contact"`
 }
 
+type callbackQuery struct {
+	ID      string  `json:"id"`
+	From    user    `json:"from"`
+	Message message `json:"message"` // TODO it is optional
+	Data    string  `json:"data"`
+}
+
 type getUpdateResponse struct {
 	Ok     bool `json:"ok"`
 	Result []struct {
-		UpdateID int64   `json:"update_id"`
-		Message  message `json:"message"`
+		UpdateID      int64          `json:"update_id"`
+		Message       *message       `json:"message"`
+		CallbackQuery *callbackQuery `json:"callback_query"`
 	} `json:"result"`
 }
 
@@ -98,16 +109,26 @@ func DecodeGetUpdates(body []byte, offset int64, botName string) ([]Message, int
 	m := make([]Message, len(data.Result))
 	u := data.Result[0].UpdateID
 	for i, e := range data.Result {
-		msg := e.Message
 		m[i].BotName = botName
-		m[i].Text = msg.Text
-		m[i].FromID = msg.From.ID
-		m[i].FromFirstName = msg.From.FirstName
-		m[i].ChatID = msg.Chat.ID
-		sideType, sideUserID, sideUserName := extractSideUser(msg)
-		m[i].SideID = sideUserID
-		m[i].SideName = sideUserName
-		m[i].SideType = sideType
+		if e.Message != nil {
+			msg := e.Message
+			m[i].FromID = msg.From.ID
+			m[i].FromFirstName = msg.From.FirstName
+			m[i].ChatID = msg.Chat.ID
+			m[i].Text = msg.Text
+			sideType, sideUserID, sideUserName := extractSideUser(msg)
+			m[i].SideID = sideUserID
+			m[i].SideName = sideUserName
+			m[i].SideType = sideType
+		} else if e.CallbackQuery != nil {
+			cb := e.CallbackQuery
+			m[i].FromID = cb.From.ID
+			m[i].FromFirstName = cb.From.FirstName
+			m[i].ChatID = cb.Message.Chat.ID
+			m[i].CallbackID = cb.ID
+			m[i].UpdateMessageID = cb.Message.MessageID
+			m[i].Text = cb.Data
+		}
 		if e.UpdateID > u {
 			u = e.UpdateID
 		}
@@ -115,7 +136,7 @@ func DecodeGetUpdates(body []byte, offset int64, botName string) ([]Message, int
 	return m, u + 1, nil
 }
 
-func extractSideUser(msg message) (tp string, id int64, name string) {
+func extractSideUser(msg *message) (tp string, id int64, name string) {
 	if msg.ForwardFromChat != nil {
 		tp = msg.ForwardFromChat.Type
 		id = msg.ForwardFromChat.ID
