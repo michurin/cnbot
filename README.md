@@ -36,10 +36,10 @@ Read on "Quick start" section to learn how to run your own bot.
   - JPEG
   - PNG
   - GIF
-- Supports
+- Supports text formatting
   - plain text messages
-  - of preformatted text
-  - markdown v2 formatted messages
+  - preformatted text
+  - raw markdown v2 formatted messages (you have to care about valid escaping)
   - inline keyboards, including mutable menus
 - Supports asynchronous notification.
   Message could be emitted by the bot, not in reply only.
