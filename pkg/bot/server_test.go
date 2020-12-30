@@ -15,39 +15,43 @@ func TestDecoder(t *testing.T) {
 
 	t.Run("invalid_method", func(t *testing.T) {
 		r := newReq(t, http.MethodGet, "", "", "")
-		u, b, err := decodeRequest(r)
+		u, b, c, err := decodeRequest(r)
 		assert.Error(t, err)
 		assert.Empty(t, b)
 		assert.Empty(t, u)
+		assert.Empty(t, c)
 	})
 
 	for _, url := range []string{"", "http://1.1.1.1/", "http://1.1.1.1/x"} {
 		url := url
 		t.Run("raw_mode_invalid_url_"+url, func(t *testing.T) {
 			r := newReq(t, http.MethodPost, "", url, "")
-			u, b, err := decodeRequest(r)
+			u, b, c, err := decodeRequest(r)
 			assert.Error(t, err)
 			assert.Empty(t, b)
 			assert.Empty(t, u)
+			assert.Empty(t, c)
 		})
 	}
 
 	t.Run("raw_ok", func(t *testing.T) {
 		r := newReq(t, http.MethodPost, "", "http://1.1.1.1/12", "text")
-		u, b, err := decodeRequest(r)
+		u, b, c, err := decodeRequest(r)
 		assert.Nil(t, err)
 		assert.Equal(t, []byte("text"), b)
 		assert.Equal(t, int64(12), u)
+		assert.Empty(t, c)
 	})
 
 	cntType := "multipart/form-data; boundary=bbb"
 
 	t.Run("multipart_can_not_parse", func(t *testing.T) {
 		r := newReq(t, http.MethodPost, cntType, "http://1.1.1.1/", "")
-		u, b, err := decodeRequest(r)
+		u, b, c, err := decodeRequest(r)
 		assert.Error(t, err)
 		assert.Empty(t, b)
 		assert.Empty(t, u)
+		assert.Empty(t, c)
 	})
 
 	body := "--bbb\nContent-Disposition: form-data; name=\"to\"\n\n12\n" +
@@ -58,39 +62,66 @@ func TestDecoder(t *testing.T) {
 		url := url
 		t.Run("multipart_can_not_parse_"+url, func(t *testing.T) {
 			r := newReq(t, http.MethodPost, cntType, url, body)
-			u, b, err := decodeRequest(r)
+			u, b, c, err := decodeRequest(r)
 			assert.Nil(t, err)
 			assert.Equal(t, []byte("text"), b)
 			assert.Equal(t, int64(12), u)
+			assert.Empty(t, c)
 		})
 	}
+
+	body = "--bbb\nContent-Disposition: form-data; name=\"to\"\n\n12\n" +
+		"--bbb\nContent-Disposition: form-data; name=\"msg\"\n\ntext\n" +
+		"--bbb\nContent-Disposition: form-data; name=\"cap\"\n\ncaption\n" +
+		"--bbb--\n"
+
+	t.Run("multipart_with_caption", func(t *testing.T) {
+		r := newReq(t, http.MethodPost, cntType, "http://1.1.1.1/", body)
+		u, b, c, err := decodeRequest(r)
+		assert.Nil(t, err)
+		assert.Equal(t, []byte("text"), b)
+		assert.Equal(t, int64(12), u)
+		assert.Equal(t, "caption", c)
+	})
 
 	body = "--bbb\nContent-Disposition: form-data; name=\"msg\"\n\ntext\n--bbb--\n"
 
 	t.Run("multipart_without_to", func(t *testing.T) {
 		r := newReq(t, http.MethodPost, cntType, "http://1.1.1.1/12", body)
-		u, b, err := decodeRequest(r)
+		u, b, c, err := decodeRequest(r)
 		assert.Nil(t, err)
 		assert.Equal(t, []byte("text"), b)
 		assert.Equal(t, int64(12), u)
+		assert.Empty(t, c)
 	})
 
 	t.Run("multipart_without_to_without_fallback", func(t *testing.T) {
 		r := newReq(t, http.MethodPost, cntType, "http://1.1.1.1/", body)
-		u, b, err := decodeRequest(r)
+		u, b, c, err := decodeRequest(r)
 		assert.Error(t, err)
 		assert.Empty(t, b)
 		assert.Empty(t, u)
+		assert.Empty(t, c)
 	})
 
 	body = "--bbb\nContent-Disposition: form-data; name=\"to\"\n\n12\n--bbb--\n"
 
 	t.Run("multipart_without_msg", func(t *testing.T) {
 		r := newReq(t, http.MethodPost, cntType, "http://1.1.1.1/", body)
-		u, b, err := decodeRequest(r)
+		u, b, c, err := decodeRequest(r)
 		assert.Error(t, err)
 		assert.Empty(t, b)
 		assert.Empty(t, u)
+		assert.Empty(t, c)
+	})
+
+	t.Run("multipart_without_msg", func(t *testing.T) {
+		r := newReq(t, http.MethodPost, cntType, "http://1.1.1.1/", body)
+		u, b, c, err := decodeRequest(r)
+		assert.Error(t, err)
+		assert.Empty(t, b)
+		assert.Empty(t, u)
+		assert.Empty(t, c)
 	})
 }
 

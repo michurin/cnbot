@@ -2,7 +2,7 @@ linters-settings:
   lll:
     line-length: 160
   funlen:
-    lines: 100
+    lines: 120
     statements: 60
   nakedret:
     max-func-lines: 100

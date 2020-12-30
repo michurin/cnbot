@@ -170,7 +170,7 @@ Please feel free to email me at `a.michurin@gmail.com`
 - Add alive server information to environment
 - Improve report (`-i` option)
 - Improve project code layout
-- Captions of images (using HTTP interface?)
+- Enrich captions of images: markdown, inline keyboard etc
 - Modes of arguments preparation (for user's process)
 - Ability to send any Telegram API requests (using HTTP interface?)
 - Disable web hook if any `getWebhookInfo`+`deleteWebhook` (?)

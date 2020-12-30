@@ -7,10 +7,20 @@ import (
 	"github.com/michurin/cnbot/pkg/tg"
 )
 
-func buildRequest(destUser, callbackMessageID int64, callbackID string, stdout []byte) (req, cbReq *tg.Request, err error) {
+func buildRequest(
+	destUser,
+	callbackMessageID int64,
+	callbackID,
+	caption string,
+	stdout []byte,
+) (
+	req,
+	cbReq *tg.Request,
+	err error,
+) {
 	imgExt := hps.ImageType(stdout)
 	if imgExt != "" {
-		req, err = tg.EncodeSendPhoto(destUser, imgExt, stdout)
+		req, err = tg.EncodeSendPhoto(destUser, imgExt, stdout, caption)
 		if err != nil {
 			return
 		}
@@ -42,8 +52,16 @@ func buildRequest(destUser, callbackMessageID int64, callbackID string, stdout [
 	return
 }
 
-func SmartSend(ctx context.Context, token, callbackID string, destUser, callbackMessageID int64, stdout []byte) error {
-	req, cbReq, err := buildRequest(destUser, callbackMessageID, callbackID, stdout)
+func SmartSend(
+	ctx context.Context,
+	token,
+	callbackID string,
+	destUser,
+	callbackMessageID int64,
+	stdout []byte,
+	caption string,
+) error {
+	req, cbReq, err := buildRequest(destUser, callbackMessageID, callbackID, caption, stdout)
 	if err != nil {
 		hps.Log(ctx, err)
 		return err

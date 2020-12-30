@@ -238,6 +238,12 @@ case "CMD_$1" in
         echo '• forwarded messages'
         echo 'to figure out user/chat/channel ID'
         ;;
+    CMD_cap)
+        # The only way to send image with caption is to use multipart/form-data encoding and "cap" parameter
+        curl -qfs https://golang.org/lib/godoc/images/footer-gopher.jpg |
+        curl -qfsX POST -o /dev/null -F to=$BOT_FROM -F msg=@- -F cap="$(date)" $BOT_SERVER
+        echo '.'
+        ;;
     *)
         # And one more
         cmd="$(echo $1 | sed 's/[-_.]/\\&/g')" # we have to care about [-_.] only because other must-escaped-chars are disallowed by bot
