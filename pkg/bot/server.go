@@ -55,35 +55,38 @@ func readPart(r *multipart.Reader) (string, []byte, bool, error) {
 	return part.FormName(), data, false, nil
 }
 
-func parseMultipart(r *multipart.Reader) (int64, []byte, error) {
+func parseMultipart(r *multipart.Reader) (int64, []byte, string, error) {
 	var destUser int64
 	var body []byte
+	var caption string
 	for {
 		name, data, done, err := readPart(r)
 		if err != nil {
-			return 0, nil, err
+			return 0, nil, "", err
 		}
 		if done {
 			break
 		}
 		switch name {
 		case "":
-			return 0, nil, errors.New("empty param name")
+			return 0, nil, "", errors.New("empty param name")
 		case "to":
 			destUser, err = hps.Atoi(string(data))
 			if err != nil {
-				return 0, nil, err
+				return 0, nil, "", err
 			}
 		case "msg":
 			body = data
+		case "cap":
+			caption = string(data)
 		default:
-			return 0, nil, errors.New("unknown param name: " + name)
+			return 0, nil, "", errors.New("unknown param name: " + name)
 		}
 	}
 	if body == nil {
-		return 0, nil, errors.New("no msg param")
+		return 0, nil, "", errors.New("no msg param")
 	}
-	return destUser, body, nil
+	return destUser, body, caption, nil
 }
 
 func multipartBoundary(m string) string {
@@ -97,38 +100,39 @@ func multipartBoundary(m string) string {
 	return ""
 }
 
-func decodeRequest(r *http.Request) (int64, []byte, error) {
+func decodeRequest(r *http.Request) (int64, []byte, string, error) {
 	if r.Method != http.MethodPost {
-		return 0, nil, errors.New("method not allowed")
+		return 0, nil, "", errors.New("method not allowed")
 	}
 	var destUser int64
 	var body []byte
 	var err error
+	var caption string
 	boundary := multipartBoundary(r.Header.Get("Content-Type"))
 	if boundary == "" {
 		body, err = ioutil.ReadAll(r.Body)
 		if err != nil {
-			return 0, nil, err
+			return 0, nil, "", err
 		}
 	} else {
-		destUser, body, err = parseMultipart(multipart.NewReader(r.Body, boundary))
+		destUser, body, caption, err = parseMultipart(multipart.NewReader(r.Body, boundary))
 		if err != nil {
-			return 0, nil, err
+			return 0, nil, "", err
 		}
 	}
 	if destUser == 0 {
 		destUser, err = pathDecode(r.URL.Path)
 		if err != nil {
-			return 0, nil, err
+			return 0, nil, "", err
 		}
 	}
-	return destUser, body, nil
+	return destUser, body, caption, nil
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := hps.Label(r.Context(), hps.RandLabel(), h.BotName)
 	hps.Log(ctx, r.Method, r.URL.String())
-	destUser, body, err := decodeRequest(r)
+	destUser, body, caption, err := decodeRequest(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		hps.Log(ctx, r.URL.String(), err)
@@ -140,7 +144,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx = hps.Label(ctx, destUser)
-	err = SmartSend(ctx, h.Token, "", destUser, 0, body) // TODO what to do with it?? We can not edit message asyc?
+	err = SmartSend(ctx, h.Token, "", destUser, 0, body, caption) // TODO what to do with it?? We can not edit message asyc?
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		hps.Log(ctx, body, err)
