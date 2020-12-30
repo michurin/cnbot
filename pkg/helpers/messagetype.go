@@ -19,6 +19,7 @@ var /* const */ labels = []struct {
 	{"pre", 5, regexp.MustCompile(`^%!PRE([\r\n]+|$)`)},
 	{"update", 8, regexp.MustCompile(`^%!UPDATE([\r\n]+|$)`)},
 	{"callback", 10, regexp.MustCompile(`^%!CALLBACK[^\r\n]*([\r\n]+|$)`)},
+	{"callback_text", 6, regexp.MustCompile(`^%!TEXT[^\r\n]+([\r\n]+|$)`)},
 }
 
 func extractLabels(a string) ([][2]string, string) {
@@ -70,6 +71,7 @@ func MessageType(data []byte) (
 	isMarkdown bool,
 	forUpdate bool,
 	markup [][][2]string,
+	callbackText string,
 	err error,
 ) {
 	if !utf8.Valid(data) {
@@ -117,6 +119,8 @@ func MessageType(data []byte) (
 			} else {
 				m = append(m, callbackPair(l[1]))
 			}
+		case "callback_text":
+			callbackText = l[1]
 		default:
 			panic("Unknown label " + l[0])
 		}

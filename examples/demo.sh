@@ -205,13 +205,17 @@ case "CMD_$1" in
         echo 'Try buttons'
         ;;
     CMD_update)
-        # %!UPDATE control can be used in conjunction with %!CALLBACK and in synchronous messages only
-        # it means that the message have to replace the inline-keyboard-message. It allows you to create
-        # mutable menus.
+        # %!UPDATE control can be used in conjunction with %!CALLBACK
+        # and in synchronous messages only
+        # it means that the message have to replace the inline-keyboard-message.
+        # It allows you to create mutable menus.
+        #
+        # %!TEXT control is to send small notification in reply to callback.
         #
         # Here we send the same inline keyboard, but new message text every time.
         #
         echo '%!UPDATE'
+        echo '%!TEXT Demo notification'
         echo '%!CALLBACK env do env'
         echo '%!CALLBACK date do date'
         echo '%!CALLBACK'
