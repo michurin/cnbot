@@ -40,7 +40,7 @@ func TestMessageType(t *testing.T) {
 	} {
 		c := c
 		t.Run(c.name, func(t *testing.T) {
-			ig, txt, md, up, mu, cbt, err := helpers.MessageType([]byte(c.b))
+			ig, txt, md, up, mu, cbt, isa, err := helpers.MessageType([]byte(c.b))
 			assert.Nil(t, err)
 			assert.False(t, up) // TODO
 			assert.Equal(t, c.mu, mu)
@@ -48,6 +48,7 @@ func TestMessageType(t *testing.T) {
 			assert.Equal(t, c.txt, txt)
 			assert.Equal(t, c.md, md)
 			assert.Empty(t, cbt) // TODO
+			assert.Empty(t, isa) // TODO
 		})
 	}
 	for _, c := range []struct {
@@ -59,7 +60,7 @@ func TestMessageType(t *testing.T) {
 	} {
 		c := c
 		t.Run(c.name, func(t *testing.T) {
-			ig, txt, md, up, mu, cbt, err := helpers.MessageType(c.b)
+			ig, txt, md, up, mu, cbt, isa, err := helpers.MessageType(c.b)
 			assert.NotNil(t, err)
 			assert.Nil(t, mu)
 			assert.False(t, up)
@@ -67,6 +68,7 @@ func TestMessageType(t *testing.T) {
 			assert.Equal(t, "", txt)
 			assert.Equal(t, false, md)
 			assert.Empty(t, cbt)
+			assert.Empty(t, isa)
 		})
 	}
 }

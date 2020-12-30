@@ -24,14 +24,14 @@ func buildRequest(
 		if err != nil {
 			return
 		}
-		cbReq, err = tg.EncodeAnswerCallbackQuery(callbackID, "")
+		cbReq, err = tg.EncodeAnswerCallbackQuery(callbackID, "", false)
 		return
 	}
-	ignore, msg, isMarkdown, forUpdate, markup, callbackText, err := hps.MessageType(stdout)
+	ignore, msg, isMarkdown, forUpdate, markup, callbackText, callbackIsAlert, err := hps.MessageType(stdout)
 	if err != nil {
 		return
 	}
-	cbReq, err = tg.EncodeAnswerCallbackQuery(callbackID, callbackText)
+	cbReq, err = tg.EncodeAnswerCallbackQuery(callbackID, callbackText, callbackIsAlert)
 	if err != nil {
 		return
 	}

@@ -20,6 +20,7 @@ var /* const */ labels = []struct {
 	{"update", 8, regexp.MustCompile(`^%!UPDATE([\r\n]+|$)`)},
 	{"callback", 10, regexp.MustCompile(`^%!CALLBACK[^\r\n]*([\r\n]+|$)`)},
 	{"callback_text", 6, regexp.MustCompile(`^%!TEXT[^\r\n]+([\r\n]+|$)`)},
+	{"callback_alert", 7, regexp.MustCompile(`^%!ALERT[^\r\n]+([\r\n]+|$)`)},
 }
 
 func extractLabels(a string) ([][2]string, string) {
@@ -60,7 +61,7 @@ func callbackPair(s string) [2]string {
 
 // It is slightly ugly mix of processor, validator... not just pure type detector (as ImageType is)
 //
-// Recognize %!PRE, %!MARKDOWN, %!CALLBACK, %!UPDATE
+// Recognize %!PRE, %!MARKDOWN, %!CALLBACK, %!UPDATE, %!TEXT, %!ALERT
 //
 // The structure of message is to be:
 // - "%!XXX"-labels in any order
@@ -72,6 +73,7 @@ func MessageType(data []byte) (
 	forUpdate bool,
 	markup [][][2]string,
 	callbackText string,
+	callbackIsAlert bool,
 	err error,
 ) {
 	if !utf8.Valid(data) {
@@ -121,6 +123,10 @@ func MessageType(data []byte) (
 			}
 		case "callback_text":
 			callbackText = l[1]
+			callbackIsAlert = false
+		case "callback_alert":
+			callbackText = l[1]
+			callbackIsAlert = true
 		default:
 			panic("Unknown label " + l[0])
 		}

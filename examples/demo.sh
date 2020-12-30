@@ -216,6 +216,7 @@ case "CMD_$1" in
         #
         echo '%!UPDATE'
         echo '%!TEXT Demo notification'
+        echo '%!ALERT Demo notification' # <--- TODO ---
         echo '%!CALLBACK env do env'
         echo '%!CALLBACK date do date'
         echo '%!CALLBACK'
