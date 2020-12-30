@@ -75,7 +75,7 @@ func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message)
 		return
 	}
 	hps.Log(ctx, "script output:", stdout)
-	err = SmartSend(ctx, bot.Token, m.CallbackID, target, m.UpdateMessageID, stdout)
+	err = SmartSend(ctx, bot.Token, m.CallbackID, target, m.UpdateMessageID, stdout, "")
 	if err != nil {
 		hps.Log(ctx, err)
 		return

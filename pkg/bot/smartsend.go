@@ -7,10 +7,10 @@ import (
 	"github.com/michurin/cnbot/pkg/tg"
 )
 
-func buildRequest(destUser, callbackMessageID int64, stdout []byte) (req *tg.Request, err error) {
+func buildRequest(destUser, callbackMessageID int64, stdout []byte, caption string) (req *tg.Request, err error) {
 	imgExt := hps.ImageType(stdout)
 	if imgExt != "" {
-		req, err = tg.EncodeSendPhoto(destUser, imgExt, stdout)
+		req, err = tg.EncodeSendPhoto(destUser, imgExt, stdout, caption)
 		return
 	}
 	ignore, msg, isMarkdown, forUpdate, markup, err := hps.MessageType(stdout)
@@ -34,7 +34,15 @@ func buildRequest(destUser, callbackMessageID int64, stdout []byte) (req *tg.Req
 	return
 }
 
-func SmartSend(ctx context.Context, token, callbackID string, destUser, callbackMessageID int64, stdout []byte) error {
+func SmartSend(
+	ctx context.Context,
+	token,
+	callbackID string,
+	destUser,
+	callbackMessageID int64,
+	stdout []byte,
+	caption string,
+) error {
 	if callbackID != "" {
 		// Slightly hackish. We have to make answerCallbackQuery call
 		// TODO: It is the simples kind of answer. Text can be added.
@@ -54,7 +62,7 @@ func SmartSend(ctx context.Context, token, callbackID string, destUser, callback
 			return err
 		}
 	}
-	req, err := buildRequest(destUser, callbackMessageID, stdout)
+	req, err := buildRequest(destUser, callbackMessageID, stdout, caption)
 	if err != nil {
 		hps.Log(ctx, err)
 		return err
