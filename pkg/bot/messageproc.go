@@ -16,6 +16,13 @@ func argsSafe(s string) []string {
 	return safeChars.FindAllString(strings.ToLower(s), -1)
 }
 
+func msgType(isCallback bool) string {
+	if isCallback {
+		return "callback"
+	}
+	return "message"
+}
+
 func envList(m tg.Message, target int64, server string) []string {
 	e := []string{
 		"BOT_NAME",
@@ -28,6 +35,8 @@ func envList(m tg.Message, target int64, server string) []string {
 		hps.Itoa(m.ChatID),
 		"BOT_TEXT",
 		m.Text,
+		"BOT_MESSAGE_TYPE",
+		msgType(m.CallbackID != ""),
 	}
 	if server != "" {
 		e = append(e,
