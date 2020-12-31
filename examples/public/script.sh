@@ -10,13 +10,17 @@ jq -c \
     --arg date "$(date +%s)" \
     --arg chat "$BOT_CHAT" \
     --arg from "$BOT_FROM" \
-    --arg from_firstname "$BOT_FROM_FIRSTNAME" \
+    --arg first_name "$BOT_FROM_FIRST_NAME" \
     --arg text "$BOT_TEXT" \
     --arg side_type "$BOT_SIDE_TYPE" \
     --arg side_name "$BOT_SIDE_NAME" \
     --arg side_id "$BOT_SIDE_ID" \
+    --arg last_name "$BOT_FROM_LAST_NAME" \
+    --arg username "$BOT_FROM_USERNAME" \
+    --arg is_bot "$BOT_FROM_IS_BOT" \
+    --arg language "$BOT_FROM_LANGUAGE" \
     --arg args "$*" \
-    '. | .date=$date | .chat=$chat | .from=$from | .from_firstname=$from_firstname | .text=$text | .side_type=$side_type | .side_name=$side_name | .side_id=$side_id | .args=$args' <<<'{}' >>"$logfile"
+    '. | .date=$date | .chat=$chat | .from=$from | .first_name=$first_name | .text=$text | .side_type=$side_type | .side_name=$side_name | .side_id=$side_id | .last_name=$last_name | .username=$username | .is_bot=$is_bot | .language=$language | .args=$args' <<<'{}' >>"$logfile"
 
 if test -n "$BOT_SIDE_TYPE"
 then
