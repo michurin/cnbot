@@ -210,13 +210,11 @@ case "CMD_$1" in
         # it means that the message have to replace the inline-keyboard-message.
         # It allows you to create mutable menus.
         #
-        # %!TEXT control is to send small notification in reply to callback.
+        # %!TEXT and %!ALERT controls are to send small notification in reply to callback.
         #
         # Here we send the same inline keyboard, but new message text every time.
         #
         echo '%!UPDATE'
-        echo '%!TEXT Demo notification'
-        echo '%!ALERT Demo notification' # <--- TODO ---
         echo '%!CALLBACK env do env'
         echo '%!CALLBACK date do date'
         echo '%!CALLBACK'
@@ -224,6 +222,17 @@ case "CMD_$1" in
         echo '%!CALLBACK'
         echo '%!CALLBACK async get random image'
         echo '%!CALLBACK update update it!'
+        echo '%!CALLBACK'
+        echo '%!CALLBACK update/n with notification'
+        echo '%!CALLBACK update/a with alert'
+        case $2 in
+            n)
+                echo '%!TEXT Demo notification'
+                ;;
+            a)
+                echo '%!ALERT Demo alert'
+                ;;
+        esac
         # by the way, you can use JSON APIs with jq assistance
         # curl -qfsL 'http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en' | jq -r '"\(.quoteText) -- \(.quoteAuthor)"'
         curl -qfsL 'http://api.forismatic.com/api/1.0/?method=getQuote&format=text&lang=en'
