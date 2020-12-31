@@ -171,7 +171,7 @@ const forwardFromChannel = `{
           "first_name": "Alexey",
           "last_name": "Michurin",
           "username": "AlexeyMichurin",
-          "language_code": "ru"
+          "language_code": "en"
         },
         "chat": {
           "id": 101,
@@ -317,6 +317,10 @@ func TestDecodeGetUpdates(t *testing.T) {
 				SideType:        cs.stype,
 				SideID:          cs.sid,
 				SideName:        cs.sname,
+				FromLastName:    "Michurin",
+				FromUsername:    "AlexeyMichurin",
+				FromIsBot:       false,
+				FromLanguage:    "en",
 			}, mm[0])
 		})
 	}
