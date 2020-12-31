@@ -44,12 +44,19 @@ type Message struct {
 	SideType        string
 	SideID          int64
 	SideName        string
+	FromLastName    string
+	FromUsername    string
+	FromIsBot       bool
+	FromLanguage    string
 }
 
 type user struct {
-	ID        int64  `json:"id"`
-	FirstName string `json:"first_name"`
-	IsBot     bool   `json:"is_bot"`
+	ID           int64  `json:"id"`
+	FirstName    string `json:"first_name"`
+	IsBot        bool   `json:"is_bot"`
+	LastName     string `json:"last_name"`     // optional
+	Username     string `json:"username"`      // optional
+	LanguageCode string `json:"language_code"` // optional
 }
 
 type chat struct {
@@ -77,10 +84,10 @@ type message struct {
 }
 
 type callbackQuery struct {
-	ID      string  `json:"id"`
-	From    user    `json:"from"`
-	Message message `json:"message"` // TODO it is optional
-	Data    string  `json:"data"`
+	ID      string   `json:"id"`
+	From    user     `json:"from"`
+	Message *message `json:"message"`
+	Data    string   `json:"data"`
 }
 
 type getUpdateResponse struct {
@@ -110,11 +117,12 @@ func DecodeGetUpdates(body []byte, offset int64, botName string) ([]Message, int
 	u := data.Result[0].UpdateID
 	for i, e := range data.Result {
 		m[i].BotName = botName
+		var from user
+		var chatID int64
 		if e.Message != nil {
 			msg := e.Message
-			m[i].FromID = msg.From.ID
-			m[i].FromFirstName = msg.From.FirstName
-			m[i].ChatID = msg.Chat.ID
+			from = msg.From
+			chatID = msg.Chat.ID
 			m[i].Text = msg.Text
 			sideType, sideUserID, sideUserName := extractSideUser(msg)
 			m[i].SideID = sideUserID
@@ -122,13 +130,24 @@ func DecodeGetUpdates(body []byte, offset int64, botName string) ([]Message, int
 			m[i].SideType = sideType
 		} else if e.CallbackQuery != nil {
 			cb := e.CallbackQuery
-			m[i].FromID = cb.From.ID
-			m[i].FromFirstName = cb.From.FirstName
-			m[i].ChatID = cb.Message.Chat.ID
+			from = cb.From
 			m[i].CallbackID = cb.ID
-			m[i].UpdateMessageID = cb.Message.MessageID
 			m[i].Text = cb.Data
+			if cb.Message != nil {
+				msg := cb.Message
+				m[i].UpdateMessageID = msg.MessageID
+				chatID = msg.Chat.ID
+			} else {
+				chatID = from.ID // fallback if no message
+			}
 		}
+		m[i].FromID = from.ID
+		m[i].FromFirstName = from.FirstName
+		m[i].ChatID = chatID
+		m[i].FromLastName = from.LastName
+		m[i].FromUsername = from.Username
+		m[i].FromIsBot = from.IsBot
+		m[i].FromLanguage = from.LanguageCode
 		if e.UpdateID > u {
 			u = e.UpdateID
 		}
