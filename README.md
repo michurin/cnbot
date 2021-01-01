@@ -166,7 +166,6 @@ Please feel free to email me at `a.michurin@gmail.com`
 ## TODO
 
 - Enrich `answerCallbackQuery` API call. Add corresponding types of control line
-- Provide more user details through environment: last name, username, language.
 - Add alive server information to environment
 - Improve report (`-i` option)
 - Improve project code layout
