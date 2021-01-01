@@ -6,7 +6,7 @@ dirname="$(dirname $0)"
 textdir="$dirname/texts"
 datadir="$dirname/data"
 logfile="$dirname/var/$(date +%y-%m-%d).log"
-jq -c \
+jq -n -c \
     --arg date "$(date +%s)" \
     --arg chat "$BOT_CHAT" \
     --arg from "$BOT_FROM" \
@@ -20,7 +20,21 @@ jq -c \
     --arg is_bot "$BOT_FROM_IS_BOT" \
     --arg language "$BOT_FROM_LANGUAGE" \
     --arg args "$*" \
-    '. | .date=$date | .chat=$chat | .from=$from | .first_name=$first_name | .text=$text | .side_type=$side_type | .side_name=$side_name | .side_id=$side_id | .last_name=$last_name | .username=$username | .is_bot=$is_bot | .language=$language | .args=$args' <<<'{}' >>"$logfile"
+    '{
+    "date": $date,
+    "chat": $chat,
+    "from": $from,
+    "first_name": $first_name,
+    "text": $text,
+    "side_type": $side_type,
+    "side_name": $side_name,
+    "side_id": $side_id,
+    "last_name": $last_name,
+    "username": $username,
+    "is_bot": $is_bot,
+    "language": $language,
+    "args": $args
+    }' >>"$logfile"
 
 if test -n "$BOT_SIDE_TYPE"
 then
