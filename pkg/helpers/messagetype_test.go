@@ -36,7 +36,7 @@ func TestMessageType(t *testing.T) {
 		{"text_cb_two", "%!CALLBACK A B\n%!CALLBACK P Q\ntext", false, "text", false, [][][2]string{{{"A", "B"}, {"P", "Q"}}}},
 		{"text_cb_two_lines", "%!CALLBACK A B\n%!CALLBACK \n%!CALLBACK P Q\ntext", false, "text", false, [][][2]string{{{"A", "B"}}, {{"P", "Q"}}}},
 		{"text_cb_one_word", "%!CALLBACK x\ntext", false, "text", false, [][][2]string{{{"x", "x"}}}},
-		{"text_cb_no_message", "%!CALLBACK x txt", false, "_empty_", true, nil},
+		{"text_cb_no_message", "%!CALLBACK x txt", false, "_empty_", true, [][][2]string{{{"x", "txt"}}}},
 	} {
 		c := c
 		t.Run(c.name, func(t *testing.T) {
