@@ -14,8 +14,8 @@ func TestExtractLabels(t *testing.T) {
 		lbs  [][2]string
 		body string
 	}{
-		{"simples", "body", nil, "body"},
-		{"simples_spaces", "\n body \n", nil, "\n body \n"},
+		{"simplest", "body", nil, "body"},
+		{"simplest_spaces", "\n body \n", nil, "\n body \n"},
 		{"wrong_label", "%!ONE\nbody", nil, "%!ONE\nbody"},
 		{"pre_no_newline", "%!PRE", [][2]string{{"pre", ""}}, ""},
 		{"pre", "%!PRE\nbody", [][2]string{{"pre", ""}}, "body"},
