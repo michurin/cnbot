@@ -3,14 +3,20 @@
 # This script is to show all features of cnbot.
 #
 # Generally, cnbot creates messages out of two sources:
-# - it receives messages from Telegram users, runs script according configuration file and treats script's output as response
-# - it listens HTTP requests (if configured), treats bodies of requests in the same way and sends the result to Telegram users
+# - it receives messages from Telegram users,
+#   runs script according configuration file and
+#   treats script's output as response
+# - it listens HTTP requests (if configured),
+#   treats bodies of requests in the same way and
+#   sends the result to Telegram users
 #
-# So, this script is run for every user request and it's output is used to reply to user.
+# So, this script is run for every user request and
+# its output is used to reply to user.
 
 # PART I: Set up environment #########################################
 #
-# cnbot doesn't pass environment to script to avoid side effects and prevent possible vulnerabilities. So, you are to
+# cnbot doesn't pass environment to script to avoid side effects and
+# prevent possible vulnerabilities. So, you are to
 # set up explicitly variables like PATH, LANG, and so on.
 
 PATH=/usr/local/bin:/bin:/usr/bin
@@ -19,7 +25,7 @@ PATH=/usr/local/bin:/bin:/usr/bin
 #
 # You are free to skip it.
 
-for c in awk cal curl date df echo env grep sed sort tail test uname uptime
+for c in dirname awk cal curl date df echo env grep sed sort tail test uname uptime
 do
     if ! command -v $c >/dev/null
     then
@@ -31,13 +37,19 @@ done
 #
 # If you don't need this functionality, you are free to skip it.
 #
-# If the bot receives forwarded message or user's contact, it sets
+# If the bot receives forwarded message or users contact, it sets
 # up three additional variables:
 # - BOT_SIDE_TYPE -- type of message: string "user", "contact", "bot" and so on
 # - BOT_SIDE_NAME -- name
 # - BOT_SIDE_ID -- id, it is useful to set up black/white list in configuration file.
-#     if you wish to add some user to black/white list, you can forward his message to bot and
-#     figure out the user id. Of cause, you can figure out user id directly from bot's logs.
+#
+# If you wish to add some user to black/white list, you can forward
+# his message to the bot and figure out the user id.
+# Of cause, you can figure out user id directly from bots logs.
+#
+# By the way, you can check if BOT_MESSAGE_TYPE=callback and process
+# callbacks separately. In this script we are processing callbacks
+# and regular messages in the same place.
 
 if test -n "$BOT_SIDE_TYPE"
 then
@@ -48,38 +60,35 @@ then
 fi
 
 # PART IV: Commands #################################################
-#
-# I use magic CMD marker to be able to build help-message automatically
 
-case "CMD_$1" in
-    CMD_start)
+# I use magic COMMAND prefix just to facilitate code reading/searching
+
+case "COMMAND_$1" in
+    COMMAND_start)
         # Simple text messages are sent as is
-        #
         echo 'Hi there! 👋'
         echo 'Say /help to get help 👈😎👈'
         ;;
-    CMD_date)
+    COMMAND_date)
         # You can run any command and get output in your Telegram client
         date
         ;;
-    CMD_uname)
+    COMMAND_uname)
         # One more example of command
         uname -a
         ;;
-    CMD_uptime)
+    COMMAND_uptime)
         # And one more
         uptime
         ;;
-    CMD_noout)
+    COMMAND_noout)
         # Empty output turns to italic string "empty"
-        #
         ;;
-    CMD_nothing)
+    COMMAND_nothing)
         # Single dot is marker of silence. The bot will reply nothing.
-        #
         echo '.'
         ;;
-    CMD_args)
+    COMMAND_args)
         # Try to say to bot
         # - args
         # - args Hello world!
@@ -99,31 +108,38 @@ case "CMD_$1" in
         echo 'args 1 2 3'
         echo 'args Hello world!'
         ;;
-    CMD_env)
-        # You can preformat your message, using '%!PRE' control line at the beginning of response.
+    COMMAND_env)
+        # You can preformat your message, using '%!PRE' control line
+        # at the beginning of response.
         #
         # Try this command and check out all available environment variables:
         # BOT_CHAT -- integer chat id
         # BOT_FROM -- integer sender id
-        # BOT_FROM_FIRSTNAME -- sender name
+        # BOT_FROM_FIRST_NAME -- sender name
         # BOT_NAME -- bot name, according configuration file
         # BOT_SERVER -- server for asynchronous communication (if set up)
         # BOT_TEXT -- original message
+        # BOT_MESSAGE_TYPE -- Message source: "callback" or "message"
+        #
+        # Telegram API doesn't guarantee to provide the following information
+        # BOT_FROM_LANGUAGE -- language in form like "en" (IETF language tag)
+        # BOT_FROM_LAST_NAME -- last name
+        # BOT_FROM_USERNAME -- username
         #
         echo '%!PRE'
         env | sort
         ;;
-    CMD_cal)
+    COMMAND_cal)
         # One more %!PRE example
         echo '%!PRE'
-        cal -h
+        cal
         ;;
-    CMD_calc)
+    COMMAND_calc)
         # The example of how to get access to raw message (BOT_TEXT).
-        #
-        # ⚠️  WARNING  Be careful, it is very easy to make vulnerability.
-        #             Do not use this code in production.
-        #
+        # .----------------------------------------------------------------.
+        # | ⚠️  WARNING  Be careful, it is very easy to make vulnerability. |
+        # |             Do not use this code in production.                |
+        # `----------------------------------------------------------------'
         if test "$#" = '1'
         then
             echo '%!MARKDOWN'
@@ -136,123 +152,132 @@ case "CMD_$1" in
             prog="BEGIN {print($(echo "$BOT_TEXT" | sed 's/^[^c]*calc//'))}"
             echo '%!PRE'
             #echo "$prog" # uncomment for debugging
+            set +e
             awk "$prog" 2>&1
+            set -e
         fi
         ;;
-    CMD_gologo)
+    COMMAND_gologo)
         # To reply by image you have just put image to stdout as is.
-        #
         curl -qfs https://golang.org/lib/godoc/images/footer-gopher.jpg
         # curl -qfs https://www.telegram.org/img/t_logo.png # try this if footer-gopher.jpg disappear
         ;;
-    CMD_du)
+    COMMAND_du)
         # You can generate image using APIs, or utilities like RRDtools.
-        #
         d="$(df -P -m / | tail -1 | awk '{gsub("[^0-9]", "", $5); print $5","(100-$5)}')"
         # This old fashioned API is deprecated in 2012, however, it is still working
         # https://developers.google.com/chart/image/docs/making_charts
         u="https://chart.googleapis.com/chart?cht=p&chd=t:$d&chs=300x200&chl=Available|Used&chtt=Disk%20usage"
         curl -qfs "$u"
         ;;
-    CMD_async)
+    COMMAND_async)
         # You are free to speak asynchronously using HTTP interface.
         #
         # Here we send three messages in reply to one incoming message.
+        # Obviously, it is possible to schedule some jobs and send such
+        # messages later.
         #
         # Here you can see
         # - %!MARKDOWN control line
-        # - two ways to send asynchronous messages: (1) raw body and (2) multipart/form-data encoding
+        # - two ways to send asynchronous messages:
+        #   (1) raw body and
+        #   (2) multipart/form-data encoding
         #
         # %!MARKDOWN is similar to %!PRE, however
-        # - It allows you to use all markdown abbilities
-        # - It doesn't escapes control chars for you. So you must to put '\' before every control character by your self.
+        # - It allows you to use all Telegrams markdown abilities
+        # - It doesn't escapes control chars for you.
+        #   So you must to put '\' before every control character by your self.
         #
-        # You can also see we specify target user explicitly. So you can send message to other user, chat or even bot, not only in reply to sender.
+        # You can also see how we specify target user explicitly.
+        # So you can send message to other user, chat or even bot,
+        # not only in reply to sender. For example, you can echo
+        # the conversation to the third party observer.
         #
         mark='%!MARKDOWN'$'\n' # it may surprise you, how we get newline in sh
         # the first way to send async message: multipart/form-data
         curl -qfsX POST -o /dev/null -F to=$BOT_FROM -F msg="${mark}_I'll send you_ *random* _image\.\.\._" $BOT_SERVER
-        curl -qfskL https://source.unsplash.com/random/600x400 | curl -qfsX POST -o /dev/null -F to=$BOT_FROM -F msg=@- $BOT_SERVER
-        # the second way to send async message: raw data + user_id at the end of url
-        echo "${mark}_Are you happy now?_" | curl -qfsX POST -o /dev/null --data-binary @- "http://$BOT_SERVER/$BOT_FROM"
+        curl -qfskL https://source.unsplash.com/random/600x400 |
+        curl -qfsX POST -o /dev/null -F to=$BOT_FROM -F msg=@- $BOT_SERVER
+        # the second way to send async message: raw data + user_id at the end of URL
+        echo "${mark}_Are you happy now?_" |
+        curl -qfsX POST -o /dev/null --data-binary @- "http://$BOT_SERVER/$BOT_FROM"
         echo '.' # suppress output processing
         ;;
-    CMD_btn)
+    COMMAND_cap)
+        # The only way to send image with caption
+        # is to use multipart/form-data encoding and "cap" parameter
+        curl -qfs https://golang.org/lib/godoc/images/footer-gopher.jpg |
+        curl -qfsX POST -o /dev/null -F to=$BOT_FROM -F msg=@- -F cap="$(date)" $BOT_SERVER
+        echo '.'
+        ;;
+    COMMAND_btn)
         # %!CALLBACK is a control line to create inline keyboards
         #
         # There are three ways to use it
         # - %!CALLBACK cmd_name run command
-        #   Creates a key with label "run command". That button will start the script with command "cmd_name".
+        #   Creates a key with label "run command".
+        #   That button will start the script with command "cmd_name".
         # - %!CALLBACK one_word
         #   Is literally equal to
         #   %!CALLBACK one_word one_word
         #   label and command are equal
         # - %!CALLBACK
-        #   Without arguments the command line starts new line of keys in inline keyboard layout.
+        #   Without arguments the command line starts new line of keys
+        #   in inline keyboard layout.
         #
         # The following control lines describe three-line keyboard
-        # [   ][   ]
-        # [        ]
-        # [   ][   ]
+        # [__env___][__date__]
+        # [_execute_uname_-a_]
         #
-        echo '%!CALLBACK env do env'
-        echo '%!CALLBACK date do date'
+        echo '%!CALLBACK env'
+        echo '%!CALLBACK date'
         echo '%!CALLBACK'
-        echo '%!CALLBACK uname do uname'
-        echo '%!CALLBACK'
-        echo '%!CALLBACK async get random image'
-        echo '%!CALLBACK update update it!'
-        echo 'Try buttons'
+        echo '%!CALLBACK uname execute uname -a'
+        echo 'Simple inline keyboard'
         ;;
-    CMD_update)
+    COMMAND_update)
         # %!UPDATE control can be used in conjunction with %!CALLBACK
         # and in synchronous messages only
         # it means that the message have to replace the inline-keyboard-message.
         # It allows you to create mutable menus.
         #
-        # %!TEXT and %!ALERT controls are to send small notification in reply to callback.
-        #
         # Here we send the same inline keyboard, but new message text every time.
         #
         echo '%!UPDATE'
-        echo '%!CALLBACK env do env'
-        echo '%!CALLBACK date do date'
-        echo '%!CALLBACK'
-        echo '%!CALLBACK uname do uname'
-        echo '%!CALLBACK'
-        echo '%!CALLBACK async get random image'
-        echo '%!CALLBACK update update it!'
-        echo '%!CALLBACK'
-        echo '%!CALLBACK update/n with notification'
-        echo '%!CALLBACK update/a with alert'
-        case $2 in
-            n)
-                echo '%!TEXT Demo notification'
-                ;;
-            a)
-                echo '%!ALERT Demo alert'
-                ;;
-        esac
-        # by the way, you can use JSON APIs with jq assistance
-        # curl -qfsL 'http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en' | jq -r '"\(.quoteText) -- \(.quoteAuthor)"'
-        curl -qfsL 'http://api.forismatic.com/api/1.0/?method=getQuote&format=text&lang=en'
+        echo '%!CALLBACK update What time is it now?'
+        echo '%!CALLBACK update-helper Show env'
+        date
         ;;
-    CMD_help)
+    COMMAND_update-helper)
+        # We can use %!UPDATE in a reply that invoked by %!CALLBACK
+        echo '%!UPDATE'
+        echo '%!CALLBACK update What time is it now?'
+        echo '%!CALLBACK update-helper Show env'
+        echo '%!PRE'
+        env | sort
+        ;;
+    COMMAND_notify)
+        # It is possible to add additional notification to response to
+        # callback message. There are two types of notifications:
+        # text and alert. See notify-text and notify-alert bellow.
+        echo '%!CALLBACK notify-text text'
+        echo '%!CALLBACK notify-alert alert'
+        echo '%!MARKDOWN'
+        echo '*Notifications*'
+        echo 'Show date as'
+        ;;
+    COMMAND_notify-text)
+        echo "%!TEXT Text notification: $(date)"
+        echo '.' # we just suppress message, howerev,
+        ;;       # you can use %!UPDATE, nonempty messages etc.
+    COMMAND_notify-alert)
+        echo "%!ALERT Alert: $(date)"
+        echo '.'
+        ;;
+    COMMAND_help)
         # One more %!MARKDOWN example
         echo '%!MARKDOWN'
-        echo '*Available commands:*'
-        grep CMD_ "$0" | grep -v case | sed 's-.*CMD_-• \\/-;s-.$--'
-        echo ''
-        echo '*And besides, the bot accespts*'
-        echo '• contacts and'
-        echo '• forwarded messages'
-        echo 'to figure out user/chat/channel ID'
-        ;;
-    CMD_cap)
-        # The only way to send image with caption is to use multipart/form-data encoding and "cap" parameter
-        curl -qfs https://golang.org/lib/godoc/images/footer-gopher.jpg |
-        curl -qfsX POST -o /dev/null -F to=$BOT_FROM -F msg=@- -F cap="$(date)" $BOT_SERVER
-        echo '.'
+        cat "$(dirname "$0")/demo-help-message.md"
         ;;
     *)
         # And one more
