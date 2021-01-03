@@ -17,12 +17,16 @@ bots:
     # | I use environment variables here just to make your first run easier. |
     # +----------------------------------------------------------------------+
     token: "${T}"
+
     # Script to serve requests
     # Relative paths evaluate with respect of configuration file directory
     script: "demo.sh"
+    #script: "public/script.sh" # you can try this script too
+
     # White list of users
     # It is possible to specify black list as "disallowed_users" list
-    # However, white list is a high priority. So you must remove "allowed_users" list to enable black list
+    # However, white list is a high priority.
+    # So you must remove "allowed_users" list to enable black list
     #     ._________.
     # +---| WARNING |--------------------------------------------------------+
     # | Be very careful with black lists. You have to keep in mind that you  |
@@ -36,27 +40,34 @@ bots:
     # in real life you will likely use just numbers:
     #   allowed_users: [1538126281]
     allowed_users: ["${U}"]
+
     # Script working directory
     # You may want to sent something like /tmp in respect of security
     # Relative paths evaluate with respect of configuration file directory
     # Default is the configuration file directory
     working_dir: "."
+
     # Maximum waiting time before sending SIGTERM to script
     # Default is 10
     term_timeout: 20
+
     # Gap in between SIGTERM and SIGKILL
     # Default is 1
     kill_timeout: 1
+
     # Time to wait process status after SIGKILL
     # Default is 1
     wait_timeout: 1
+
     # HTTP server to accept asynchronous message
     bind_address: "127.0.0.1:9091"
-    # HTTP server's read/write timeouts
+
+    # HTTP servers read/write timeouts
     # Default 10 for both
     read_timeout: 5
     write_timeout: 5
+
 # Optional alive-handler address
 # You can remove this section to disable alive-handler
 alive:
-  bind_address: "127.0.0.1:9999"
+  bind_address: "127.0.0.1:8900"
