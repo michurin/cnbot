@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ALIVE_HANDLER='http://127.0.0.1:9999'
+ALIVE_HANDLER='http://127.0.0.1:8900'
 
 dirname="$(dirname $0)"
 textdir="$dirname/texts"
@@ -12,6 +12,7 @@ jq -n -c \
     --arg from "$BOT_FROM" \
     --arg first_name "$BOT_FROM_FIRST_NAME" \
     --arg text "$BOT_TEXT" \
+    --arg message_type "$BOT_MESSAGE_TYPE" \
     --arg side_type "$BOT_SIDE_TYPE" \
     --arg side_name "$BOT_SIDE_NAME" \
     --arg side_id "$BOT_SIDE_ID" \
@@ -26,6 +27,7 @@ jq -n -c \
     "from": $from,
     "first_name": $first_name,
     "text": $text,
+    "message_type": $message_type,
     "side_type": $side_type,
     "side_name": $side_name,
     "side_id": $side_id,
@@ -46,43 +48,53 @@ then
     exit
 fi
 
-case "CMD_$1" in
-    CMD_date) # 💡 Execute command `date`
+case "${BOT_MESSAGE_TYPE}_$1" in
+    message_date)
         date
         ;;
-    CMD_uname) # 💡 `uname -a`
+    message_uname)
         uname -a
         ;;
-    CMD_uptime) # 💡 `uptime`
+    message_uptime)
         uptime
         ;;
-    CMD_cal) # 💡 `cal`
+    message_cal)
         echo '%!PRE'
         cal -h
         ;;
-    CMD_env) # 🤔 `env` \(show all environment variables available for script\) Try to say _"env Hello World\!"_
+    message_env)
         echo '%!PRE'
         env | sort
         ;;
-    CMD_args) # 🤔 Show scripts arguments\. Try to say _"args Hello World\!"_
+    message_args)
         echo 'Passed args:'
         for a in "$@"
         do
             echo "👉 $a"
         done
         ;;
-    CMD_image) # 🤪 Show random image
+    message_image)
         curl -qfskL https://source.unsplash.com/random/600x400
         ;;
-    CMD_buttons) # 🌶️ Buttons
-        echo '%!CALLBACK date'
-        echo '%!CALLBACK uname'
-        echo '%!CALLBACK help list of commands (help)'
+    message_buttons)
+        echo '%!CALLBACK buttons-helper-date date as notification'
+        echo '%!CALLBACK buttons-helper-uname uname as alert'
         echo '%!CALLBACK'
-        echo '%!CALLBACK uptime Well, what uptime is it now? 🕓'
+        echo '%!CALLBACK buttons-helper-uptime Well, what uptime is it now? 🕓'
         echo 'Play with buttons!'
         ;;
-    CMD_menu) # 🌶️ Mutable menu
+    callback_buttons-helper-date)
+        echo "%!TEXT $(date)"
+        echo '.'
+        ;;
+    callback_buttons-helper-uname)
+        echo "%!ALERT $(uname -a)"
+        echo '.'
+        ;;
+    callback_buttons-helper-uptime)
+        uptime
+        ;;
+    message_menu|callback_menu)
         # According the rules of parsing, all invalid characters are considered
         # as separators. It means that "menu=1" turns to arg1=menu, arg2=1.
         # It is a way to make multi-arg callback.
@@ -97,7 +109,7 @@ case "CMD_$1" in
         echo '%!MARKDOWN'
         cat "$textdir/page$pg.txt" | sed 's/[-.(),]/\\&/g'
         ;;
-    CMD_delayed) # 🌶️ Schedule delayed message \(background jobs with asynchronous response\)
+    message_delayed)
         # Here we save "task" for cron.sh in a "quirky" way.
         # Our abuse protection may be considered as naive, however, it
         # works properly! Do not forget that cnbot cares about concurrency.
@@ -120,29 +132,22 @@ case "CMD_$1" in
             echo 'In the meantime, we can just chat\.'
         fi
         ;;
-    CMD_help) # ℹ️ List of commands
+    message_help)
         echo '%!MARKDOWN'
-        echo '*Available commands*'
-        echo ''
-        grep CMD_ "$0" | grep -v case | grep '#' | sed 's-.*CMD_-• \\/-;s-..#- —-'
-        echo ''
-        echo '*And besides, the bot accespts*'
-        echo '• contacts and'
-        echo '• forwarded messages'
-        echo 'to figure out user/chat/channel ID'
+        cat "$textdir/help.md"
         ;;
-    CMD_info) # ℹ️ Build summary
+    message_info)
         echo 'Build information:'
         echo ''
         curl -s "$ALIVE_HANDLER" | jq -r '"Build: \(.version.build)\nBot ver: \(.version.version)\nGo ver: \(.version.go)\nStarted at: \(.started_at)"'
         ;;
-    CMD_start) # ℹ️ Show greeting
+    message_start)
+        echo '%!MARKDOWN'
         cat "$textdir/start.txt"
         ;;
     *)
         cmd="$(sed 's/[-_.]/\\&/g' <<< "$1")"
         echo '%!MARKDOWN'
-        echo "I didn't recognize your command '*$cmd*' Try to say '*help*' to me"
+        echo "I didn't recognize your __${BOT_MESSAGE_TYPE}__ '__${cmd}__' Try to say '*__help__*' to me"
         ;;
 esac
-
