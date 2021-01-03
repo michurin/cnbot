@@ -7,13 +7,31 @@ import (
 	"github.com/michurin/cnbot/pkg/tg"
 )
 
-func buildRequest(destUser, callbackMessageID int64, stdout []byte, caption string) (req *tg.Request, err error) {
+func buildRequest(
+	destUser,
+	callbackMessageID int64,
+	callbackID,
+	caption string,
+	stdout []byte,
+) (
+	req,
+	cbReq *tg.Request,
+	err error,
+) {
 	imgExt := hps.ImageType(stdout)
 	if imgExt != "" {
 		req, err = tg.EncodeSendPhoto(destUser, imgExt, stdout, caption)
+		if err != nil {
+			return
+		}
+		cbReq, err = tg.EncodeAnswerCallbackQuery(callbackID, "", false)
 		return
 	}
-	ignore, msg, isMarkdown, forUpdate, markup, err := hps.MessageType(stdout)
+	ignore, msg, isMarkdown, forUpdate, markup, callbackText, callbackIsAlert, err := hps.MessageType(stdout)
+	if err != nil {
+		return
+	}
+	cbReq, err = tg.EncodeAnswerCallbackQuery(callbackID, callbackText, callbackIsAlert)
 	if err != nil {
 		return
 	}
@@ -43,41 +61,34 @@ func SmartSend(
 	stdout []byte,
 	caption string,
 ) error {
-	if callbackID != "" {
-		// Slightly hackish. We have to make answerCallbackQuery call
-		// TODO: It is the simples kind of answer. Text can be added.
-		req, err := tg.EncodeAnswerCallbackQuery(callbackID)
-		if err != nil {
-			hps.Log(ctx, err)
-			return err
-		}
-		body, err := hps.Do(ctx, tg.Encode(token, req))
-		if err != nil {
-			hps.Log(ctx, err)
-			return err
-		}
-		err = tg.DecodeSendMessage(body)
-		if err != nil {
-			hps.Log(ctx, err)
-			return err
-		}
-	}
-	req, err := buildRequest(destUser, callbackMessageID, stdout, caption)
+	req, cbReq, err := buildRequest(destUser, callbackMessageID, callbackID, caption, stdout)
 	if err != nil {
 		hps.Log(ctx, err)
 		return err
 	}
+	err = sendRequest(ctx, token, cbReq)
+	if err != nil {
+		hps.Log(ctx, err)
+		return err
+	}
+	err = sendRequest(ctx, token, req)
+	if err != nil {
+		hps.Log(ctx, err)
+		return err
+	}
+	return nil
+}
+
+func sendRequest(ctx context.Context, token string, req *tg.Request) error {
 	if req == nil { // message to be ignored
 		return nil
 	}
 	body, err := hps.Do(ctx, tg.Encode(token, req))
 	if err != nil {
-		hps.Log(ctx, err)
 		return err
 	}
 	err = tg.DecodeSendMessage(body)
 	if err != nil {
-		hps.Log(ctx, err)
 		return err
 	}
 	return nil

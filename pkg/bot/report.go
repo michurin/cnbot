@@ -12,7 +12,7 @@ import (
 	"github.com/michurin/cnbot/pkg/tg"
 )
 
-const version = "2.3.0"
+const version = "2.4.0"
 
 var /* const */ Build = "noBuildInfo" // go build -ldflags "-X github.com/michurin/cnbot/pkg/bot.Build=`date +%F`-`git rev-parse --short HEAD`" ./cmd/...
 

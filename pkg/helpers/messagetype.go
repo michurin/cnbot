@@ -19,6 +19,8 @@ var /* const */ labels = []struct {
 	{"pre", 5, regexp.MustCompile(`^%!PRE([\r\n]+|$)`)},
 	{"update", 8, regexp.MustCompile(`^%!UPDATE([\r\n]+|$)`)},
 	{"callback", 10, regexp.MustCompile(`^%!CALLBACK[^\r\n]*([\r\n]+|$)`)},
+	{"callback_text", 6, regexp.MustCompile(`^%!TEXT[^\r\n]+([\r\n]+|$)`)},
+	{"callback_alert", 7, regexp.MustCompile(`^%!ALERT[^\r\n]+([\r\n]+|$)`)},
 }
 
 func extractLabels(a string) ([][2]string, string) {
@@ -59,7 +61,7 @@ func callbackPair(s string) [2]string {
 
 // It is slightly ugly mix of processor, validator... not just pure type detector (as ImageType is)
 //
-// Recognize %!PRE, %!MARKDOWN, %!CALLBACK, %!UPDATE
+// Recognize %!PRE, %!MARKDOWN, %!CALLBACK, %!UPDATE, %!TEXT, %!ALERT
 //
 // The structure of message is to be:
 // - "%!XXX"-labels in any order
@@ -70,6 +72,8 @@ func MessageType(data []byte) (
 	isMarkdown bool,
 	forUpdate bool,
 	markup [][][2]string,
+	callbackText string,
+	callbackIsAlert bool,
 	err error,
 ) {
 	if !utf8.Valid(data) {
@@ -77,13 +81,7 @@ func MessageType(data []byte) (
 		ignoreIt = true
 		return
 	}
-	text = string(data)
-	if strings.TrimSpace(text) == "." {
-		ignoreIt = true
-		text = ""
-		return
-	}
-	labels, text := extractLabels(text)
+	labels, text := extractLabels(string(data))
 	if len(text) > 4096 {
 		// TODO ugly check
 		// - according documentation this limit applies after entities parsing
@@ -94,12 +92,7 @@ func MessageType(data []byte) (
 		err = errors.New("message too long")
 		return
 	}
-	if strings.TrimSpace(text) == "" {
-		// TODO be careful with markdown, empty message can be represented by nonempty markdown string
-		isMarkdown = true
-		text = "_empty_"
-		return
-	}
+	originalText := text // before PRE if any
 	m := [][2]string(nil)
 	for _, l := range labels {
 		switch l[0] {
@@ -117,10 +110,24 @@ func MessageType(data []byte) (
 			} else {
 				m = append(m, callbackPair(l[1]))
 			}
+		case "callback_text":
+			callbackText = l[1]
+			callbackIsAlert = false
+		case "callback_alert":
+			callbackText = l[1]
+			callbackIsAlert = true
 		default:
 			panic("Unknown label " + l[0])
 		}
 	}
 	markup = appendNotEmpty(markup, m)
+	switch strings.TrimSpace(originalText) {
+	case "":
+		isMarkdown = true
+		text = "_empty_"
+	case ".":
+		ignoreIt = true
+		text = ""
+	}
 	return
 }
