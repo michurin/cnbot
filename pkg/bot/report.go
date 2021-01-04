@@ -12,7 +12,7 @@ import (
 	"github.com/michurin/cnbot/pkg/tg"
 )
 
-const version = "2.4.0"
+const version = "2.5.0"
 
 var /* const */ Build = "noBuildInfo" // go build -ldflags "-X github.com/michurin/cnbot/pkg/bot.Build=`date +%F`-`git rev-parse --short HEAD`" ./cmd/...
 
@@ -75,9 +75,7 @@ func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) string {
 	for i, nick := range nicks {
 		ctx := hps.Label(rootCtx, nick)
 		c := cfgs[nick]
-		reports[i] = fmt.Sprintf(`- version: %s-%s
-- go version: %s / %s / %s
-- nickname: %q
+		reports[i] = fmt.Sprintf(`- nickname: %q
   - bot info:%s
     - web hook: %s
   - configuration:
@@ -87,11 +85,6 @@ func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) string {
       - working dir: %q
       - timeouts: %v, %v, %v (term/kill/wait)
     - server:%s`,
-			version,
-			Build,
-			runtime.Version(),
-			runtime.GOOS,
-			runtime.GOARCH,
 			nick,
 			botInfo(ctx, c.Token),
 			botWebHook(ctx, c.Token),
@@ -103,5 +96,13 @@ func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) string {
 			c.ScriptWaitTimeout,
 			serverConfigurationToString(c.BindAddress, c.WriteTimeout, c.ReadTimeout))
 	}
-	return strings.Join(reports, "\n")
+	return fmt.Sprintf(`- version: %s-%s
+- go version: %s / %s / %s
+%s`,
+		version,
+		Build,
+		runtime.Version(),
+		runtime.GOOS,
+		runtime.GOARCH,
+		strings.Join(reports, "\n"))
 }

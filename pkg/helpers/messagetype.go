@@ -15,6 +15,7 @@ var /* const */ labels = []struct {
 	len   int
 	re    *regexp.Regexp
 }{
+	{"silent", 8, regexp.MustCompile(`^%!SILENT([\r\n]+|$)`)},
 	{"markdown", 10, regexp.MustCompile(`^%!MARKDOWN([\r\n]+|$)`)},
 	{"pre", 5, regexp.MustCompile(`^%!PRE([\r\n]+|$)`)},
 	{"update", 8, regexp.MustCompile(`^%!UPDATE([\r\n]+|$)`)},
@@ -77,7 +78,7 @@ func MessageType(data []byte) (
 	err error,
 ) {
 	if !utf8.Valid(data) {
-		err = errors.New("invalid message: valid UTF8 string")
+		err = errors.New("invalid message: valid UTF-8 string")
 		ignoreIt = true
 		return
 	}
@@ -92,13 +93,14 @@ func MessageType(data []byte) (
 		err = errors.New("message too long")
 		return
 	}
-	originalText := text // before PRE if any
+	var isPre bool
 	m := [][2]string(nil)
 	for _, l := range labels {
 		switch l[0] {
+		case "silent":
+			ignoreIt = true
 		case "pre":
-			isMarkdown = true
-			text = "```\n" + markDownEscaping.ReplaceAllString(text, "\\$1") + "\n```"
+			isPre = true
 		case "markdown":
 			isMarkdown = true
 		case "update":
@@ -121,13 +123,19 @@ func MessageType(data []byte) (
 		}
 	}
 	markup = appendNotEmpty(markup, m)
-	switch strings.TrimSpace(originalText) {
-	case "":
-		isMarkdown = true
-		text = "_empty_"
-	case ".":
+	if ignoreIt {
 		ignoreIt = true
 		text = ""
+		return
+	}
+	if strings.TrimSpace(text) == "" {
+		isMarkdown = true
+		text = "_empty_"
+		return
+	}
+	if isPre {
+		isMarkdown = true
+		text = "```\n" + markDownEscaping.ReplaceAllString(text, "\\$1") + "\n```"
 	}
 	return
 }
