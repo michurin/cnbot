@@ -84,12 +84,12 @@ case "${BOT_MESSAGE_TYPE}_$1" in
         echo 'Play with buttons!'
         ;;
     callback_buttons-helper-date)
+        echo '%!SILENT'
         echo "%!TEXT $(date)"
-        echo '.'
         ;;
     callback_buttons-helper-uname)
+        echo '%!SILENT'
         echo "%!ALERT $(uname -a)"
-        echo '.'
         ;;
     callback_buttons-helper-uptime)
         uptime

@@ -85,8 +85,8 @@ case "COMMAND_$1" in
         # Empty output turns to italic string "empty"
         ;;
     COMMAND_nothing)
-        # Single dot is marker of silence. The bot will reply nothing.
-        echo '.'
+        # The bot will reply nothing.
+        echo '%!SILENT'
         ;;
     COMMAND_args)
         # Try to say to bot
@@ -193,6 +193,7 @@ case "COMMAND_$1" in
         # not only in reply to sender. For example, you can echo
         # the conversation to the third party observer.
         #
+        echo '%!SILENT' # suppress message
         mark='%!MARKDOWN'$'\n' # it may surprise you, how we get newline in sh
         # the first way to send async message: multipart/form-data
         curl -qfsX POST -o /dev/null -F to=$BOT_FROM -F msg="${mark}_I'll send you_ *random* _image\.\.\._" $BOT_SERVER
@@ -201,14 +202,13 @@ case "COMMAND_$1" in
         # the second way to send async message: raw data + user_id at the end of URL
         echo "${mark}_Are you happy now?_" |
         curl -qfsX POST -o /dev/null --data-binary @- "http://$BOT_SERVER/$BOT_FROM"
-        echo '.' # suppress output processing
         ;;
     COMMAND_cap)
+        echo '%!SILENT' # no message
         # The only way to send image with caption
         # is to use multipart/form-data encoding and "cap" parameter
         curl -qfs https://golang.org/lib/godoc/images/footer-gopher.jpg |
         curl -qfsX POST -o /dev/null -F to=$BOT_FROM -F msg=@- -F cap="$(date)" $BOT_SERVER
-        echo '.'
         ;;
     COMMAND_btn)
         # %!CALLBACK is a control line to create inline keyboards
@@ -267,12 +267,12 @@ case "COMMAND_$1" in
         echo 'Show date as'
         ;;
     COMMAND_notify-text)
+        echo '%!SILENT' # no message, however, you can use %!UPDATE, nonempty messages etc.
         echo "%!TEXT Text notification: $(date)"
-        echo '.' # we just suppress message, howerev,
-        ;;       # you can use %!UPDATE, nonempty messages etc.
+        ;;
     COMMAND_notify-alert)
+        echo '%!SILENT' # no message
         echo "%!ALERT Alert: $(date)"
-        echo '.'
         ;;
     COMMAND_help)
         # One more %!MARKDOWN example
