@@ -2,56 +2,53 @@ package helpers_test
 
 import (
 	"bytes"
+	"io/ioutil"
 	"testing"
 
 	"github.com/michurin/cnbot/pkg/helpers"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 )
 
-func TestMessageType(t *testing.T) {
-	t.Parallel()
-	for _, c := range []struct {
-		name string
-		b    string
-		ig   bool
-		txt  string
-		md   bool
-		mu   [][][2]string
-	}{
-		{"empty", "", false, "_empty_", true, nil},
-		{"space", " \n ", false, "_empty_", true, nil},
-		{"silent", "%!SILENT", true, "", false, nil},
-		{"silent_with_extra", "%!SILENT\nextra", true, "", false, nil},
-		{"text", "text", false, "text", false, nil},
-		{"text_space", "\n text \n", false, "\n text \n", false, nil},
-		{"pre_empty", "%!PRE", false, "_empty_", true, nil},
-		{"pre_empty_ctl", "%!PRE\n\n", false, "_empty_", true, nil},
-		{"pre_space", "%!PRE\n \n", false, "_empty_", true, nil},
-		{"pre_pre_bug", "%!PRE\n%!PRE\nbody", false, "```\nbody\n```", true, nil},
-		{"md", "%!MARKDOWN\ntext", false, "text", true, nil},
-		{"md_empty", "%!MARKDOWN", false, "_empty_", true, nil},
-		{"md_empty_ctl", "%!MARKDOWN\n\n", false, "_empty_", true, nil},
-		{"text_cb", "%!CALLBACK x txt\ntext", false, "text", false, [][][2]string{{{"x", "txt"}}}},
-		{"text_cb_pre", "%!CALLBACK y txt2\n%!PRE\ntext", false, "```\ntext\n```", true, [][][2]string{{{"y", "txt2"}}}},
-		{"text_cb_pre_nl", "%!CALLBACK z txt3\n\n%!PRE\ntext", false, "```\ntext\n```", true, [][][2]string{{{"z", "txt3"}}}},
-		{"text_cb_two", "%!CALLBACK A B\n%!CALLBACK P Q\ntext", false, "text", false, [][][2]string{{{"A", "B"}, {"P", "Q"}}}},
-		{"text_cb_two_lines", "%!CALLBACK A B\n%!CALLBACK \n%!CALLBACK P Q\ntext", false, "text", false, [][][2]string{{{"A", "B"}}, {{"P", "Q"}}}},
-		{"text_cb_one_word", "%!CALLBACK x\ntext", false, "text", false, [][][2]string{{{"x", "x"}}}},
-		{"text_cb_no_message", "%!CALLBACK x txt", false, "_empty_", true, [][][2]string{{{"x", "txt"}}}},
-	} {
+type testCase struct {
+	Name    string
+	Message string
+	Exp     struct {
+		Text         string
+		Ignore       bool
+		Markdown     bool
+		Update       bool
+		Markup       [][][2]string
+		CallbackText string `yaml:"callback_text"`
+		IsAlert      bool   `yaml:"is_alert"`
+	}
+}
+
+func TestMessageType_ok(t *testing.T) {
+	data, err := ioutil.ReadFile("test_data/message_type.yaml")
+	require.NoError(t, err)
+	cc := []testCase(nil)
+	err = yaml.Unmarshal(data, &cc)
+	require.NoError(t, err)
+	for _, c := range cc {
 		c := c
-		t.Run(c.name, func(t *testing.T) {
-			ig, txt, md, up, mu, cbt, isa, err := helpers.MessageType([]byte(c.b))
-			assert.Nil(t, err)
-			assert.False(t, up) // TODO
-			assert.Equal(t, c.mu, mu)
-			assert.Equal(t, c.ig, ig)
-			assert.Equal(t, c.txt, txt)
-			assert.Equal(t, c.md, md)
-			assert.Empty(t, cbt) // TODO
-			assert.Empty(t, isa) // TODO
+		t.Run(c.Name, func(t *testing.T) {
+			ig, txt, md, up, mu, cbt, isa, err := helpers.MessageType([]byte(c.Message))
+			assert.NoError(t, err)
+			assert.Equal(t, c.Exp.Text, txt)
+			assert.Equal(t, c.Exp.Ignore, ig)
+			assert.Equal(t, c.Exp.Markdown, md)
+			assert.Equal(t, c.Exp.Update, up)
+			assert.Equal(t, c.Exp.Markup, mu)
+			assert.Equal(t, c.Exp.CallbackText, cbt)
+			assert.Equal(t, c.Exp.IsAlert, isa)
 		})
 	}
+}
+
+func TestMessageType_error(t *testing.T) {
+	t.Parallel()
 	for _, c := range []struct {
 		name string
 		b    []byte
