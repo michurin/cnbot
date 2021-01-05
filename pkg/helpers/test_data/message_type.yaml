@@ -143,3 +143,24 @@
     markup:
       - [["a", "b"]]
       - [["c", "d"], ["e", "f"]]
+-
+  name: stop_simple
+  message: |-
+    %!---
+    one
+  exp:
+    text: one
+-
+  name: stop
+  message: |-
+    %!PRE
+    %!---
+    %!PRE
+    one
+  exp:
+    text: |-
+      ```
+      %\!PRE
+      one
+      ```
+    markdown: true

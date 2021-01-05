@@ -22,6 +22,7 @@ var /* const */ labels = []struct {
 	{"callback", 10, regexp.MustCompile(`^%!CALLBACK[^\r\n]*([\r\n]+|$)`)},
 	{"callback_text", 6, regexp.MustCompile(`^%!TEXT[^\r\n]+([\r\n]+|$)`)},
 	{"callback_alert", 7, regexp.MustCompile(`^%!ALERT[^\r\n]+([\r\n]+|$)`)},
+	{"stop", 5, regexp.MustCompile(`^%!---([\r\n]+|$)`)},
 }
 
 func extractLabels(a string) ([][2]string, string) {
@@ -32,9 +33,11 @@ func extractLabels(a string) ([][2]string, string) {
 			x := d.re.FindString(a)
 			l := len(x)
 			if l > 0 {
-				lbs = append(lbs, [2]string{d.label, strings.TrimSpace(a[d.len:l])})
+				if d.label != "stop" {
+					lbs = append(lbs, [2]string{d.label, strings.TrimSpace(a[d.len:l])})
+					stop = false
+				}
 				a = a[l:]
-				stop = false
 				break
 			}
 		}
