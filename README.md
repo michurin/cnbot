@@ -165,7 +165,6 @@ Please feel free to email me at `a.michurin@gmail.com`
 
 ## TODO
 
-- Control like to force start of message. It could be `%!---` or `%!ENDOFCONTROLS`
 - Enrich `answerCallbackQuery` API call. Add corresponding types of control line
 - Add alive server information to environment
 - Improve project code layout
