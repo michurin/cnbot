@@ -175,4 +175,3 @@ Please feel free to email me at `a.michurin@gmail.com`
 - Disable web hook if any `getWebhookInfo`+`deleteWebhook` (?)
 - Play with `getMyCommands`/`setMyCommands` that were added in March 2020 in Bot API 4.7
 - Examples of rc-scripts and systemd service-file.
-- Test coverage
