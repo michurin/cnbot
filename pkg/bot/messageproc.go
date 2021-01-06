@@ -23,49 +23,46 @@ func msgType(isCallback bool) string {
 	return "message"
 }
 
+func appendIfNotEmpty(a []string, x ...string) []string {
+	for i := 1; i < len(x); i += 2 {
+		if x[i] != "" {
+			a = append(a, x[i-1], x[i])
+		}
+	}
+	return a
+}
+
+func boolToString(a bool) (r string) {
+	if a {
+		r = "TRUE"
+	}
+	return
+}
+
 func envList(m tg.Message, target int64, server string) []string {
 	e := []string{
-		"BOT_NAME",
-		m.BotName,
-		"BOT_FROM",
-		hps.Itoa(target),
-		"BOT_FROM_FIRST_NAME",
-		m.FromFirstName,
-		"BOT_CHAT",
-		hps.Itoa(m.ChatID),
-		"BOT_TEXT",
-		m.Text,
-		"BOT_MESSAGE_TYPE",
-		msgType(m.CallbackID != ""),
-	}
-	if server != "" {
-		e = append(e,
-			"BOT_SERVER",
-			server,
-		)
+		"BOT_VERSION", Version,
+		"BOT_NAME", m.BotName,
+		"BOT_FROM", hps.Itoa(target),
+		"BOT_FROM_FIRST_NAME", m.FromFirstName,
+		"BOT_CHAT", hps.Itoa(m.ChatID),
+		"BOT_TEXT", m.Text,
+		"BOT_MESSAGE_TYPE", msgType(m.CallbackID != ""),
 	}
 	if m.SideType != "" {
 		e = append(e,
-			"BOT_SIDE_TYPE",
-			m.SideType,
-			"BOT_SIDE_ID",
-			hps.Itoa(m.SideID),
-			"BOT_SIDE_NAME",
-			m.SideName,
+			"BOT_SIDE_TYPE", m.SideType,
+			"BOT_SIDE_ID", hps.Itoa(m.SideID),
+			"BOT_SIDE_NAME", m.SideName,
 		)
 	}
-	if m.FromLastName != "" {
-		e = append(e, "BOT_FROM_LAST_NAME", m.FromLastName)
-	}
-	if m.FromUsername != "" {
-		e = append(e, "BOT_FROM_USERNAME", m.FromUsername)
-	}
-	if m.FromIsBot {
-		e = append(e, "BOT_FROM_IS_BOT", "TRUE")
-	}
-	if m.FromLanguage != "" {
-		e = append(e, "BOT_FROM_LANGUAGE", m.FromLanguage)
-	}
+	e = appendIfNotEmpty(e,
+		"BOT_SERVER", server,
+		"BOT_FROM_LAST_NAME", m.FromLastName,
+		"BOT_FROM_USERNAME", m.FromUsername,
+		"BOT_FROM_LANGUAGE", m.FromLanguage,
+		"BOT_FROM_IS_BOT", boolToString(m.FromIsBot),
+	)
 	return e
 }
 

@@ -166,7 +166,6 @@ Please feel free to email me at `a.michurin@gmail.com`
 ## TODO
 
 - Enrich `answerCallbackQuery` API call. Add corresponding types of control line
-- Add alive server information to environment
 - Improve project code layout
 - Enrich captions of images: markdown, inline keyboard etc
 - Modes of arguments preparation (for user's process)

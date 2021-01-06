@@ -12,10 +12,6 @@ import (
 	"github.com/michurin/cnbot/pkg/tg"
 )
 
-const version = "2.5.2"
-
-var /* const */ Build = "noBuildInfo" // go build -ldflags "-X github.com/michurin/cnbot/pkg/bot.Build=`date +%F`-`git rev-parse --short HEAD`" ./cmd/...
-
 func serverConfigurationToString(addr string, w, r time.Duration) string {
 	if addr == "" {
 		return " server is not configured"
@@ -96,11 +92,10 @@ func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) string {
 			c.ScriptWaitTimeout,
 			serverConfigurationToString(c.BindAddress, c.WriteTimeout, c.ReadTimeout))
 	}
-	return fmt.Sprintf(`- version: %s-%s
+	return fmt.Sprintf(`- version: %s
 - go version: %s / %s / %s
 %s`,
-		version,
-		Build,
+		Version,
 		runtime.Version(),
 		runtime.GOOS,
 		runtime.GOARCH,
