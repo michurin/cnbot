@@ -64,7 +64,7 @@ case "${BOT_MESSAGE_TYPE}_$1" in
         ;;
     message_env)
         echo '%!PRE'
-        env | sort
+        declare -xp | sed 's;declare -x ;;' # like 'env | sort' but works with multi line values
         ;;
     message_args)
         echo 'Passed args:'

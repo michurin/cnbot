@@ -127,7 +127,7 @@ case "COMMAND_$1" in
         # BOT_FROM_USERNAME -- username
         #
         echo '%!PRE'
-        env | sort
+        declare -xp | sed 's;declare -x ;;' # ugly, but things like 'env | sort' don't work right with multi line values
         ;;
     COMMAND_cal)
         # One more %!PRE example
