@@ -17,7 +17,7 @@ func EncodeGetUpdates(offset int64, timeout int) (*Request, error) {
 	}
 	r := getUpdateRequest{
 		Timeout:        timeout,
-		AllowedUpdates: []string{"message", "callback_query"},
+		AllowedUpdates: []string{"message", "edited_message", "callback_query"},
 	}
 	if offset != 0 {
 		r.Offset = &offset
@@ -95,6 +95,7 @@ type getUpdateResponse struct {
 	Result []struct {
 		UpdateID      int64          `json:"update_id"`
 		Message       *message       `json:"message"`
+		EditedMessage *message       `json:"edited_message"`
 		CallbackQuery *callbackQuery `json:"callback_query"`
 	} `json:"result"`
 }
@@ -119,7 +120,8 @@ func DecodeGetUpdates(body []byte, offset int64, botName string) ([]Message, int
 		m[i].BotName = botName
 		var from user
 		var chatID int64
-		if e.Message != nil {
+		switch {
+		case e.Message != nil:
 			msg := e.Message
 			from = msg.From
 			chatID = msg.Chat.ID
@@ -128,7 +130,12 @@ func DecodeGetUpdates(body []byte, offset int64, botName string) ([]Message, int
 			m[i].SideID = sideUserID
 			m[i].SideName = sideUserName
 			m[i].SideType = sideType
-		} else if e.CallbackQuery != nil {
+		case e.EditedMessage != nil:
+			msg := e.EditedMessage
+			from = msg.From
+			chatID = msg.Chat.ID
+			m[i].Text = msg.Text
+		case e.CallbackQuery != nil:
 			cb := e.CallbackQuery
 			from = cb.From
 			m[i].CallbackID = cb.ID

@@ -339,7 +339,7 @@ func TestEncodeGetUpdates(t *testing.T) {
 		assert.Equal(t, &tg.Request{
 			Method:      "getUpdates",
 			ContentType: "application/json",
-			Body:        []byte(`{"timeout":10,"allowed_updates":["message","callback_query"]}`),
+			Body:        []byte(`{"timeout":10,"allowed_updates":["message","edited_message","callback_query"]}`),
 		}, req)
 	})
 	t.Run("none_zero_offset", func(t *testing.T) {
@@ -348,7 +348,7 @@ func TestEncodeGetUpdates(t *testing.T) {
 		assert.Equal(t, &tg.Request{
 			Method:      "getUpdates",
 			ContentType: "application/json",
-			Body:        []byte(`{"offset":100,"timeout":10,"allowed_updates":["message","callback_query"]}`),
+			Body:        []byte(`{"offset":100,"timeout":10,"allowed_updates":["message","edited_message","callback_query"]}`),
 		}, req)
 	})
 }
