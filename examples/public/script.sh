@@ -1,11 +1,14 @@
 #!/bin/bash
 
-ALIVE_HANDLER='http://127.0.0.1:8900'
+# You can find more explanations in demo.sh
+
+alivehandler='http://127.0.0.1:8900'
 
 dirname="$(dirname $0)"
 textdir="$dirname/texts"
 datadir="$dirname/data"
 logfile="$dirname/var/$(date +%y-%m-%d).log"
+
 jq -n -c \
     --arg date "$(date +%s)" \
     --arg chat "$BOT_CHAT" \
@@ -20,6 +23,12 @@ jq -n -c \
     --arg username "$BOT_FROM_USERNAME" \
     --arg is_bot "$BOT_FROM_IS_BOT" \
     --arg language "$BOT_FROM_LANGUAGE" \
+    --arg loc_long "$BOT_LOCATION_LONGITUDE" \
+    --arg loc_lat "$BOT_LOCATION_LATITUDE" \
+    --arg loc_acc "$BOT_LOCATION_ACCURACY" \
+    --arg loc_period "$BOT_LOCATION_LIVE_PERIOD" \
+    --arg loc_heading "$BOT_LOCATION_HEADING" \
+    --arg loc_alert_r "$BOT_LOCATION_ALERT_RADIUS" \
     --arg args "$*" \
     '{
     "date": $date,
@@ -35,6 +44,12 @@ jq -n -c \
     "username": $username,
     "is_bot": $is_bot,
     "language": $language,
+    "loc_long": $loc_long,
+    "loc_lat": $loc_lat,
+    "loc_acc": $loc_acc,
+    "loc_period": $loc_period,
+    "loc_heading": $loc_heading,
+    "loc_alert_r": $loc_alert_r,
     "args": $args
     }' >>"$logfile"
 
@@ -45,6 +60,22 @@ then
     echo "Message from: $BOT_SIDE_TYPE"
     echo "Name: $BOT_SIDE_NAME"
     echo "ID: $BOT_SIDE_ID"
+    exit
+fi
+
+if test -n "$BOT_LOCATION_LONGITUDE" # BOT_LOCATION_LATITUDE can be used too
+then
+    echo '%!PRE'
+    echo 'Location is received'
+    echo ''
+    echo "Longitude: $BOT_LOCATION_LONGITUDE"
+    echo "Latitude:  $BOT_LOCATION_LATITUDE"
+    echo ''
+    echo 'Optional:'
+    echo "Accuracy:     $BOT_LOCATION_ACCURACY"
+    echo "Live period:  $BOT_LOCATION_LIVE_PERIOD"
+    echo "Heading:      $BOT_LOCATION_HEADING"
+    echo "Alert radius: $BOT_LOCATION_ALERT_RADIUS"
     exit
 fi
 
@@ -139,7 +170,7 @@ case "${BOT_MESSAGE_TYPE}_$1" in
     message_info)
         echo 'Build information:'
         echo ''
-        curl -s "$ALIVE_HANDLER" | jq -r '"Build: \(.version.build)\nBot ver: \(.version.version)\nGo ver: \(.version.go)\nStarted at: \(.started_at)"'
+        curl -s "$alivehandler" | jq -r '"Build: \(.version.build)\nBot ver: \(.version.version)\nGo ver: \(.version.go)\nStarted at: \(.started_at)"'
         ;;
     message_start)
         echo '%!MARKDOWN'

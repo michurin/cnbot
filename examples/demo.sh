@@ -33,9 +33,9 @@ do
     fi
 done
 
-# PART III: Check if it is forwarded message or contact #############
+# PART III: Check if it is forwarded message or contact or location #
 #
-# If you don't need this functionality, you are free to skip it.
+# If you don't need this functionality, you are free to skip this part.
 #
 # If the bot receives forwarded message or users contact, it sets
 # up three additional variables:
@@ -56,6 +56,24 @@ then
     echo "Message from $BOT_SIDE_TYPE"
     echo "Name: $BOT_SIDE_NAME"
     echo "ID: $BOT_SIDE_ID"
+    exit
+fi
+
+# You can process shared locations if you wish
+
+if test -n "$BOT_LOCATION_LONGITUDE" # BOT_LOCATION_LATITUDE can be used too
+then
+    echo '%!PRE'
+    echo 'Location is received'
+    echo ''
+    echo "Longitude: $BOT_LOCATION_LONGITUDE"
+    echo "Latitude:  $BOT_LOCATION_LATITUDE"
+    echo ''
+    echo 'Optional:'
+    echo "Accuracy:     $BOT_LOCATION_ACCURACY"
+    echo "Live period:  $BOT_LOCATION_LIVE_PERIOD"
+    echo "Heading:      $BOT_LOCATION_HEADING"
+    echo "Alert radius: $BOT_LOCATION_ALERT_RADIUS"
     exit
 fi
 

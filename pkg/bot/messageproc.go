@@ -62,6 +62,12 @@ func envList(m tg.Message, target int64, server string) []string {
 		"BOT_FROM_USERNAME", m.FromUsername,
 		"BOT_FROM_LANGUAGE", m.FromLanguage,
 		"BOT_FROM_IS_BOT", boolToString(m.FromIsBot),
+		"BOT_LOCATION_LONGITUDE", m.LocationLongitude,
+		"BOT_LOCATION_LATITUDE", m.LocationLatitude,
+		"BOT_LOCATION_ACCURACY", m.LocationHorizontalAccuracy,
+		"BOT_LOCATION_LIVE_PERIOD", m.LocationLivePeriod,
+		"BOT_LOCATION_HEADING", m.LocationHeading,
+		"BOT_LOCATION_ALERT_RADIUS", m.LocationProximityAlertRadius,
 	)
 	return e
 }
