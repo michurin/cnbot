@@ -33,3 +33,7 @@ You can use commands with or without leading slash: `\/date` and `date` are both
 • contacts and
 • forwarded messages
 to figure out user/chat/channel ID
+
+or
+• share your location or
+• even live location

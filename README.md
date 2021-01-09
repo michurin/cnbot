@@ -41,6 +41,7 @@ Read on "Quick start" section to learn how to run your own bot.
   - preformatted text
   - raw markdown v2 formatted messages (you have to care about valid escaping)
   - inline keyboards, including mutable menus
+- Supports location sharing
 - Supports asynchronous notification.
   Message could be emitted by the bot, not in reply only.
   You are free to send messages from `cron` scripts or
@@ -165,7 +166,6 @@ Please feel free to email me at `a.michurin@gmail.com`
 
 ## TODO
 
-- Locations (including tracking)
 - Enrich `answerCallbackQuery` API call. Add corresponding types of control line
 - Improve project code layout
 - Enrich captions of images: markdown, inline keyboard etc

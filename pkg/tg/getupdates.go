@@ -3,6 +3,8 @@ package tg
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"strconv"
 )
 
 type getUpdateRequest struct {
@@ -17,7 +19,7 @@ func EncodeGetUpdates(offset int64, timeout int) (*Request, error) {
 	}
 	r := getUpdateRequest{
 		Timeout:        timeout,
-		AllowedUpdates: []string{"message", "callback_query"},
+		AllowedUpdates: []string{"message", "edited_message", "callback_query"},
 	}
 	if offset != 0 {
 		r.Offset = &offset
@@ -48,6 +50,14 @@ type Message struct {
 	FromUsername    string
 	FromIsBot       bool
 	FromLanguage    string
+	// locations are used in environment variables only
+	// so we can use strings to keep it
+	LocationLongitude            string // floats here, empty string means it is no location in message
+	LocationLatitude             string
+	LocationHorizontalAccuracy   string // strings instead *float to
+	LocationLivePeriod           string // convey nil pointers as
+	LocationHeading              string // empty strings
+	LocationProximityAlertRadius string
 }
 
 type user struct {
@@ -73,14 +83,24 @@ type contact struct {
 	Vcard       *string `json:"vcard"` // TODO not used yet
 }
 
+type location struct {
+	Longitude            float64  `json:"longitude"`
+	Latitude             float64  `json:"latitude"`
+	HorizontalAccuracy   *float64 `json:"horizontal_accuracy"`
+	LivePeriod           *int64   `json:"live_period"`
+	Heading              *int64   `json:"heading"`
+	ProximityAlertRadius *int64   `json:"proximity_alert_radius"`
+}
+
 type message struct {
-	MessageID       int64    `json:"message_id"`
-	Text            string   `json:"text"`
-	From            user     `json:"from"`
-	Chat            chat     `json:"chat"`
-	ForwardFrom     *user    `json:"forward_from"`
-	ForwardFromChat *chat    `json:"forward_from_chat"`
-	Contact         *contact `json:"contact"`
+	MessageID       int64     `json:"message_id"`
+	Text            string    `json:"text"` // if fact, text is optional
+	From            user      `json:"from"`
+	Chat            chat      `json:"chat"`
+	ForwardFrom     *user     `json:"forward_from"`
+	ForwardFromChat *chat     `json:"forward_from_chat"`
+	Contact         *contact  `json:"contact"`
+	Location        *location `json:"location"`
 }
 
 type callbackQuery struct {
@@ -95,6 +115,7 @@ type getUpdateResponse struct {
 	Result []struct {
 		UpdateID      int64          `json:"update_id"`
 		Message       *message       `json:"message"`
+		EditedMessage *message       `json:"edited_message"`
 		CallbackQuery *callbackQuery `json:"callback_query"`
 	} `json:"result"`
 }
@@ -119,16 +140,26 @@ func DecodeGetUpdates(body []byte, offset int64, botName string) ([]Message, int
 		m[i].BotName = botName
 		var from user
 		var chatID int64
-		if e.Message != nil {
+		switch {
+		case e.Message != nil:
 			msg := e.Message
 			from = msg.From
 			chatID = msg.Chat.ID
 			m[i].Text = msg.Text
-			sideType, sideUserID, sideUserName := extractSideUser(msg)
-			m[i].SideID = sideUserID
-			m[i].SideName = sideUserName
-			m[i].SideType = sideType
-		} else if e.CallbackQuery != nil {
+			m[i].SideType, m[i].SideID, m[i].SideName = extractSideUser(msg)
+			m[i].LocationLongitude, m[i].LocationLatitude, m[i].LocationHorizontalAccuracy,
+				m[i].LocationLivePeriod, m[i].LocationHeading,
+				m[i].LocationProximityAlertRadius = extractLocation(msg.Location)
+		case e.EditedMessage != nil:
+			msg := e.EditedMessage
+			from = msg.From
+			chatID = msg.Chat.ID
+			m[i].Text = msg.Text
+			m[i].SideType, m[i].SideID, m[i].SideName = extractSideUser(msg)
+			m[i].LocationLongitude, m[i].LocationLatitude, m[i].LocationHorizontalAccuracy,
+				m[i].LocationLivePeriod, m[i].LocationHeading,
+				m[i].LocationProximityAlertRadius = extractLocation(msg.Location)
+		case e.CallbackQuery != nil:
 			cb := e.CallbackQuery
 			from = cb.From
 			m[i].CallbackID = cb.ID
@@ -179,4 +210,35 @@ func extractSideUser(msg *message) (tp string, id int64, name string) {
 		return
 	}
 	return
+}
+
+func extractLocation(loc *location) (lon, lat, acc, period, heading, alertRad string) {
+	if loc == nil {
+		return
+	}
+	lon = ftoa(loc.Longitude)
+	lat = ftoa(loc.Latitude)
+	acc = fPtrToA(loc.HorizontalAccuracy)
+	period = iPtrToA(loc.LivePeriod)
+	heading = iPtrToA(loc.Heading)
+	alertRad = iPtrToA(loc.ProximityAlertRadius)
+	return
+}
+
+func ftoa(x float64) string {
+	return fmt.Sprintf("%f", x)
+}
+
+func fPtrToA(x *float64) string {
+	if x != nil {
+		return fmt.Sprintf("%f", *x)
+	}
+	return ""
+}
+
+func iPtrToA(x *int64) string {
+	if x != nil {
+		return strconv.FormatInt(*x, 10)
+	}
+	return ""
 }

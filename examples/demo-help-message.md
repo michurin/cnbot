@@ -40,3 +40,7 @@
 • contacts and
 • forwarded messages
 to figure out user/chat/channel ID
+
+*You can also share you location*
+• location
+• or live location
