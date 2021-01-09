@@ -166,6 +166,7 @@ Please feel free to email me at `a.michurin@gmail.com`
 
 ## TODO
 
+- Locations (including tracking)
 - Enrich `answerCallbackQuery` API call. Add corresponding types of control line
 - Improve project code layout
 - Enrich captions of images: markdown, inline keyboard etc
@@ -173,4 +174,5 @@ Please feel free to email me at `a.michurin@gmail.com`
 - Ability to send any Telegram API requests (using HTTP interface?)
 - Disable web hook if any `getWebhookInfo`+`deleteWebhook` (?)
 - Play with `getMyCommands`/`setMyCommands` that were added in March 2020 in Bot API 4.7
+- Ability to send data to bot: images, voice, documents (?)
 - Examples of rc-scripts and systemd service-file.
