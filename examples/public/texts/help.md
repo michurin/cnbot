@@ -4,7 +4,6 @@ You can use commands with or without leading slash: `\/date` and `date` are both
 
 *Simple commands*
 • \/date — Execute command `date`
-• \/uname — `uname -a`
 • \/uptime — `uptime`
 
 *Preformatted output*

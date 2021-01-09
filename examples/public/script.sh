@@ -2,6 +2,8 @@
 
 # You can find more explanations in demo.sh
 
+export TZ=UTC
+
 alivehandler='http://127.0.0.1:8900'
 
 dirname="$(dirname $0)"
@@ -83,9 +85,6 @@ case "${BOT_MESSAGE_TYPE}_$1" in
     message_date)
         date
         ;;
-    message_uname)
-        uname -a
-        ;;
     message_uptime)
         uptime
         ;;
@@ -95,7 +94,8 @@ case "${BOT_MESSAGE_TYPE}_$1" in
         ;;
     message_env)
         echo '%!PRE'
-        declare -xp | sed 's;declare -x ;;' # like 'env | sort' but works with multi line values
+        # it has to work correctly with multiline values
+        python -c 'import os; print("\n".join(sorted(k+"="+v for k, v, in os.environ.items() if k.startswith("BOT_"))))'
         ;;
     message_args)
         echo 'Passed args:'
