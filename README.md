@@ -166,7 +166,6 @@ Please feel free to email me at `a.michurin@gmail.com`
 
 ## TODO
 
-- Locations (including tracking)
 - Enrich `answerCallbackQuery` API call. Add corresponding types of control line
 - Improve project code layout
 - Enrich captions of images: markdown, inline keyboard etc
