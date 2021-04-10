@@ -126,6 +126,7 @@ func TestDecoder(t *testing.T) {
 }
 
 func newReq(t *testing.T, method string, cntType string, url string, body string) *http.Request {
+	t.Helper()
 	r, err := http.NewRequestWithContext(context.Background(), method, url, strings.NewReader(body))
 	require.Nil(t, err)
 	if cntType != "" {

@@ -38,13 +38,15 @@ type logContextKey string
 
 const labelKey = logContextKey("label")
 
-var buildPrefixLen int
-var labelInfo = "[info]"
-var labelError = "[error]"
-var labelPrefix = "["
-var labelPostfix = "]"
-var callerPrefix = "["
-var callerPostfix = "]"
+var (
+	buildPrefixLen int
+	labelInfo      = "[info]"
+	labelError     = "[error]"
+	labelPrefix    = "["
+	labelPostfix   = "]"
+	callerPrefix   = "["
+	callerPostfix  = "]"
+)
 
 func fmtMessage(sep string, messages ...interface{}) (label, msg string) {
 	label = labelInfo
