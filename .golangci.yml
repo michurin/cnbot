@@ -80,7 +80,7 @@ linters:
     - revive
     - sqlclosecheck
       # - testpackage
-      # - thelper
+    - thelper
       # - tparallel
     - wastedassign
       # - wrapcheck
