@@ -11,11 +11,13 @@ import (
 	hps "github.com/michurin/cnbot/pkg/helpers"
 )
 
-var /* const */ startedAtTime = time.Now()
-var /* const */ startedAt = startedAtTime.Format(time.RFC3339)
-var /* const */ startedAtUnix = startedAtTime.Unix()
-var /* const */ pid = os.Getpid()
-var /* const */ goVer = runtime.Version()
+var /* const */ (
+	startedAtTime = time.Now()
+	startedAt     = startedAtTime.Format(time.RFC3339)
+	startedAtUnix = startedAtTime.Unix()
+	pid           = os.Getpid()
+	goVer         = runtime.Version()
+)
 
 type AliveHandler struct{}
 

@@ -6,6 +6,8 @@ linters-settings:
     statements: 60
   nakedret:
     max-func-lines: 100
+  cyclop:
+    max-complexity: 16
 linters:
   disable-all: true
   enable:
@@ -16,6 +18,7 @@ linters:
     - dupl
     - errcheck
     - exhaustive
+    - exportloopref
     - funlen
     - goconst
     - gocritic
@@ -28,14 +31,12 @@ linters:
     - gosimple
     - govet
     - ineffassign
-    - interfacer
     - lll
     - misspell
     - nakedret
     - noctx
     - nolintlint
     - rowserrcheck
-    - scopelint
     - staticcheck
     - structcheck
     - stylecheck
@@ -45,3 +46,42 @@ linters:
     - unused
     - varcheck
     - whitespace
+      # disabled by default
+      # TODO: check desabled
+    - asciicheck
+    - cyclop
+    - durationcheck
+      # - errorlint
+      # - exhaustivestruct
+      # - forbidigo
+    - forcetypeassert
+    - gci
+      # - gochecknoglobals
+      # - gochecknoinits
+    - gocognit
+      # - godot
+      # - godox
+      # - goerr113
+    - gofumpt
+    - goheader
+      # - gomnd
+    - gomoddirectives
+    - gomodguard
+      # - ifshort
+    - importas
+    - makezero
+      # - maligned
+    - nestif
+    - nilerr
+      # - nlreturn
+      # - paralleltest
+    - prealloc
+    - predeclared
+    - revive
+    - sqlclosecheck
+      # - testpackage
+      # - thelper
+      # - tparallel
+    - wastedassign
+      # - wrapcheck
+      # - wsl
