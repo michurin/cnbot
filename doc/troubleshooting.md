@@ -21,7 +21,7 @@ absolute paths or export `PATH` environment variable.
 Why does `cnbot` behave is that way?
 Where are two crucial reasons:
 
-- Repeatable behavior. You script will word in the same environment on your laptop,
+- Repeatable behavior. You script has to work in the same environment on your laptop,
 on the dedicated server, from  ordinary user and from root.
 - Security reasons. You have to specify `PATH`
 explicitly in your script.
