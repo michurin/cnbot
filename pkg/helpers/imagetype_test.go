@@ -3,8 +3,9 @@ package helpers_test
 import (
 	"testing"
 
-	"github.com/michurin/cnbot/pkg/helpers"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/michurin/cnbot/pkg/helpers"
 )
 
 func TestImageType(t *testing.T) {

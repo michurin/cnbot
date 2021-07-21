@@ -8,6 +8,8 @@ linters-settings:
     max-func-lines: 100
   cyclop:
     max-complexity: 16
+  gci:
+    local-prefixes: github.com/michurin/cnbot
 linters:
   disable-all: true
   enable:
@@ -25,7 +27,6 @@ linters:
     - gocyclo
     - gofmt
     - goimports
-    - golint
     - goprintffuncname
     - gosec
     - gosimple

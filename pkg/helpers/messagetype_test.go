@@ -5,10 +5,11 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/michurin/cnbot/pkg/helpers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
+
+	"github.com/michurin/cnbot/pkg/helpers"
 )
 
 type testCase struct {

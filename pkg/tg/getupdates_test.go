@@ -3,8 +3,9 @@ package tg_test
 import (
 	"testing"
 
-	"github.com/michurin/cnbot/pkg/tg"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/michurin/cnbot/pkg/tg"
 )
 
 const ordinaryMessage = `{

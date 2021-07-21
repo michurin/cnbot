@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/michurin/cnbot/pkg/helpers"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/michurin/cnbot/pkg/helpers"
 )
 
 type subCase struct {
