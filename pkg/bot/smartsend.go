@@ -3,6 +3,8 @@ package bot
 import (
 	"context"
 
+	"github.com/michurin/minlog"
+
 	hps "github.com/michurin/cnbot/pkg/helpers"
 	"github.com/michurin/cnbot/pkg/tg"
 )
@@ -63,17 +65,17 @@ func SmartSend(
 ) error {
 	req, cbReq, err := buildRequest(destUser, callbackMessageID, callbackID, caption, stdout)
 	if err != nil {
-		hps.Log(ctx, err)
+		minlog.Log(ctx, err)
 		return err
 	}
 	err = sendRequest(ctx, token, cbReq)
 	if err != nil {
-		hps.Log(ctx, err)
+		minlog.Log(ctx, err)
 		return err
 	}
 	err = sendRequest(ctx, token, req)
 	if err != nil {
-		hps.Log(ctx, err)
+		minlog.Log(ctx, err)
 		return err
 	}
 	return nil

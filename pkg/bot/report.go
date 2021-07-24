@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/michurin/minlog"
+
 	hps "github.com/michurin/cnbot/pkg/helpers"
 	"github.com/michurin/cnbot/pkg/tg"
 )
@@ -25,12 +27,12 @@ func serverConfigurationToString(addr string, w, r time.Duration) string {
 func botInfo(ctx context.Context, token string) string {
 	out, err := hps.Do(ctx, tg.Encode(token, tg.EncodeGetMe()))
 	if err != nil {
-		hps.Log(ctx, err)
+		minlog.Log(ctx, err)
 		return " ERROR"
 	}
 	botID, botName, firstName, canJoinGrp, canReadAllGrpMsg, supportInline, err := tg.DecodeGetMe(out)
 	if err != nil {
-		hps.Log(ctx, err)
+		minlog.Log(ctx, err)
 		return " ERROR"
 	}
 	return fmt.Sprintf(`
@@ -45,12 +47,12 @@ func botInfo(ctx context.Context, token string) string {
 func botWebHook(ctx context.Context, token string) string {
 	out, err := hps.Do(ctx, tg.Encode(token, tg.EncodeGetWebhookInfo()))
 	if err != nil {
-		hps.Log(ctx, err)
+		minlog.Log(ctx, err)
 		return "ERROR"
 	}
 	u, err := tg.DecodeGetWebhookInfo(out)
 	if err != nil {
-		hps.Log(ctx, err)
+		minlog.Log(ctx, err)
 		return "ERROR"
 	}
 	if u == "" {
@@ -69,7 +71,7 @@ func BotsReport(rootCtx context.Context, cfgs map[string]hps.BotConfig) string {
 	sort.Strings(nicks)
 	reports := make([]string, len(nicks))
 	for i, nick := range nicks {
-		ctx := hps.Label(rootCtx, nick)
+		ctx := minlog.Label(rootCtx, nick)
 		c := cfgs[nick]
 		reports[i] = fmt.Sprintf(`- nickname: %q
   - bot info:%s
