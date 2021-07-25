@@ -5,28 +5,35 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"os"
+	"runtime"
 	"strings"
 	"sync/atomic"
 
 	"github.com/michurin/minlog"
+	"github.com/michurin/warehouse/go/paintjson"
 )
 
-func init() { // TODO eliminate init(), call it from Run explicitly
-	/*
-		// TODO use smart prefix cutter
-		_, fileName, _, ok := runtime.Caller(0)
-		if !ok {
-			panic("can not get build prefix")
-		}
-		buildPrefixLen := len(fileName) - len("pkg/helpers/log.go")
-	*/
+func SetupLogging() {
+	_, fileName, _, ok := runtime.Caller(0)
+	if !ok {
+		panic("can not get build prefix")
+	}
+	buildPrefixLen := len(fileName) - len("helpers/log.go")
+	callerOpt := minlog.WithCallerCutter(func(p string) string {
+		return p[buildPrefixLen:]
+	})
 	fi, err := os.Stdout.Stat()
 	if err != nil {
 		minlog.Log(context.Background(), "Can not check stat(stdout)", err)
 		return
 	}
 	if (fi.Mode() & os.ModeCharDevice) != 0 {
+		jcOpts := []paintjson.Option{
+			paintjson.ClrCtl(paintjson.Blue),
+			paintjson.ClrKey(paintjson.Brown),
+		}
 		minlog.SetDefaultLogger(minlog.New(
+			callerOpt,
 			minlog.WithLineFormatter(func(tm, level, label, caller, msg string) string {
 				lc := "1"
 				if level == minlog.DefaultInfoLabel {
@@ -37,12 +44,13 @@ func init() { // TODO eliminate init(), call it from Run explicitly
 					"\033[3" + lc + "m" + level + "\033[0m",
 					"\033[1m" + label + "\033[0m",
 					"\033[34m" + caller + "\033[0m",
-					msg, // TODO color it
+					paintjson.String(msg, jcOpts...),
 				}, " ")
 			}),
 		))
 	} else {
 		minlog.SetDefaultLogger(minlog.New(
+			callerOpt,
 			minlog.WithLineFormatter(func(tm, level, label, caller, msg string) string {
 				return strings.Join([]string{
 					tm,

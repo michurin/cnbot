@@ -24,6 +24,8 @@ func Run(rootCtx context.Context) {
 	ctx, cancel := hps.ShutdownCtx(rootCtx, syscall.SIGTERM, os.Interrupt)
 	defer cancel()
 
+	hps.SetupLogging()
+
 	configFile, infoMode, err := hps.CommandLine()
 	if err != nil {
 		minlog.Log(ctx, err)
