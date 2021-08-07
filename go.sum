@@ -1,7 +1,7 @@
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/michurin/minlog v0.0.0-20210725040507-88f5e36b8e5e h1:IplaxiVbGd7R2Sup4JaWmImxnhtLdgcwE4ihD4EivbU=
-github.com/michurin/minlog v0.0.0-20210725040507-88f5e36b8e5e/go.mod h1:QRIZQbe4/plcoxJ73DZC5iXtNmM0sRT5C/o44HZBrZU=
+github.com/michurin/minlog v0.0.0-20210807182240-e035a5bcb5af h1:iknj7eVH2Qebt/sQdvNoz+wfmCz3StK7nmP4rmyzPyE=
+github.com/michurin/minlog v0.0.0-20210807182240-e035a5bcb5af/go.mod h1:QRIZQbe4/plcoxJ73DZC5iXtNmM0sRT5C/o44HZBrZU=
 github.com/michurin/warehouse/go/paintjson v0.0.0-20210722045350-9384b9ae85ee h1:/vzn+yJp3TQ16R7xMub12/aLaQk9rtUdRD0+hbDlVok=
 github.com/michurin/warehouse/go/paintjson v0.0.0-20210722045350-9384b9ae85ee/go.mod h1:CREz712S4rJmpe4qu4qHist77p5gl/7jV2TEi85/7l0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
