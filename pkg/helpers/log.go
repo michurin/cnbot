@@ -9,8 +9,8 @@ import (
 	"strings"
 	"sync/atomic"
 
+	"github.com/michurin/jsonpainter"
 	"github.com/michurin/minlog"
-	"github.com/michurin/warehouse/go/paintjson"
 )
 
 func SetupLogging() {
@@ -28,9 +28,9 @@ func SetupLogging() {
 		return
 	}
 	if (fi.Mode() & os.ModeCharDevice) != 0 {
-		jcOpts := []paintjson.Option{
-			paintjson.ClrCtl(paintjson.Blue),
-			paintjson.ClrKey(paintjson.Brown),
+		jcOpts := []jsonpainter.Option{
+			jsonpainter.ClrCtl(jsonpainter.Blue),
+			jsonpainter.ClrKey(jsonpainter.Brown),
 		}
 		minlog.SetDefaultLogger(minlog.New(
 			callerOpt,
@@ -44,7 +44,7 @@ func SetupLogging() {
 					"\033[3" + lc + "m" + level + "\033[0m",
 					"\033[1m" + label + "\033[0m",
 					"\033[34m" + caller + "\033[0m",
-					paintjson.String(msg, jcOpts...),
+					jsonpainter.String(msg, jcOpts...),
 				}, " ")
 			}),
 		))
