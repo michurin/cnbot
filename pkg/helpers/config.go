@@ -124,7 +124,7 @@ func ReadConfig(configFile string) (map[string]BotConfig, string, error) {
 		if !stat.Mode().IsRegular() {
 			return nil, "", fmt.Errorf("script file %s is not regular", script)
 		}
-		if stat.Mode()&0111 == 0 { // slightly weird. just mimic exec.findExecutable
+		if stat.Mode()&0o111 == 0 { // slightly weird. just mimic exec.findExecutable
 			return nil, "", fmt.Errorf("script file %s is not permited", script)
 		}
 		pwd := toAbsPath(baseDir, b.WorkingDir)

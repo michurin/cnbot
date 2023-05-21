@@ -27,7 +27,7 @@ func memMap(m *runtime.MemStats) map[string]interface{} {
 	t := reflect.TypeOf(*m)
 	e := map[string]interface{}{}
 	for i := 0; i < v.NumField(); i++ {
-		switch t.Field(i).Type.Kind() { // nolint:exhaustive
+		switch t.Field(i).Type.Kind() { //nolint:exhaustive
 		case reflect.Bool, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
 			e[t.Field(i).Name] = v.Field(i).Interface()
 		default:
