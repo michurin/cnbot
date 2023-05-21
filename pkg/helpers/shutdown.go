@@ -4,6 +4,8 @@ import (
 	"context"
 	"os"
 	"os/signal"
+
+	"github.com/michurin/minlog"
 )
 
 // Do not forget defer cancel()
@@ -13,7 +15,7 @@ func ShutdownCtx(ctx context.Context, sig ...os.Signal) (context.Context, contex
 	signal.Notify(sigs, sig...)
 	go func() {
 		sig := <-sigs
-		Log(ctx, "Killed by signal", sig.String())
+		minlog.Log(ctx, "Killed by signal", sig.String())
 		cancel()
 	}()
 	return ctx, cancel

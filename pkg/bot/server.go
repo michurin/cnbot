@@ -10,8 +10,11 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/michurin/minlog"
 
 	hps "github.com/michurin/cnbot/pkg/helpers"
 )
@@ -130,32 +133,32 @@ func decodeRequest(r *http.Request) (int64, []byte, string, error) {
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx := hps.Label(r.Context(), hps.RandLabel(), h.BotName)
-	hps.Log(ctx, r.Method, r.URL.String())
+	ctx := minlog.Label(r.Context(), hps.AutoLabel()+":"+h.BotName)
+	minlog.Log(ctx, r.Method, r.URL.String())
 	destUser, body, caption, err := decodeRequest(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		hps.Log(ctx, r.URL.String(), err)
+		minlog.Log(ctx, r.URL.String(), err)
 		return
 	}
 	if !h.AccessCtl.IsAllowed(destUser) {
 		w.WriteHeader(http.StatusForbidden)
-		hps.Log(ctx, destUser, errors.New("user is not allowed"))
+		minlog.Log(ctx, destUser, errors.New("user is not allowed"))
 		return
 	}
-	ctx = hps.Label(ctx, destUser)
+	ctx = minlog.Label(ctx, strconv.FormatInt(destUser, 10))
 	err = SmartSend(ctx, h.Token, "", destUser, 0, body, caption) // TODO what to do with it?? We can not edit message asyc?
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		hps.Log(ctx, body, err)
+		minlog.Log(ctx, body, err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	hps.Log(ctx, http.StatusOK)
+	minlog.Log(ctx, http.StatusOK)
 }
 
 func RunHTTPServer(ctx context.Context, addr string, writeTimeout time.Duration, readTimeout time.Duration, handler http.Handler) {
-	ctx = hps.Label(ctx, "["+addr+"]")
+	ctx = minlog.Label(ctx, "["+addr+"]")
 	s := http.Server{
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
@@ -165,15 +168,15 @@ func RunHTTPServer(ctx context.Context, addr string, writeTimeout time.Duration,
 	}
 	go func() { // what if we shutdown before listen?
 		<-ctx.Done()
-		hps.Log(ctx, "Server is going to shutdown")
+		minlog.Log(ctx, "Server is going to shutdown")
 		dCtx, cancel := context.WithTimeout(context.Background(), gracefulShutdownInterval)
 		defer cancel()
 		err := s.Shutdown(dCtx)
 		if err != nil {
-			hps.Log(ctx, err)
+			minlog.Log(ctx, err)
 		}
 	}()
-	hps.Log(ctx, "Server is starting on", s.Addr, "with timeouts", s.ReadTimeout, s.WriteTimeout)
-	hps.Log(ctx, s.ListenAndServe())
-	hps.Log(ctx, "Server finished")
+	minlog.Log(ctx, "Server is starting on", s.Addr, "with timeouts", s.ReadTimeout, s.WriteTimeout)
+	minlog.Log(ctx, s.ListenAndServe())
+	minlog.Log(ctx, "Server finished")
 }

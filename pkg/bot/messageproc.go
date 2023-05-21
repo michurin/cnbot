@@ -4,7 +4,10 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
+
+	"github.com/michurin/minlog"
 
 	hps "github.com/michurin/cnbot/pkg/helpers"
 	"github.com/michurin/cnbot/pkg/tg"
@@ -74,15 +77,15 @@ func envList(m tg.Message, target int64, server string) []string {
 
 func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message) {
 	target := m.ChatID
-	ctx = hps.Label(ctx, hps.RandLabel(), m.BotName, target)
-	hps.Log(ctx, "Message", m.Text)
+	ctx = minlog.Label(ctx, m.BotName+":"+hps.AutoLabel()+":"+strconv.FormatInt(target, 10))
+	minlog.Log(ctx, "Message", m.Text)
 	bot, ok := botMap[m.BotName]
 	if !ok {
-		hps.Log(ctx, fmt.Errorf("bot `%s` is not known", m.BotName))
+		minlog.Log(ctx, fmt.Errorf("bot `%s` is not known", m.BotName))
 		return
 	}
 	if !bot.Access.IsAllowed(target) {
-		hps.Log(ctx, fmt.Errorf("user %d is not allowed", target))
+		minlog.Log(ctx, fmt.Errorf("user %d is not allowed", target))
 		return
 	}
 	stdout, err := hps.Exec(
@@ -95,13 +98,13 @@ func process(ctx context.Context, botMap map[string]hps.BotConfig, m tg.Message)
 		hps.Env(envList(m, target, bot.BindAddress)...),
 		bot.WorkingDir)
 	if err != nil {
-		hps.Log(ctx, err)
+		minlog.Log(ctx, err)
 		return
 	}
-	hps.Log(ctx, "script output:", stdout)
+	minlog.Log(ctx, "script output:", stdout)
 	err = SmartSend(ctx, bot.Token, m.CallbackID, target, m.UpdateMessageID, stdout, "")
 	if err != nil {
-		hps.Log(ctx, err)
+		minlog.Log(ctx, err)
 		return
 	}
 }
@@ -110,7 +113,7 @@ func MessageProcessor(ctx context.Context, msgQueue <-chan tg.Message, botMap ma
 	for {
 		select {
 		case <-ctx.Done():
-			hps.Log(ctx, "Queue listener exited due to context cancellation")
+			minlog.Log(ctx, "Queue listener exited due to context cancellation")
 			return
 		case m := <-msgQueue:
 			process(ctx, botMap, m)

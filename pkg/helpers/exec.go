@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"syscall"
 	"time"
+
+	"github.com/michurin/minlog"
 )
 
 func killGrp(ctx context.Context, pid int, sig syscall.Signal) {
@@ -15,12 +17,12 @@ func killGrp(ctx context.Context, pid int, sig syscall.Signal) {
 	// For example you can get ESRCH (0x3) that doesn't support by syscall.Errno.Is().
 	pgid, err := syscall.Getpgid(pid) // not cmd.SysProcAttr.Pgid
 	if err != nil {
-		Log(ctx, err)
+		minlog.Log(ctx, err)
 		return
 	}
 	err = syscall.Kill(-pgid, sig) // minus
 	if err != nil {
-		Log(ctx, err)
+		minlog.Log(ctx, err)
 		return
 	}
 }
@@ -39,7 +41,7 @@ func Exec(
 	[]byte,
 	error,
 ) {
-	Log(ctx, env, command, args)
+	minlog.Log(ctx, env, command, args)
 	// setup cmd
 	cmd := exec.Command(command, args...) // we don't use ctx here because it kills only process, not group
 	cmd.SysProcAttr = &syscall.SysProcAttr{
@@ -54,7 +56,7 @@ func Exec(
 	// start command synchronously; we hope it doesn't take a long time
 	err := cmd.Start()
 	if err != nil {
-		Log(ctx, err)
+		minlog.Log(ctx, err)
 		return nil, err
 	}
 	// wait command with care about timeouts and ctx
@@ -69,18 +71,18 @@ func Exec(
 		select {
 		case err := <-sync: // it has to appear before kill sections to catch stat errors
 			if err != nil { // *exec.ExitError if status != 0
-				Log(ctx, err, errBuffer.Bytes())
+				minlog.Log(ctx, err, errBuffer.Bytes())
 				return nil, err
 			}
 			if len(errBuffer.Bytes()) != 0 { // just log stderr if any
-				Log(ctx, command, args, errBuffer.Bytes())
+				minlog.Log(ctx, command, args, errBuffer.Bytes())
 			}
 			if !cmd.ProcessState.Exited() {
 				panic("The program is not exited! It's impossible")
 			}
 			return outBuffer.Bytes(), nil
 		case <-ctx.Done(): // urgent exit, we doesn't even wait for process finalization
-			Log(ctx, "Exec terminated by context")
+			minlog.Log(ctx, "Exec terminated by context")
 			killGrp(ctx, cmd.Process.Pid, syscall.SIGKILL)
 			return nil, nil
 		case <-termBound:
@@ -91,7 +93,7 @@ func Exec(
 			// Very bad case, we gave up, we leave goroutine with cmd.Wait running...
 			// I hope it will never happen.
 			err := errors.New("can't wait anymore")
-			Log(ctx, err)
+			minlog.Log(ctx, err)
 			return nil, err
 		}
 	}

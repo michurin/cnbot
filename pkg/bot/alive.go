@@ -2,13 +2,14 @@ package bot
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"reflect"
 	"runtime"
 	"time"
 
-	hps "github.com/michurin/cnbot/pkg/helpers"
+	"github.com/michurin/minlog"
 )
 
 var /* const */ (
@@ -54,18 +55,14 @@ func (h *AliveHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"mem_status":      memMap(m),
 	})
 	if err != nil {
-		hps.Log(r.Context(), err)
+		minlog.Log(r.Context(), err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	n, err := w.Write(b)
 	if err != nil {
-		hps.Log(r.Context(), err)
-		return
-	}
-	if n != len(b) {
-		hps.Log(r.Context(), "Not all data has been written")
+		minlog.Log(r.Context(), err, fmt.Sprintf("(%d/%d written)", n, len(b)))
 		return
 	}
 }

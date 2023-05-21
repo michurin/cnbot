@@ -7,6 +7,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/michurin/minlog"
+
 	hps "github.com/michurin/cnbot/pkg/helpers"
 	"github.com/michurin/cnbot/pkg/tg"
 )
@@ -22,15 +24,17 @@ func Run(rootCtx context.Context) {
 	ctx, cancel := hps.ShutdownCtx(rootCtx, syscall.SIGTERM, os.Interrupt)
 	defer cancel()
 
+	hps.SetupLogging()
+
 	configFile, infoMode, err := hps.CommandLine()
 	if err != nil {
-		hps.Log(ctx, err)
+		minlog.Log(ctx, err)
 		return
 	}
 
 	bots, aliveAddr, err := hps.ReadConfig(configFile)
 	if err != nil {
-		hps.Log(ctx, configFile, err)
+		minlog.Log(ctx, configFile, err)
 		return
 	}
 
@@ -89,5 +93,5 @@ func Run(rootCtx context.Context) {
 		}
 	}
 
-	hps.Log(ctx, "Bot has been stopped")
+	minlog.Log(ctx, "Bot has been stopped")
 }
