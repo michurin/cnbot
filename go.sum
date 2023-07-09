@@ -1,9 +1,7 @@
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/michurin/jsonpainter v0.0.0-20210808115829-37446ab9d75c h1:qr12RQY64j4jb8p0plXs2kd7Y8y0o7Rv85ziUvx/NpM=
-github.com/michurin/jsonpainter v0.0.0-20210808115829-37446ab9d75c/go.mod h1:lCCMVnIrELa+0dmj7PGxy+XBbAX9z+SJAwBRCwcHjFA=
-github.com/michurin/jsonpainter v0.0.0-20220312054115-8be9479ebced h1:4s3XorcIXT2q70IAVowDSGCWK8xdysfV2O/XIc2wEhg=
-github.com/michurin/jsonpainter v0.0.0-20220312054115-8be9479ebced/go.mod h1:lCCMVnIrELa+0dmj7PGxy+XBbAX9z+SJAwBRCwcHjFA=
+github.com/michurin/jsonpainter v0.0.0-20230617042058-19410576097e h1:ZvrxzBW4p+ZE5IiNr8Cn01ndIWhL1UQan1EFx545goo=
+github.com/michurin/jsonpainter v0.0.0-20230617042058-19410576097e/go.mod h1:lCCMVnIrELa+0dmj7PGxy+XBbAX9z+SJAwBRCwcHjFA=
 github.com/michurin/minlog v0.0.0-20210807182240-e035a5bcb5af h1:iknj7eVH2Qebt/sQdvNoz+wfmCz3StK7nmP4rmyzPyE=
 github.com/michurin/minlog v0.0.0-20210807182240-e035a5bcb5af/go.mod h1:QRIZQbe4/plcoxJ73DZC5iXtNmM0sRT5C/o44HZBrZU=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
