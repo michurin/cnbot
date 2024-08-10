@@ -9,7 +9,10 @@ linters-settings:
   cyclop:
     max-complexity: 16
   gci:
-    local-prefixes: github.com/michurin/cnbot
+    sections:
+      - standard
+      - default
+      - prefix(github.com/michurin/cnbot)
 linters:
   disable-all: true
   enable:
