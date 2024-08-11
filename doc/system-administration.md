@@ -35,7 +35,8 @@ As usual create service file like this `/etc/systemd/system/cnbot.service`:
 ```ini
 [Unit]
 Description=Telegram bot (cnbot) service
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
