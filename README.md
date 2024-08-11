@@ -3,7 +3,6 @@
 ![build](https://github.com/michurin/cnbot/workflows/build/badge.svg)
 ![test](https://github.com/michurin/cnbot/workflows/test/badge.svg)
 ![lint](https://github.com/michurin/cnbot/workflows/lint/badge.svg)
-[![@cnbot_demobot](http://shields.io/badge/demo_bot-%40cnbot__demobot-brightgreen?logo=telegram&style=flat)](https://t.me/cnbot_demobot)
 
 The goal of this project is to provide a way
 to alive Telegram bots by scripting that
@@ -14,16 +13,6 @@ that is complying with extremely simple contract.
 ![Telegram bot screenshot](https://raw.githubusercontent.com/michurin/cnbot/static/screenshot.png)
 
 ## Features
-
-### Quick glance
-
-First of all, demo bot [@cnbot_demobot](https://t.me/cnbot_demobot)
-is to give you an idea of how it works. This bot is driven
-by `cnbot` and [this script](examples/public/script.sh).
-
-You can find more details out of comments in
-[demo script](examples/demo.sh) and [demo config](examples/config.yaml).
-Read on "Quick start" section to learn how to run your own bot.
 
 ### Key features
 
@@ -85,9 +74,8 @@ Read on "Quick start" section to learn how to run your own bot.
 - You have to [create](https://core.telegram.org/bots#3-how-do-i-create-a-bot)
   your Telegram bot and get your bot **token**.
   It is easy and totally free.
-- It would be nice to know your Telegram user ID. You can
-  learn it on the demo bot [@cnbot_demobot](https://t.me/cnbot_demobot)
-  or special bot [@userinfobot](https://t.me/userinfobot).
+- It would be nice to know your Telegram user ID. This bot
+  [@userinfobot](https://t.me/userinfobot) can help you.
   Or otherwise, you can proceed now, and find your ID out of
   the `cnbot` logs later.
 
