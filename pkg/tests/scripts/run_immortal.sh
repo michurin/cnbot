@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 trap '' SIGINT
 sleep 1

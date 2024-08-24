@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 trap 'echo trap SIGINT' SIGINT
 trap 'echo trap SIGTERM' SIGTERM
