@@ -37,13 +37,15 @@ It seems, API of this bot engines is quite stable and won't change dramatically 
 
 ## Basic ideas
 
-All interactions `cnbot`-script are based on (i) `stdout` stream, (ii) arguments and (iii) environment variables.
+You impalement all your business logic in your scripts. You are totally free to use all Telegram API abilities.
 
-The engine recognize multimedia and images. It cares about concurrency and races.
+`cnbot` interact with scripts using (i) `stdout` stream, (ii) arguments and (iii) environment variables.
+
+The engine automatically recognize multimedia and images. It cares about concurrency and races.
 
 It also provides simple API for asynchronous messaging from `cron`s and such things.
 
-It manages tasks (subprocesses), control timeouts, send signals and provides abilities to
+It manages tasks (subprocesses), controls timeouts, sends signals and provides abilities to
 run long-running tasks like long image/video conversions and/or downloading.
 
 One instance of engine is able to manage several different bots.
@@ -68,6 +70,8 @@ Just run one command to invoke the simplest bot:
 ```sh
 tb_token='TOKEN' tb_script=/usr/bin/echo tb_long_running_script=/usr/bin/echo tb_ctrl_addr=:9999 cnbot
 ```
+
+You are free to keep your token in file and use syntax like this to refer to file: `tb_token=@filename`
 
 Don't worry, we will use configuration file further. The engine is able to use both files and direct environment variables.
 
