@@ -6,6 +6,8 @@ even simpler than CGI scripts.
 All you need to write is a script (on any language)
 that is complying with extremely simple contract.
 
+![Telegram bot demo screenshot](https://raw.githubusercontent.com/michurin/cnbot/static/screenshot-2024.gif)
+
 > [!NOTE]
 > The minimal-effort echo-bot can be started like this:
 >
