@@ -870,9 +870,12 @@ WantedBy=multi-user.target
 - Engine API uses non-standard method `RUN`. It allows by standards, however it doesn't seem inevitable.
 - Engine uses [`mime.ExtensionsByType()`](https://pkg.go.dev/mime#ExtensionsByType) to detect extensions for multimedia attachments. This function relies on the system configuration. It's highly recommended to install package like `shared-mime-info`. Pleas keep it in mind when you build production docker images and deploy the engine to remote servers.
 - Integration tests rely exclusively on `bash` rather than any other shell. Simple `sh` won't work in most cases.
+- Tests also rely on `curl`.
 - Engine doesn't retry any requests to Telegram API. Looks like issue. However, Telegram API doesn't provide any idempotency keys, and engine doesn't save state between restarts. It seems you have to solve this issue somehow else.
 - It hasn't been tested on MS Windows and FreeBSD.
 - The engine doesn't support persistent storage. You have to save state if you need by yourself.
+- Engine consider kill signals as errors. So it's final log message is error mostly. It is confusing.
+- Right now code has a lot of public types, methods and functions. I want this code to be able to be embedded and integrated. However, public API needs to be reviewed.
 
 ## Developing and contributing
 
