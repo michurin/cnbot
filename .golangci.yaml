@@ -1,0 +1,44 @@
+linters:
+  enable-all: true
+  disable:
+      # deprecated
+    - execinquery
+    - exportloopref
+      # disabled because the Go version (1.21)
+    - copyloopvar
+    - intrange
+      # TODO turn on
+    - depguard
+    - err113
+    - exhaustruct
+    - gochecknoglobals # TODO turn in on asap
+    - godot
+    - godox
+    - gomnd
+    - lll
+    - mnd
+    - testifylint
+    - wastedassign
+    - wrapcheck
+      # seems too hard
+    - nlreturn
+    - paralleltest
+    - varnamelen
+    - wsl
+linters-settings:
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(github.com/michurin/cnbot)
+  cyclop:
+    max-complexity: 20 # would be 10
+  funlen:
+    max-complexity: 60
+    statements: 60
+    lines: 100
+issues:
+  exclude-rules:
+    - path: 'pkg/app/(log|version).go'
+      linters:
+      - forbidigo

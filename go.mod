@@ -1,10 +1,15 @@
 module github.com/michurin/cnbot
 
-go 1.14
+go 1.21
 
 require (
-	github.com/michurin/jsonpainter v0.0.0-20240121073223-63e2ac2c69a8
-	github.com/michurin/minlog v0.0.0-20240121075435-4238205a1af5
+	github.com/michurin/systemd-env-file v0.0.0-20240901064949-1bf6f202a17f
 	github.com/stretchr/testify v1.9.0
-	gopkg.in/yaml.v3 v3.0.1
+	golang.org/x/sync v0.8.0
+)
+
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
