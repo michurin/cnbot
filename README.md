@@ -8,15 +8,6 @@ that is complying with extremely simple contract.
 
 ![Telegram bot demo screenshot](https://raw.githubusercontent.com/michurin/cnbot/static/screenshot-2024.gif)
 
-> [!NOTE]
-> The minimal-effort echo-bot can be started like this:
->
-> ````sh
-> tb_token='TG_API_TOKEN' tb_script=echo tb_long_running_script=true tb_ctrl_addr=:9999 cnbot
-> ````
->
-> Where `echo` and `true` are standard command line utilities.
-
 ## What is it for
 
 This bot engine has proven itself in alerting, system monitoring and managing tasks.
@@ -54,6 +45,17 @@ One instance of engine is able to manage several different bots.
 
 ## Quick start
 
+### Zero-effort Docker-way to run full-featured bot
+
+All you need is bot token ([instructions](https://core.telegram.org/bots#how-do-i-create-a-bot)).
+
+```sh
+docker build -t cnbot:latest https://raw.githubusercontent.com/michurin/cnbot/master/demo/Dockerfile
+docker run -it --rm --name cnbot -e TB_TOKEN=226015286:AAHmNQ3zUTIHy9vSJBl9HaCr0B6_JZHEFSw cnbot:latest
+```
+
+[More details](https://github.com/michurin/cnbot/tree/master/demo)
+
 ### Run simplest one-line bot
 
 #### Prepare
@@ -61,16 +63,21 @@ One instance of engine is able to manage several different bots.
 First things first, you need to create bot and get it's token.
 It is free, just follow [instructions](https://core.telegram.org/bots#how-do-i-create-a-bot).
 
-#### Build
+#### Build and run
 
-TODO: `go install final_path`, hint: `GOBIN=$(pwd)`
-
-#### Run
-
-Just run one command to invoke the simplest bot:
+You need Telegram API token, `golang` and standard system commands `echo` and `true`.
 
 ```sh
-tb_token='TOKEN' tb_script=/usr/bin/echo tb_long_running_script=/usr/bin/echo tb_ctrl_addr=:9999 cnbot
+go install github.com/michurin/cnbot/cmd/...@latest
+tb_token='226015286:AAHmNQ3zUTIHy9vSJBl9HaCr0B6_JZHEFSw' tb_script=echo tb_long_running_script=true tb_ctrl_addr=:9999 cnbot
+```
+
+or without installation:
+
+```sh
+git clone https://github.com/michurin/cnbot
+cd cnbot
+tb_token='226015286:AAHmNQ3zUTIHy9vSJBl9HaCr0B6_JZHEFSw' tb_script=echo tb_long_running_script=true tb_ctrl_addr=:9999 go run ./cmd/...
 ```
 
 You are free to keep your token in file and use syntax like this to refer to file: `tb_token=@filename`
@@ -84,7 +91,7 @@ Don't worry, we will use configuration file further. The engine is able to use b
 
 Run this command with correct variables and try to say something to you bot. You will be echoed by it.
 
-### Put your configuration to file
+### Put your configuration into file
 
 You may as well put your configuration into env-file. The format of file is literally the same as `systemd` use.
 So you are able to load it in `systemd` files as well. For example:
@@ -242,7 +249,7 @@ curl -qs https://github.githubassets.com/favicons/favicon.png | curl -qs http://
 ### Formatted text
 
 ```sh
-(echo '%!PRE'; echo 'Hello!') | curl -qs http://localhost:9999/?to=153812628 --data-binary '@-'
+(echo '%!PRE'; echo 'Hello!') | curl -qs http://localhost:9999/?to=153333328 --data-binary '@-'
 ```
 
 ## Big picture
@@ -888,6 +895,7 @@ WantedBy=multi-user.target
 - Configuration must be simple
 - Code must be testable and has to be covered
 - Functionality has to be observable and has to provide ability to add metrics and monitoring by adding middleware without code changing
+- The engine tries to be case insensitive considering environment variables. It can lead to false warnings
 
 ### Deep debugging
 
