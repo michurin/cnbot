@@ -1,5 +1,9 @@
 # cnbot
 
+[![build](https://github.com/michurin/cnbot/actions/workflows/ci.yaml/badge.svg)](https://github.com/michurin/cnbot/actions/workflows/ci.yaml)
+[![codecov](https://codecov.io/gh/michurin/cnbot/graph/badge.svg?token=3GdCf3TqZC)](https://codecov.io/gh/michurin/cnbot)
+[![Go Report Card](https://goreportcard.com/badge/github.com/michurin/cnbot)](https://goreportcard.com/report/github.com/michurin/cnbot)
+
 The goal of this project is to provide a way
 to alive Telegram bots by scripting that
 even simpler than CGI scripts.
