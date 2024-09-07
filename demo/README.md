@@ -61,13 +61,13 @@ sudo docker exec cnbot curl -qs http://localhost:9999/getMe | jq
 
 It is `mitmproxy` available in the container. You can run `mitmproxy` tool like this
 
-```
+```sh
 sudo docker run -it --rm --name cnbot -e 'TB_TOKEN=4839574812:AAFD39kkdpWt3ywyRZergyOLMaJhac60qc' -e 'TB_SCRIPT=/app/bot_debug.sh' -e 'TB_LONG_RUNNING_SCRIPT=/app/bot_long_debug.sh' -e 'TB_API_ORIGIN=http://localhost:9001' cnbot:v2 /usr/local/bin/mitmdump --set confdir=/tmp --flow-detail 4 -p 9001 --mode reverse:https://api.telegram.org
 ```
 
 And than execute `cnbot` in this container:
 
-```
+```sh
 sudo docker exec -it cnbot ./cnbot
 ```
 
@@ -75,7 +75,7 @@ Now try to talk with bot and enjoy verbose output.
 
 ## Just docker memo
 
-```
+```sh
 sudo docker images                 # list images
 sudo docker image rm -f cnbot:v2   # remove image
 
