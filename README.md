@@ -55,7 +55,7 @@ All you need is bot token ([instructions](https://core.telegram.org/bots#how-do-
 
 ```sh
 docker build -t cnbot:latest https://raw.githubusercontent.com/michurin/cnbot/master/demo/Dockerfile
-docker run -it --rm --name cnbot -e TB_TOKEN=226015286:AAHmNQ3zUTIHy9vSJBl9HaCr0B6_JZHEFSw cnbot:latest
+docker run -it --rm --name cnbot -e TB_TOKEN=4839574812:AAFD39kkdpWt3ywyRZergyOLMaJhac60qc cnbot:latest
 ```
 
 [More details](https://github.com/michurin/cnbot/tree/master/demo)
@@ -73,7 +73,7 @@ You need Telegram API token, `golang` and standard system commands `echo` and `t
 
 ```sh
 go install github.com/michurin/cnbot/cmd/...@latest
-tb_token='226015286:AAHmNQ3zUTIHy9vSJBl9HaCr0B6_JZHEFSw' tb_script=echo tb_long_running_script=true tb_ctrl_addr=:9999 cnbot
+tb_token='4839574812:AAFD39kkdpWt3ywyRZergyOLMaJhac60qc' tb_script=echo tb_long_running_script=true tb_ctrl_addr=:9999 cnbot
 ```
 
 or without installation:
@@ -81,7 +81,7 @@ or without installation:
 ```sh
 git clone https://github.com/michurin/cnbot
 cd cnbot
-tb_token='226015286:AAHmNQ3zUTIHy9vSJBl9HaCr0B6_JZHEFSw' tb_script=echo tb_long_running_script=true tb_ctrl_addr=:9999 go run ./cmd/...
+tb_token='4839574812:AAFD39kkdpWt3ywyRZergyOLMaJhac60qc' tb_script=echo tb_long_running_script=true tb_ctrl_addr=:9999 go run ./cmd/...
 ```
 
 You are free to keep your token in file and use syntax like this to refer to file: `tb_token=@filename`
