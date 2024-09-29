@@ -19,6 +19,10 @@ t="${t%%.*}"
 base="${0%/*}/logs/$(date +%s)_${t}_${$}_"
 ext='.log'
 
+# do not forget to create all necessary directories
+mkdir -p "$(dirname "$base")"
+
+# store command line arguments
 n=0
 for a in "$@"
 do
@@ -26,8 +30,11 @@ do
     n="$(($n+1))"
 done
 
+# store environment variables
 env | sort >"${base}env${ext}"
 
+# run and store standard streams
 "$cmd" "$@" 2>"${base}err${ext}" | tee "${base}out${ext}"
 
+# store final exit code
 echo "$?" >"${base}status${ext}"

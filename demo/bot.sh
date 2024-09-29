@@ -1,6 +1,7 @@
 #!/bin/bash
 
 LOG=logs/log.log # /dev/null
+mkdir -p "$(dirname "$LOG")" # do not forget to create all necessary directories
 
 FROM="$tg_message_from_id"
 
@@ -42,6 +43,10 @@ case "$1" in
         echo ''
         echo "📌 Configuration:"
         echo "LOG=$LOG"
+        echo 'working directory:'
+        echo " $PWD"
+        echo 'binary:'
+        echo " $0"
         ;;
     about)
         echo '%!PRE'

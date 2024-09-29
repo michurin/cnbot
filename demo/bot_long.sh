@@ -1,6 +1,7 @@
 #!/bin/bash
 
-LOG=logs/log_long.log # /dev/null
+LOG=logs/log_long.log # /dev/null to disable logging
+mkdir -p "$(dirname "$LOG")" # do not forget to create all necessary directories
 
 FROM="$tg_x_to"
 
