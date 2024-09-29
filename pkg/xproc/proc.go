@@ -19,8 +19,7 @@ type Cmd struct {
 	InterruptDelay time.Duration
 	KillDelay      time.Duration
 	Env            []string
-	Command        string
-	ConfigFileDir  string
+	Command        string // must be absolute path to executable
 }
 
 func killGrp(ctx context.Context, pid int, sig syscall.Signal) {
@@ -51,11 +50,7 @@ func (c *Cmd) Run(
 ) {
 	// setup cmd
 	command := c.Command
-	if !filepath.IsAbs(c.Command) {
-		command = filepath.Join(c.ConfigFileDir, c.Command)
-	}
-	commandFile := "." + string(filepath.Separator) + filepath.Base(command) // filepath.Join drops dots
-	cmd := exec.Command(commandFile, args...)                                // we don't use CommandContext here because it kills only process, not group
+	cmd := exec.Command(command, args...) // we don't use CommandContext here because it kills only process, not group
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setpgid: true,
 	}

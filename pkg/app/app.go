@@ -3,21 +3,24 @@ package app
 import (
 	"context"
 	"net/http"
+	"os"
+	"os/exec"
 	"path"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"golang.org/x/sync/errgroup"
 
 	"github.com/michurin/cnbot/pkg/ctxlog"
 	"github.com/michurin/cnbot/pkg/xbot"
-	"github.com/michurin/cnbot/pkg/xcfg"
 	"github.com/michurin/cnbot/pkg/xctrl"
 	"github.com/michurin/cnbot/pkg/xlog"
 	"github.com/michurin/cnbot/pkg/xloop"
 	"github.com/michurin/cnbot/pkg/xproc"
 )
 
-func bot(ctx context.Context, eg *errgroup.Group, cfg xcfg.Config, tgAPIOrigin, build string) {
+func bot(ctx context.Context, eg *errgroup.Group, cfg BotConfig, tgAPIOrigin, build string) error {
 	bot := &xbot.Bot{
 		APIOrigin: tgAPIOrigin,
 		Token:     cfg.Token,
@@ -26,20 +29,27 @@ func bot(ctx context.Context, eg *errgroup.Group, cfg xcfg.Config, tgAPIOrigin, 
 
 	envCommon := []string{"tg_x_ctrl_addr=" + cfg.ControlAddr, "tg_x_build=" + build}
 
+	cfgDir, err := filepath.Abs(cfg.ConfigFileDir) // if dir is "", it uses CWD
+	if err != nil {
+		return ctxlog.Errorfx(ctx, "invalid config dir: %w", err)
+	}
+
+	// caution:
+	// do not return errors and do not interrupt flow after goroutines running
+	// it will lead to goroutine leaking
+
 	command := &xproc.Cmd{
 		InterruptDelay: 10 * time.Second,
 		KillDelay:      10 * time.Second,
 		Env:            envCommon,
-		Command:        cfg.Script,
-		ConfigFileDir:  cfg.ConfigFileDir,
+		Command:        absPathToBinary(cfgDir, cfg.Script),
 	}
 
 	commandLong := &xproc.Cmd{
 		InterruptDelay: 10 * time.Minute,
 		KillDelay:      10 * time.Minute,
 		Env:            envCommon,
-		Command:        cfg.LongRunningScript,
-		ConfigFileDir:  path.Dir(cfg.LongRunningScript),
+		Command:        absPathToBinary(cfgDir, cfg.LongRunningScript),
 	}
 
 	eg.Go(func() error {
@@ -73,15 +83,44 @@ func bot(ctx context.Context, eg *errgroup.Group, cfg xcfg.Config, tgAPIOrigin, 
 		}
 		return nil
 	})
+
+	return nil
 }
 
-func Application(rootCtx context.Context, bots map[string]xcfg.Config, tgAPIOrigin, build string) error {
+func absPathToBinary(cwd, b string) string {
+	// This function assumes that cwd is absolute. It returns absolute path to executable file.
+	// case: is it absolute
+	if path.IsAbs(b) {
+		return b
+	}
+	// case: is it regular binary, accessible via $path
+	if !strings.Contains(b, string(os.PathSeparator)) {
+		x, err := exec.LookPath(b)
+		if err == nil {
+			return x
+		}
+	}
+	return path.Join(cwd, b)
+}
+
+type BotConfig struct {
+	ControlAddr       string
+	Token             string
+	Script            string
+	LongRunningScript string
+	ConfigFileDir     string
+}
+
+func Application(rootCtx context.Context, bots map[string]BotConfig, tgAPIOrigin, build string) error {
 	if len(bots) == 0 {
 		return ctxlog.Errorfx(rootCtx, "there is no configuration")
 	}
 	eg, ctx := errgroup.WithContext(rootCtx)
 	for name, cfg := range bots {
-		bot(xlog.Bot(ctx, name), eg, cfg, tgAPIOrigin, build)
+		err := bot(xlog.Bot(ctx, name), eg, cfg, tgAPIOrigin, build)
+		if err != nil {
+			return err
+		}
 	}
 	xlog.L(ctx, "Run. Build="+build)
 	return eg.Wait()

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -20,6 +21,11 @@ import (
 	"github.com/michurin/cnbot/pkg/xloop"
 	"github.com/michurin/cnbot/pkg/xproc"
 )
+
+// *****************************************************************************
+// Integration tests use real curl utility. It must be installed in your system.
+// Motivation: to cover real behavior of curls command line options.
+// *****************************************************************************
 
 // TODO setup xlog
 
@@ -141,7 +147,7 @@ func TestMethods(t *testing.T) {
 
 			bot := buildBot(tgURL)
 
-			command := buildCommand("scripts/show_args.sh")
+			command := buildCommand(t, "scripts/show_args.sh")
 
 			err := xloop.Loop(ctx, bot, command)
 			require.Error(t, err)
@@ -353,7 +359,7 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 
 			bot := buildBot(tgURL)
 
-			command := buildCommand(cs.script)
+			command := buildCommand(t, cs.script)
 
 			err := xloop.Loop(ctx, bot, command)
 			require.Error(t, err)
@@ -483,7 +489,7 @@ func TestHttp_long(t *testing.T) { // CAUTION: test has sleep
 	defer tgClose()
 
 	bot := buildBot(tgURL)
-	command := buildCommand("scripts/longrunning.sh")
+	command := buildCommand(t, "scripts/longrunning.sh")
 
 	h := xctrl.Handler(bot, command, ctxlog.Patch(context.Background()))
 
@@ -499,18 +505,18 @@ func TestHttp_long(t *testing.T) { // CAUTION: test has sleep
 func TestProc(t *testing.T) { // CAUTION: test has sleep indirectly
 	ctx := context.Background()
 	t.Run("argsEnvs", func(t *testing.T) {
-		data, err := buildCommand("scripts/run_show_args.sh").Run(ctx, []string{"ARG1", "ARG2"}, []string{"test1=TEST1", "test2=TEST2"})
+		data, err := buildCommand(t, "scripts/run_show_args.sh").Run(ctx, []string{"ARG1", "ARG2"}, []string{"test1=TEST1", "test2=TEST2"})
 		require.NoError(t, err, "data="+string(data))
 		assert.Equal(t, "arg1=ARG1 arg2=ARG2 test1=TEST1 test2=TEST2 TEST=test\n", string(data))
 	})
 	t.Run("exit", func(t *testing.T) {
-		data, err := buildCommand("scripts/run_exit.sh").Run(ctx, nil, nil)
+		data, err := buildCommand(t, "scripts/run_exit.sh").Run(ctx, nil, nil)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "wait: exit status 28")
 		assert.Nil(t, data)
 	})
 	t.Run("sigint", func(t *testing.T) {
-		data, err := buildCommand("scripts/run_slow.sh").Run(ctx, nil, nil)
+		data, err := buildCommand(t, "scripts/run_slow.sh").Run(ctx, nil, nil)
 		require.NoError(t, err)
 		assert.Equal(t,
 			`start
@@ -521,26 +527,28 @@ trap EXIT
 `, string(data))
 	})
 	t.Run("sigkill", func(t *testing.T) {
-		data, err := buildCommand("scripts/run_immortal.sh").Run(ctx, nil, nil)
+		data, err := buildCommand(t, "scripts/run_immortal.sh").Run(ctx, nil, nil)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "wait: signal: killed")
 		assert.Nil(t, data)
 	})
 	t.Run("notfound", func(t *testing.T) {
-		data, err := buildCommand("scripts/NOTFOUND").Run(ctx, nil, nil)
+		data, err := buildCommand(t, "scripts/NOTFOUND").Run(ctx, nil, nil)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "fork/exec ./NOTFOUND: no such file or directory")
+		assert.Contains(t, err.Error(), "/NOTFOUND: no such file or directory") // it is absolute path appears in error message
 		assert.Nil(t, data)
 	})
 }
 
-func buildCommand(cmd string) *xproc.Cmd {
+func buildCommand(t *testing.T, cmd string) *xproc.Cmd {
+	t.Helper()
+	absCmd, err := filepath.Abs(cmd) // app does it
+	require.NoError(t, err)
 	return &xproc.Cmd{
 		InterruptDelay: 200 * time.Millisecond, // timeouts important for TestProc
 		KillDelay:      200 * time.Millisecond,
 		Env:            []string{"TEST=test"},
-		Command:        cmd,
-		ConfigFileDir:  ".",
+		Command:        absCmd,
 	}
 }
 
