@@ -108,8 +108,9 @@ case "$1" in
         mShowAlert='{"text":"show alert","callback_data":"ment_alert"}'
         mLikeIt='{"text":"like it","callback_data":"ment_like"}'
         mUnlikeIt='{"text":"unlike it","callback_data":"ment_unlike"}'
+        mCopy='{"text":"copy \"MAGIC\" to clipboard","copy_text":{"text":"MAGIC"}}'
         mDelete='{"text":"delete this message","callback_data":"ment_delete"}'
-        mLayout="[[$mShowEnv],[$mShowAlert,$mShowNotification],[$mLikeIt,$mUnlikeIt],[$mDelete]]"
+        mLayout="[[$mShowEnv],[$mShowAlert,$mShowNotification],[$mLikeIt,$mUnlikeIt],[$mCopy],[$mDelete]]"
         API sendMessage \
             -F chat_id=$FROM \
             -F text='Actions' \
