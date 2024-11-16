@@ -2,7 +2,6 @@ linters:
   enable-all: true
   disable:
       # deprecated
-    - execinquery
     - exportloopref
       # disabled because the Go version (1.21)
     - copyloopvar
@@ -14,7 +13,6 @@ linters:
     - gochecknoglobals # TODO turn in on asap
     - godot
     - godox
-    - gomnd
     - lll
     - mnd
     - testifylint
