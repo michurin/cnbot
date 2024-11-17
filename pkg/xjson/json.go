@@ -12,28 +12,29 @@ func jsonToEnv(pfx string, x any) ([]string, error) {
 	case nil:
 		return nil, nil
 	case bool:
-		return []string{fmt.Sprintf("%s=%t", pfx, e)}, nil
+		return []string{pfx + "=" + strconv.FormatBool(e)}, nil
 	case float64:
-		return []string{fmt.Sprintf("%s=%.20g", pfx, e)}, nil
+		return []string{pfx + "=" + strconv.FormatFloat(e, 'g', -1, 64)}, nil
 	case string:
-		return []string{fmt.Sprintf("%s=%s", pfx, e)}, nil
+		return []string{pfx + "=" + e}, nil
 	case []any:
 		l := len(e)
-		if l == 0 {
-			return nil, nil
-		}
 		res := make([]string, 0, l+1) // we cannot predict final length, however it's not less than l+1
-		lst := make([]string, l)
+		lst := make([]string, 0, l)
 		for i, v := range e {
 			p := pfx + "_" + strconv.Itoa(i)
-			lst[i] = p
 			t, err := jsonToEnv(p, v)
 			if err != nil {
 				return nil, err
 			}
-			res = append(res, t...)
+			if len(t) != 0 {
+				lst = append(lst, p)
+				res = append(res, t...)
+			}
 		}
-		res = append(res, fmt.Sprintf("%s=%s", pfx, strings.Join(lst, " ")))
+		if len(res) > 0 {
+			res = append(res, pfx+"="+strings.Join(lst, " ")) // append indexes
+		}
 		return res, nil
 	case map[string]any:
 		res := make([]string, 0, len(e)) // the same case as above
