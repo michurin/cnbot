@@ -861,8 +861,8 @@ Systemd unit file example (`/etc/systemd/system/cnbot.service`):
 ```ini
 [Unit]
 Description=Telegram bot (cnbot) service
-After=network-online.target
-Wants=network-online.target
+Documentation=https://github.com/michurin/cnbot
+After=network.target nss-lookup.target
 
 [Service]
 Type=simple
