@@ -33,7 +33,7 @@ jobs:
           go-version: "1.24"
       - uses: golangci/golangci-lint-action@v6
         with:
-          version: "v1.62"
+          version: "v1.64"
       - run: "go test -v -coverprofile=coverage.tmp -covermode=atomic -coverpkg=./pkg/... ./pkg/..."
       - run: "grep -v /pkg/app/ coverage.tmp >coverage.txt"
       - run: "diff coverage.tmp coverage.txt || true" # just to see what has been excluded

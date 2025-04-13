@@ -2,7 +2,7 @@ linters:
   enable-all: true
   disable:
       # deprecated
-    - exportloopref
+    - tenv
       # disabled because the Go version (1.21)
     - copyloopvar
     - intrange
