@@ -30,12 +30,6 @@ func (h *handler) Enabled(ctx context.Context, level slog.Level) bool {
 	return h.next.Enabled(ctx, level)
 }
 
-func (h *handler) fname(pc uintptr) string {
-	f, _ := runtime.CallersFrames([]uintptr{pc}).Next()
-	file, _ := strings.CutPrefix(f.File, h.pfx)
-	return fmt.Sprintf("%s:%d", file, f.Line)
-}
-
 func (h *handler) Handle(ctx context.Context, ro slog.Record) error {
 	// Slightly overcomplicated approach. So we want to:
 	// - save attrs from handler as is
@@ -103,4 +97,10 @@ func (h *handler) WithGroup(name string) slog.Handler {
 		pfx:  h.pfx,
 		next: h.next.WithGroup(name),
 	}
+}
+
+func (h *handler) fname(pc uintptr) string {
+	f, _ := runtime.CallersFrames([]uintptr{pc}).Next()
+	file, _ := strings.CutPrefix(f.File, h.pfx)
+	return fmt.Sprintf("%s:%d", file, f.Line)
 }

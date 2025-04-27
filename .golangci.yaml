@@ -1,41 +1,69 @@
+version: "2"
 linters:
-  enable-all: true
+  default: all
   disable:
-      # deprecated
-    - tenv
-      # disabled because the Go version (1.21)
     - copyloopvar
-    - intrange
-      # TODO turn on
-    - depguard
     - err113
     - exhaustruct
-    - gochecknoglobals # TODO turn in on asap
+    - gochecknoglobals
     - godot
     - godox
+    - intrange
     - lll
     - mnd
-    - testifylint
-    - wastedassign
-    - wrapcheck
-      # seems too hard
     - nlreturn
     - paralleltest
+    - testifylint
     - varnamelen
+    - wastedassign
+    - wrapcheck
     - wsl
-linters-settings:
-  gci:
-    sections:
-      - standard
-      - default
-      - prefix(github.com/michurin/cnbot)
-  cyclop:
-    max-complexity: 20 # would be 10
-  funlen:
-    statements: 60
-    lines: 100
-issues:
-  exclude-rules:
-    - path: 'pkg/app/(log|version).go'
-      linters:
-      - forbidigo
+  settings:
+    cyclop:
+      max-complexity: 20
+    funlen:
+      lines: 100
+      statements: 60
+    depguard:
+      rules:
+        main:
+          allow:
+            - $gostd
+            - github.com/michurin/cnbot
+            - golang.org/x/sync/errgroup
+            - github.com/michurin/systemd-env-file
+            - github.com/stretchr/testify
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - forbidigo
+        path: pkg/app/(log|version).go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/michurin/cnbot)
+
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
