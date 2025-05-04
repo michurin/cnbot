@@ -13,6 +13,7 @@ linters:
     - mnd
     - nlreturn
     - paralleltest
+    - revive
     - testifylint
     - varnamelen
     - wastedassign
@@ -30,24 +31,22 @@ linters:
           allow:
             - $gostd
             - github.com/michurin/cnbot
-            - golang.org/x/sync/errgroup
             - github.com/michurin/systemd-env-file
             - github.com/stretchr/testify
+            - golang.org/x/sync/errgroup
   exclusions:
     generated: lax
-    presets:
-      - comments
-      - common-false-positives
-      - legacy
-      - std-error-handling
+    warn-unused: true
     rules:
-      - linters:
+      - path: "pkg/app/(log|version)\\.go"
+        linters:
           - forbidigo
-        path: pkg/app/(log|version).go
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
+      - source: "^\\s*defer\\s+"
+        linters:
+          - errcheck
+      - source: "\\s(os\\.ReadFile|exec\\.Command)\\("
+        linters:
+          - gosec
 formatters:
   enable:
     - gci
@@ -60,10 +59,3 @@ formatters:
         - standard
         - default
         - prefix(github.com/michurin/cnbot)
-
-  exclusions:
-    generated: lax
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
