@@ -19,6 +19,8 @@ type APIAct struct {
 }
 
 func APIServer(t *testing.T, cancel context.CancelFunc, api map[string][]APIAct) (string, func()) {
+	// TODO
+	// HUGE MISFEATURE: we do not check all calls are really happened! We are checking only happened calls though.
 	t.Helper()
 	testDone := make(chan struct{})
 	steps := map[string]int{} // it looks ugly, however we can use it without locks
@@ -32,6 +34,7 @@ func APIServer(t *testing.T, cancel context.CancelFunc, api map[string][]APIAct)
 		body := string(bodyBytes)
 
 		url := r.URL.String()
+		t.Logf("Mock server: url=%q", url)
 		n := steps[url]
 		ax, ok := api[url]
 		assert.True(t, ok, "URL not found: "+url)

@@ -185,7 +185,7 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 		{
 			IsJSON:   true,
 			Request:  `{"offset":501,"timeout":30,"allowed_updates":["callback_query","inline_query","message","message_reaction","poll","poll_answer"]}`,
-			Response: nil,
+			Response: nil, // the second update call will stop Mock API server
 		},
 	}
 	sendMessageResponseJSON := []byte(`{"ok": true, "result": {}}`)
@@ -193,7 +193,7 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 		name   string
 		script string
 		api    map[string][]apiserver.APIAct
-	}{
+	}{ // TODO adjust naming of tests and scripts
 		{
 			name:   "simple_text",
 			script: "scripts/just_ok.sh",
@@ -363,7 +363,7 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 
 			err := xloop.Loop(ctx, bot, command)
 			require.Error(t, err)
-			require.Contains(t, err.Error(), "context canceled") // like "api: client: Post \"http://127.0.0.1:34241/botMORN/getUpdates\": context canceled"
+			require.ErrorContains(t, err, "context canceled") // like "api: client: Post \"http://127.0.0.1:34241/botMORN/getUpdates\": context canceled"
 		})
 	}
 }
