@@ -14,7 +14,7 @@ func jsonToEnv(pfx string, x any) ([]string, error) {
 	case bool:
 		return []string{pfx + "=" + strconv.FormatBool(e)}, nil
 	case float64:
-		return []string{pfx + "=" + strconv.FormatFloat(e, 'g', -1, 64)}, nil
+		return []string{pfx + "=" + strconv.FormatFloat(e, 'f', -1, 64)}, nil
 	case string:
 		return []string{pfx + "=" + e}, nil
 	case []any:

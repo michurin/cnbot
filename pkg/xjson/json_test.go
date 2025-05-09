@@ -34,15 +34,16 @@ func TestJSONToEnv(t *testing.T) {
 			"j": "",
 			"k": float64(.3),
 			"l": float64(.2) + float64(.1),
+			"m": float64(1<<53 - 1),
 			// corner cases: partially skipping
-			"m": []any{float64(1), nil, float64(3)},                         // m[1] won't appear
-			"n": map[string]any{"a": float64(1), "b": nil, "c": float64(3)}, // n["b"] won't appear
+			"n": []any{float64(1), nil, float64(3)},                         // m[1] won't appear
+			"o": map[string]any{"a": float64(1), "b": nil, "c": float64(3)}, // n["b"] won't appear
 			// not appears: empty structures
-			"o": map[string]any{},
-			"p": []any{},
+			"p": map[string]any{},
+			"q": []any{},
 			// not appears: empty nested structures
-			"q": map[string]any{"a": nil, "b": []any{}, "c": map[string]any{}},
-			"r": []any{nil, []any{}, map[string]any{}},
+			"r": map[string]any{"a": nil, "b": []any{}, "c": map[string]any{}},
+			"s": []any{nil, []any{}, map[string]any{}},
 		}
 		env, err := xjson.JSONToEnv(x)
 		require.NoError(t, err)
@@ -63,11 +64,12 @@ func TestJSONToEnv(t *testing.T) {
 			"tg_j=",
 			"tg_k=0.3",
 			"tg_l=0.30000000000000004",
-			"tg_m=tg_m_0 tg_m_2",
-			"tg_m_0=1",
-			"tg_m_2=3",
-			"tg_n_a=1",
-			"tg_n_c=3",
+			"tg_m=9007199254740991", // 2**53-1 (all bits are '1')
+			"tg_n=tg_n_0 tg_n_2",
+			"tg_n_0=1",
+			"tg_n_2=3",
+			"tg_o_a=1",
+			"tg_o_c=3",
 		}, env)
 	})
 	t.Run("invalidType", func(t *testing.T) {
