@@ -47,9 +47,17 @@ func RequestFromBinary(data []byte, userID int64) (*Request, error) {
 		}
 		if bytes.HasPrefix(data, []byte("%!PRE\n")) {
 			croped := bytes.TrimSpace(data[6:]) // 6 is len of prefix
-			str, l, err := checkTextLen(croped)
-			if err != nil {
-				return nil, fmt.Errorf("preformatted stdout: %w", err)
+			if len(croped) == 0 {
+				return RequestStruct("sendMessage", map[string]any{
+					"chat_id":  userID,
+					"text":     "-", // Forcing empty preformated text to "-"
+					"entities": []any{map[string]any{"type": "pre", "offset": 0, "length": 1}},
+				})
+			}
+			str := string(croped)
+			r := []rune(str)
+			if len(r) > 4096 { // In this place length is in terms of Unicode chars
+				return reqMultipart("sendDocument", userID, "document", croped, "formatted_text", "text/plain") // TODO nice to add caption... with caption_entities?
 			}
 			return RequestStruct("sendMessage", map[string]any{
 				"chat_id": userID,
@@ -58,14 +66,19 @@ func RequestFromBinary(data []byte, userID int64) (*Request, error) {
 					map[string]any{
 						"type":   "pre",
 						"offset": 0,
-						"length": l,
+						"length": len(utf16.Encode(r)), // According Telegram's API, in this place the length is in terms of UTF-16
 					},
 				},
 			})
 		}
-		str, _, err := checkTextLen(bytes.TrimSpace(data))
-		if err != nil {
-			return nil, fmt.Errorf("raw stdout: %w", err)
+		data = bytes.TrimSpace(data)
+		if len(data) == 0 {
+			return nil, ctxlog.Errorf("zero length data: skipping response")
+		}
+		str := string(data)
+		r := []rune(str)
+		if len(r) > 4096 { // In this place length is in terms of Unicode chars
+			return reqMultipart("sendDocument", userID, "document", data, "message", "text/plain") // TODO nice to add caption
 		}
 		return RequestStruct("sendMessage", map[string]any{"chat_id": userID, "text": str})
 	case strings.HasPrefix(contentType, "image/"): // TODO to limit image formats
@@ -98,7 +111,11 @@ func fext(ctype string) string {
 			return e
 		}
 	}
-	return exts[0]
+	e := exts[0]
+	if e == ".asc" {
+		return ".txt" // looks more reasonable for text/plain
+	}
+	return e
 }
 
 func reqMultipart(method string, to int64, fieldname string, data []byte, filename string, ctype string) (*Request, error) { // TODO legacy
@@ -132,17 +149,4 @@ func reqMultipart(method string, to int64, fieldname string, data []byte, filena
 		ContentType: w.FormDataContentType(),
 		Body:        body.Bytes(),
 	}, nil
-}
-
-func checkTextLen(x []byte) (string, int, error) {
-	if len(x) == 0 {
-		return "", 0, ctxlog.Errorf("empty text")
-	}
-	s := string(x)
-	r := []rune(s)
-	l := len(utf16.Encode(r)) // according to telegram bot API, considering length in term of utf16
-	if len(r) > 4096 {        // according to telegram bot API documentation, limits are applied after parsing
-		return "", 0, fmt.Errorf("text too long: %d chars: %s...%s", l, string(r[:10]), string(r[len(r)-10:]))
-	}
-	return s, l, nil
 }

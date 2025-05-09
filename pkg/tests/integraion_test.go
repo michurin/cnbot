@@ -209,6 +209,34 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 			},
 		},
 		{
+			name:   "long_text",
+			script: "scripts/text_long.sh",
+			api: map[string][]apiserver.APIAct{
+				"/botMORN/getUpdates": simpleUpdates,
+				"/botMORN/sendMessage": {
+					{
+						IsJSON:   true,
+						Request:  `{"chat_id": 1500, "text": "` + strings.Repeat(`⌘⌘⌘⌘⌘⌘⌘⌘⌘⌘⌘⌘\n`, 315) + `1` + `"}`,
+						Response: sendMessageResponseJSON,
+					},
+				},
+			},
+		},
+		{
+			name:   "too_long_text",
+			script: "scripts/text_too_long.sh",
+			api: map[string][]apiserver.APIAct{
+				"/botMORN/getUpdates": simpleUpdates,
+				"/botMORN/sendDocument": {
+					{
+						IsJSON:   false,
+						Request:  "--BOUND\r\nContent-Disposition: form-data; name=\"chat_id\"\r\n\r\n1500\r\n--BOUND\r\nContent-Disposition: form-data; name=\"document\"; filename=\"message.txt\"\r\nContent-Type: text/plain\r\n\r\n" + strings.Repeat("⌘⌘⌘⌘⌘⌘⌘⌘⌘⌘⌘⌘\n", 315) + `12` + "\r\n--BOUND--\r\n",
+						Response: sendMessageResponseJSON,
+					},
+				},
+			},
+		},
+		{
 			name:   "preformatted_text",
 			script: "scripts/preformatted_ok.sh",
 			api: map[string][]apiserver.APIAct{
@@ -231,6 +259,34 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 					{
 						IsJSON:   true,
 						Request:  `{"chat_id": 1500, "text": "⚒️", "entities": [{"type": "pre", "offset": 0, "length": 2}]}`,
+						Response: sendMessageResponseJSON,
+					},
+				},
+			},
+		},
+		{
+			name:   "preformatted_long_text",
+			script: "scripts/text_pre_long.sh",
+			api: map[string][]apiserver.APIAct{
+				"/botMORN/getUpdates": simpleUpdates,
+				"/botMORN/sendMessage": {
+					{
+						IsJSON:   true,
+						Request:  `{"chat_id": 1500, "entities": [{"length":4096, "offset":0, "type":"pre"}], "text": "` + strings.Repeat(`⌘⌘⌘⌘⌘⌘⌘⌘⌘⌘⌘⌘\n`, 315) + `1` + `"}`,
+						Response: sendMessageResponseJSON,
+					},
+				},
+			},
+		},
+		{
+			name:   "preformatted_too_long_text",
+			script: "scripts/text_pre_too_long.sh",
+			api: map[string][]apiserver.APIAct{
+				"/botMORN/getUpdates": simpleUpdates,
+				"/botMORN/sendDocument": {
+					{
+						IsJSON:   false,
+						Request:  "--BOUND\r\nContent-Disposition: form-data; name=\"chat_id\"\r\n\r\n1500\r\n--BOUND\r\nContent-Disposition: form-data; name=\"document\"; filename=\"formatted_text.txt\"\r\nContent-Type: text/plain\r\n\r\n" + strings.Repeat("⌘⌘⌘⌘⌘⌘⌘⌘⌘⌘⌘⌘\n", 315) + `12` + "\r\n--BOUND--\r\n",
 						Response: sendMessageResponseJSON,
 					},
 				},
@@ -337,13 +393,6 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 		{
 			name:   "media_len_zero",
 			script: "scripts/media_len_zero.sh",
-			api: map[string][]apiserver.APIAct{
-				"/botMORN/getUpdates": simpleUpdates,
-			},
-		},
-		{
-			name:   "media_len_too_long",
-			script: "scripts/media_len_too_long.sh",
 			api: map[string][]apiserver.APIAct{
 				"/botMORN/getUpdates": simpleUpdates,
 			},
