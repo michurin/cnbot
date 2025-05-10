@@ -13,7 +13,7 @@ import (
 
 type APIAct struct {
 	IsJSON   bool // TODO use content type?
-	Stream   bool // TODO couple with IsJSON
+	Stream   bool // IsJSON must be false if Stream is true
 	Request  string
 	Response []byte
 }
@@ -40,9 +40,10 @@ func APIServer(t *testing.T, cancel context.CancelFunc, api map[string][]APIAct)
 		assert.True(t, ok, "URL not found: "+url)
 		a := ax[n]
 		steps[url] = n + 1
-		if a.Stream { // TODO couple Stream and IsJSON
+		if a.Stream {
 			_, err = w.Write(a.Response)
 			assert.NoError(t, err)
+			assert.False(t, a.IsJSON, "IsJSON must be false if Stream is true")
 			return
 		}
 		if a.IsJSON {

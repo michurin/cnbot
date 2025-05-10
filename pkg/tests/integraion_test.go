@@ -185,18 +185,16 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 		{
 			IsJSON:   true,
 			Request:  `{"offset":501,"timeout":30,"allowed_updates":["callback_query","inline_query","message","message_reaction","poll","poll_answer"]}`,
-			Response: nil, // the second update call will stop Mock API server
+			Response: nil, // the second update call will stop Mock API server by this nil
 		},
 	}
 	sendMessageResponseJSON := []byte(`{"ok": true, "result": {}}`)
 	for _, cs := range []struct {
-		name   string
 		script string
 		api    map[string][]apiserver.APIAct
-	}{ // TODO adjust naming of tests and scripts
+	}{
 		{
-			name:   "simple_text",
-			script: "scripts/just_ok.sh",
+			script: "scripts/text_ok.sh",
 			api: map[string][]apiserver.APIAct{
 				"/botMORN/getUpdates": simpleUpdates,
 				"/botMORN/sendMessage": {
@@ -209,7 +207,6 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 			},
 		},
 		{
-			name:   "long_text",
 			script: "scripts/text_long.sh",
 			api: map[string][]apiserver.APIAct{
 				"/botMORN/getUpdates": simpleUpdates,
@@ -223,7 +220,6 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 			},
 		},
 		{
-			name:   "too_long_text",
 			script: "scripts/text_too_long.sh",
 			api: map[string][]apiserver.APIAct{
 				"/botMORN/getUpdates": simpleUpdates,
@@ -237,7 +233,6 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 			},
 		},
 		{
-			name:   "preformatted_text",
 			script: "scripts/preformatted_ok.sh",
 			api: map[string][]apiserver.APIAct{
 				"/botMORN/getUpdates": simpleUpdates,
@@ -251,7 +246,6 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 			},
 		},
 		{
-			name:   "preformatted_complex_text",
 			script: "scripts/preformatted_complex_ok.sh", // one unicode char, however it is two utf16 words and length=2
 			api: map[string][]apiserver.APIAct{
 				"/botMORN/getUpdates": simpleUpdates,
@@ -265,8 +259,7 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 			},
 		},
 		{
-			name:   "preformatted_long_text",
-			script: "scripts/text_pre_long.sh",
+			script: "scripts/preformatted_long.sh",
 			api: map[string][]apiserver.APIAct{
 				"/botMORN/getUpdates": simpleUpdates,
 				"/botMORN/sendMessage": {
@@ -279,8 +272,7 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 			},
 		},
 		{
-			name:   "preformatted_too_long_text",
-			script: "scripts/text_pre_too_long.sh",
+			script: "scripts/preformatted_too_long.sh",
 			api: map[string][]apiserver.APIAct{
 				"/botMORN/getUpdates": simpleUpdates,
 				"/botMORN/sendDocument": {
@@ -293,7 +285,6 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 			},
 		},
 		{
-			name:   "media_jpeg",
 			script: "scripts/media_jpeg.sh",
 			api: map[string][]apiserver.APIAct{
 				"/botMORN/getUpdates": simpleUpdates,
@@ -307,7 +298,6 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 			},
 		},
 		{
-			name:   "media_png",
 			script: "scripts/media_png.sh",
 			api: map[string][]apiserver.APIAct{
 				"/botMORN/getUpdates": simpleUpdates,
@@ -321,7 +311,6 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 			},
 		},
 		{
-			name:   "media_mp3",
 			script: "scripts/media_mp3.sh",
 			api: map[string][]apiserver.APIAct{
 				"/botMORN/getUpdates": simpleUpdates,
@@ -335,7 +324,6 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 			},
 		},
 		{
-			name:   "media_ogg",
 			script: "scripts/media_ogg.sh",
 			api: map[string][]apiserver.APIAct{
 				"/botMORN/getUpdates": simpleUpdates,
@@ -349,7 +337,6 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 			},
 		},
 		{
-			name:   "media_mp4",
 			script: "scripts/media_mp4.sh",
 			api: map[string][]apiserver.APIAct{
 				"/botMORN/getUpdates": simpleUpdates,
@@ -363,7 +350,6 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 			},
 		},
 		{
-			name:   "media_pdf",
 			script: "scripts/media_pdf.sh",
 			api: map[string][]apiserver.APIAct{
 				"/botMORN/getUpdates": simpleUpdates,
@@ -377,7 +363,6 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 			},
 		},
 		{
-			name:   "media_unknown_binary",
 			script: "scripts/media_bin.sh",
 			api: map[string][]apiserver.APIAct{
 				"/botMORN/getUpdates": simpleUpdates,
@@ -391,7 +376,6 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 			},
 		},
 		{
-			name:   "media_len_zero",
 			script: "scripts/media_len_zero.sh",
 			api: map[string][]apiserver.APIAct{
 				"/botMORN/getUpdates": simpleUpdates,
@@ -399,7 +383,7 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 		},
 	} {
 		cs := cs
-		t.Run(cs.name, func(t *testing.T) {
+		t.Run(cs.script[8:], func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
@@ -553,7 +537,7 @@ func TestHttp_long(t *testing.T) { // CAUTION: test has sleep
 
 func TestProc(t *testing.T) { // CAUTION: test has sleep indirectly
 	ctx := context.Background()
-	t.Run("argsEnvs", func(t *testing.T) {
+	t.Run("show_args", func(t *testing.T) {
 		data, err := buildCommand(t, "scripts/run_show_args.sh").Run(ctx, []string{"ARG1", "ARG2"}, []string{"test1=TEST1", "test2=TEST2"})
 		require.NoError(t, err, "data="+string(data))
 		assert.Equal(t, "arg1=ARG1 arg2=ARG2 test1=TEST1 test2=TEST2 TEST=test\n", string(data))
@@ -564,7 +548,7 @@ func TestProc(t *testing.T) { // CAUTION: test has sleep indirectly
 		assert.Contains(t, err.Error(), "wait: exit status 28")
 		assert.Nil(t, data)
 	})
-	t.Run("sigint", func(t *testing.T) {
+	t.Run("slow", func(t *testing.T) {
 		data, err := buildCommand(t, "scripts/run_slow.sh").Run(ctx, nil, nil)
 		require.NoError(t, err)
 		assert.Equal(t,
@@ -575,7 +559,7 @@ end
 trap EXIT
 `, string(data))
 	})
-	t.Run("sigkill", func(t *testing.T) {
+	t.Run("immortal", func(t *testing.T) {
 		data, err := buildCommand(t, "scripts/run_immortal.sh").Run(ctx, nil, nil)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "wait: signal: killed")
