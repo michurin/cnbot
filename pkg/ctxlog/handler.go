@@ -45,7 +45,7 @@ func (h *handler) Handle(ctx context.Context, ro slog.Record) error {
 	lastErr := (*wrapError)(nil) // not thread safe code; h.Attrs doing consequently
 	ro.Attrs(func(a slog.Attr) bool {
 		v := a.Value.Any()
-		if err, ok := v.(error); ok {
+		if err, ok := v.(error); ok { //nolint:noinlineerr
 			e := new(wrapError)
 			if errors.As(err, &e) {
 				lastErr = e
