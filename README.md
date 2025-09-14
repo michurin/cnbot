@@ -34,7 +34,7 @@ It seems, API of this bot engines is quite stable and won't change dramatically 
 
 ## Basic ideas
 
-You impalement all your business logic in your scripts. You are totally free to use all Telegram API abilities.
+You implement all your business logic in your scripts. You are totally free to use all Telegram API abilities.
 
 `cnbot` interact with scripts using (i) `stdout` stream, (ii) arguments and (iii) environment variables.
 
@@ -156,7 +156,7 @@ It will reply to you something like that:
 ```
 
 You can see that your message has been put to arguments in convenient normalized form, and you have a bunch of useful variables
-with additional information. We will consider them further. At this point we just figure out then our user id is `tg_message_from_id=153333328`.
+with additional information. We will consider them further. At this point we just figure out that our user id is `tg_message_from_id=153333328`.
 We will use this information very soon.
 
 ### Asynchronous messaging
