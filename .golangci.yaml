@@ -11,8 +11,10 @@ linters:
     - intrange
     - lll
     - mnd
+    - modernize # nice to be turned on in future
     - nlreturn
     - paralleltest
+    - perfsprint # nice to be turned
     - revive
     - testifylint
     - varnamelen

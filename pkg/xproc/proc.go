@@ -38,10 +38,8 @@ func killGrp(ctx context.Context, pid int, sig syscall.Signal) {
 	}
 }
 
-// Note: don't use ctx for timeouts
-// Note: be careful with env argument, side effects are possible
 func (c *Cmd) Run(
-	ctx context.Context,
+	ctx context.Context, // Note: don't use ctx for timeouts
 	args []string,
 	env []string,
 ) (
@@ -50,7 +48,7 @@ func (c *Cmd) Run(
 ) {
 	// setup cmd
 	command := c.Command
-	cmd := exec.Command(command, args...) // we don't use CommandContext here because it kills only process, not group
+	cmd := exec.Command(command, args...) //nolint:noctx // we don't use CommandContext here because it kills only process, not group
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setpgid: true,
 	}

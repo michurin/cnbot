@@ -1,13 +1,13 @@
 module github.com/michurin/cnbot
 
-go 1.23.0
+go 1.24.0
 
 toolchain go1.24.2
 
 require (
-	github.com/michurin/systemd-env-file v0.0.0-20250315054830-e401e91b6fe4
-	github.com/stretchr/testify v1.10.0
-	golang.org/x/sync v0.14.0
+	github.com/michurin/systemd-env-file v0.0.0-20250606021327-1e826f3c7c79
+	github.com/stretchr/testify v1.11.1
+	golang.org/x/sync v0.17.0
 )
 
 require (
