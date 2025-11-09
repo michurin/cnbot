@@ -2,24 +2,17 @@ version: "2"
 linters:
   default: all
   disable:
-    - copyloopvar
     - err113
     - exhaustruct
     - gochecknoglobals
     - godot
     - godox
-    - intrange
-    - lll
     - mnd
     - modernize # nice to be turned on in future
     - nlreturn
     - paralleltest
-    - perfsprint # nice to be turned
-    - revive
-    - testifylint
-    - varnamelen
-    - wastedassign
-    - wrapcheck
+    - perfsprint # nice to be turned on
+    - wrapcheck # nice to be turned on
     - wsl
     - wsl_v5
   settings:
@@ -37,11 +30,22 @@ linters:
             - github.com/michurin/systemd-env-file
             - github.com/stretchr/testify
             - golang.org/x/sync/errgroup
+    lll:
+      line-length: 160
+    testifylint:
+      disable:
+        - require-error
+    revive:
+      rules:
+        - name: exported
+          disabled: true
+    varnamelen:
+      max-distance: 50
   exclusions:
     generated: lax
     warn-unused: true
     rules:
-      - path: "pkg/app/(log|version)\\.go"
+      - path: "pkg/app/(log|version)\\.go$"
         linters:
           - forbidigo
       - source: "^\\s*defer\\s+"
@@ -50,6 +54,19 @@ linters:
       - source: "\\s(os\\.ReadFile|exec\\.Command)\\("
         linters:
           - gosec
+      - path: "_test\\.go$"
+        linters:
+          - lll
+          - varnamelen
+      - source: "\\*errgroup.Group"
+        linters:
+          - varnamelen
+      - source: "w http.ResponseWriter"
+        linters:
+          - varnamelen
+      - source: "\\(nil\\)$"
+        linters:
+          - wastedassign
 formatters:
   enable:
     - gci
