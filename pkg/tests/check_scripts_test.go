@@ -22,7 +22,6 @@ func TestCheckScripts(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, len(ee))
 		for _, e := range ee {
-			e := e
 			t.Run(e.Name(), func(t *testing.T) {
 				scriptName := path.Join(scriptsDir, e.Name())
 				if _, skip := knownEntitiesToSkip[scriptName]; skip {

@@ -117,7 +117,6 @@ func TestMethods(t *testing.T) {
 			sendRequest: `{"chat_id": 1500, "text": "button_data [n=1]"}`,
 		},
 	} {
-		cs := cs
 		t.Run(cs.name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
@@ -382,7 +381,6 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 			},
 		},
 	} {
-		cs := cs
 		t.Run(cs.script[8:], func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
@@ -441,7 +439,6 @@ func TestHttp(t *testing.T) {
 			},
 		},
 	} {
-		cs := cs
 		t.Run(cs.name, func(t *testing.T) {
 			tgURL, tgClose := apiserver.APIServer(t, nil, cs.api)
 			defer tgClose()
