@@ -260,7 +260,8 @@ curl -qs https://github.githubassets.com/favicons/favicon.png | curl -qs http://
 
 ### Prepare playground
 
-Let's extend our `mybot.sh` like that (it is literally [demo script](demo/demo_bot.sh) you can run by [docker compose](demo/compose.yaml)):
+Let's extend our `mybot.sh` like that (it is literally [demo script](https://github.com/michurin/cnbot/tree/master/demo/bot.sh)
+you can [run it in docker](https://github.com/michurin/cnbot/tree/master/demo)):
 
 ```sh
 #!/bin/bash
@@ -458,7 +459,7 @@ You can use `help` command to see all available commands.'
 esac
 ```
 
-Let's add script for long-running tasks `mybot_long.sh` (it's [demo script](demo/demo_bot_long.sh)):
+Let's add script for long-running tasks `mybot_long.sh` (it's [demo script](https://github.com/michurin/cnbot/tree/master/demo/bot_long.sh)):
 
 ```sh
 #!/bin/sh
