@@ -36,7 +36,7 @@ func RequestStruct(method string, x any) (*Request, error) {
 	}, nil
 }
 
-var quoteEscaper = strings.NewReplacer("\\", "\\\\", `"`, "\\\"")
+var quoteEscaper = strings.NewReplacer(`\`, `\\`, `"`, `\"`)
 
 func RequestFromBinary(data []byte, userID int64) (*Request, error) {
 	contentType := http.DetectContentType(data)
