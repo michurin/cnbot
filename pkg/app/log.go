@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"sort"
+	"strings"
 
 	"github.com/michurin/cnbot/pkg/ctxlog"
 	"github.com/michurin/cnbot/pkg/xlog"
@@ -24,23 +25,29 @@ func (logHandler) Handle(_ context.Context, r slog.Record) error {
 		kv[a.Key] = a.Value.Any()
 		return true
 	})
-	std := ""                                                    // std attributes
+	std := make([]string, 0, 4)                                  // std attributes
 	for _, a := range []string{"bot", "comp", "api", "source"} { // order significant
 		if v, ok := kv[a]; ok {
-			std = std + " [" + v.(string) + "]" //nolint:forcetypeassert // we use typed helples to enrich context with all this values
+			std = append(std, " ["+v.(string)+"]") //nolint:forcetypeassert // we use typed helples to enrich context with all this values
 			delete(kv, a)
 		}
 	}
-	ekeys := []string(nil) // extra keys
+	ekeys := make([]string, 0, len(kv)) // extra keys
 	for k := range kv {
 		ekeys = append(ekeys, k)
 	}
 	sort.Strings(ekeys)
-	nstd := ""
-	for _, a := range ekeys {
-		nstd += fmt.Sprintf(" %s=%v", a, kv[a])
+	nstd := make([]string, len(ekeys))
+	for i, a := range ekeys {
+		nstd[i] = fmt.Sprintf(" %s=%v", a, kv[a])
 	}
-	fmt.Printf("%s [%s]%s%s %s\n", r.Time.Format("2006-01-02 15:04:05"), r.Level.String(), std, nstd, r.Message)
+	fmt.Printf(
+		"%s [%s]%s%s %s\n",
+		r.Time.Format("2006-01-02 15:04:05"),
+		r.Level.String(),
+		strings.Join(std, ""),
+		strings.Join(nstd, ""),
+		r.Message)
 	return nil
 }
 
