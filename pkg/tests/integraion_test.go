@@ -313,10 +313,10 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 			script: "scripts/media_mp3.sh",
 			api: map[string][]apiserver.APIAct{
 				"/botMORN/getUpdates": simpleUpdates,
-				"/botMORN/sendAudio": {
+				"/botMORN/sendVoice": {
 					{
 						IsJSON:   false,
-						Request:  "--BOUND\r\nContent-Disposition: form-data; name=\"chat_id\"\r\n\r\n1500\r\n--BOUND\r\nContent-Disposition: form-data; name=\"audio\"; filename=\"audio.mp3\"\r\nContent-Type: audio/mpeg\r\n\r\nID3\r\n--BOUND--\r\n",
+						Request:  "--BOUND\r\nContent-Disposition: form-data; name=\"chat_id\"\r\n\r\n1500\r\n--BOUND\r\nContent-Disposition: form-data; name=\"voice\"; filename=\"voice.mp3\"\r\nContent-Type: audio/mpeg\r\n\r\nID3\r\n--BOUND--\r\n",
 						Response: sendMessageResponseJSON,
 					},
 				},
@@ -326,10 +326,10 @@ func TestScriptOutputTypes(t *testing.T) { //nolint:funlen
 			script: "scripts/media_ogg.sh",
 			api: map[string][]apiserver.APIAct{
 				"/botMORN/getUpdates": simpleUpdates,
-				"/botMORN/sendDocument": { // consider ogg as document, it seems it's not fully supported
+				"/botMORN/sendVoice": {
 					{
 						IsJSON:   false,
-						Request:  "--BOUND\r\nContent-Disposition: form-data; name=\"chat_id\"\r\n\r\n1500\r\n--BOUND\r\nContent-Disposition: form-data; name=\"document\"; filename=\"document.ogx\"\r\nContent-Type: application/ogg\r\n\r\nOggS\x00\r\n--BOUND--\r\n",
+						Request:  "--BOUND\r\nContent-Disposition: form-data; name=\"chat_id\"\r\n\r\n1500\r\n--BOUND\r\nContent-Disposition: form-data; name=\"voice\"; filename=\"voice.ogx\"\r\nContent-Type: application/ogg\r\n\r\nOggS\x00\r\n--BOUND--\r\n",
 						Response: sendMessageResponseJSON,
 					},
 				},

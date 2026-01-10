@@ -85,8 +85,10 @@ func RequestFromBinary(data []byte, userID int64) (*Request, error) {
 		return reqMultipart("sendPhoto", userID, "photo", data, "image", contentType)
 	case strings.HasPrefix(contentType, "video/"): // TODO to limit video formats
 		return reqMultipart("sendVideo", userID, "video", data, "video", contentType)
-	case strings.HasPrefix(contentType, "audio/"): // it seems application/ogg is not fully supported; it requires OPUS encoding
-		return reqMultipart("sendAudio", userID, "audio", data, "audio", contentType)
+	case strings.HasPrefix(contentType, "audio/"): // TODO limit to ogg, mp3 and mp4
+		return reqMultipart("sendVoice", userID, "voice", data, "voice", contentType)
+	case contentType == "application/ogg":
+		return reqMultipart("sendVoice", userID, "voice", data, "voice", contentType)
 	default: // TODO hmm... application/* and font/*
 		xlog.L(context.TODO(), fmt.Sprintf("Fallback to multipart from %q", contentType)) // TODO no context here
 		return reqMultipart("sendDocument", userID, "document", data, "document", contentType)
