@@ -888,6 +888,8 @@ WantedBy=multi-user.target
 - The engine doesn't support persistent storage. You have to save state if you need by yourself.
 - Engine consider kill signals as errors. So it's final log message is error mostly. It is confusing.
 - Right now code has a lot of public types, methods and functions. I want this code to be able to be embedded and integrated. However, public API needs to be reviewed.
+- In examples I use `env | sort` to view environment variables. However, if you like to process multi line values in correct way, you may want to say something like `env -0 | sort -z | tr '\0' '\n'`.
+- In example of systemd service you may want to use `DynamicUser=yes` (instead of `User=nobody`). However, it is very strong isolation, you may want to use `StateDirectory=` or similar instructions if you want to give write access to filesystem. More over, you can find useful instruction like that `ExecStartPre=/bin/sh -c 'until host api.telegram.org; do echo "Waiting for DNS..."; sleep 1; done'` to be strongly sure the resolving is available.
 
 ## Developing and contributing
 
