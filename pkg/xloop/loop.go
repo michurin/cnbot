@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/michurin/cnbot/pkg/ctxlog"
 	"github.com/michurin/cnbot/pkg/xbot"
@@ -149,8 +148,7 @@ func processMessage(ctx context.Context, m any, command *xproc.Cmd) (*xbot.Reque
 	if err != nil {
 		xlog.L(ctx, err) // return nil, err // TODO callback_query...
 	}
-	args := textToArgs(text)
-	data, err := command.Run(ctx, args, env)
+	data, err := command.Run(ctx, xproc.SanitizeArgs(strings.Fields(text)), env)
 	if err != nil {
 		return nil, err // already wrapped with context
 	}
@@ -162,38 +160,4 @@ func processMessage(ctx context.Context, m any, command *xproc.Cmd) (*xbot.Reque
 		return nil, ctxlog.Errorfx(ctx, "cannot prepare request (nil): %w", err)
 	}
 	return req, nil
-}
-
-// valid chars:
-// - %+,-.^_{}~
-// - digits: 0123456789
-// - letters: a-zA-Z will be converted to lower case
-var asciiSpaceAndUnsafe = [256]uint8{
-	'\x00': 1, '\x01': 1, '\x02': 1, '\x03': 1, '\x04': 1, '\x05': 1, '\x06': 1, '\x07': 1,
-	'\x08': 1, '\x09': 1, '\x0a': 1, '\x0b': 1, '\x0c': 1, '\x0d': 1, '\x0e': 1, '\x0f': 1,
-	'\x10': 1, '\x11': 1, '\x12': 1, '\x13': 1, '\x14': 1, '\x15': 1, '\x16': 1, '\x17': 1,
-	'\x18': 1, '\x19': 1, '\x1a': 1, '\x1b': 1, '\x1c': 1, '\x1d': 1, '\x1e': 1, '\x1f': 1, '\x20': 1,
-	'"': 1, '\\': 1, '`': 1, '$': 1, // systemd SHELL_NEED_ESCAPE
-	'*': 1, '?': 1, '[': 1, ']': 1, // systemd GLOB_CHARS
-	'\'': 1, '(': 1, ')': 1, '<': 1, '>': 1, '|': 1, '&': 1, ';': 1, '!': 1, // systemd SHELL_NEED_QUOTES
-	'/': 1, ':': 1, // path separators
-	'=': 1, '#': 1, '@': 1, '+': 1, '-': 1, '.', // extra
-}
-
-func textToArgs(text string) []string { // TODO tests; move to package or file before?
-	if !utf8.ValidString(text) { // just drop invalid strings
-		return nil
-	}
-	a := strings.Fields(strings.ToLower(text))
-	b := make([]string, len(a))
-	for i, v := range a {
-		r := make([]byte, 0, len(v))
-		for _, q := range []byte(v) {
-			if asciiSpaceAndUnsafe[q] == 0 {
-				r = append(r, q)
-			}
-		}
-		b[i] = string(r)
-	}
-	return b
 }

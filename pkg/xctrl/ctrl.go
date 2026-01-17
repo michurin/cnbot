@@ -121,7 +121,7 @@ func Handler(bot *xbot.Bot, cmd *xproc.Cmd, loggingPatch ctxlog.PatchAttrs) http
 			go func() { //nolint:contextcheck // TODO: limit concurrency
 				ctx := ctxlog.ApplyPatch(context.Background(), logCtxPatch)
 				// TODO refactor. it is similar to processMessage
-				body, err := cmd.Run(ctx, q["a"], []string{"tg_x_to=" + strconv.FormatInt(to, 10)})
+				body, err := cmd.Run(ctx, xproc.SanitizeArgs(q["a"]), []string{"tg_x_to=" + strconv.FormatInt(to, 10)})
 				if err != nil {
 					xlog.L(ctx, err)
 					return
