@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -27,7 +28,12 @@ func bot(ctx context.Context, eg *errgroup.Group, cfg BotConfig, tgAPIOrigin, bu
 		Client:    http.DefaultClient,
 	}
 
-	envCommon := []string{"tg_x_ctrl_addr=" + cfg.ControlAddr, "tg_x_build=" + build}
+	envCommon := []string{
+		"tg_x_ctrl_addr=" + cfg.ControlAddr,
+		"tg_x_build=" + build,
+		"tg_x_pid=" + strconv.Itoa(os.Getpid()),
+		"tg_x_exe=" + os.Args[0],
+	}
 
 	cfgDir, err := filepath.Abs(cfg.ConfigFileDir) // if dir is "", it uses CWD
 	if err != nil {

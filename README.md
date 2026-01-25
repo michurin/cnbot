@@ -152,6 +152,8 @@ It will reply to you something like that:
 │ tg_update_id=513333387                  │
 │ tg_x_build=development (devel)          │
 │ tg_x_ctrl_addr=:9999                    │
+│ tg_x_exe=/usr/bin/cnbot                 │
+│ tg_x_pid=9911                           │
 ╰─────────────────────────────────────────╯
 ```
 
@@ -694,6 +696,8 @@ Engine provides the following additional variables:
 
 - `tg_x_build`
 - `tg_x_ctrl_addr`
+- `tg_x_pid`
+- `tg_x_exe`
 - `tg_x_to` (long-running scripts only)
 
 #### System variables
