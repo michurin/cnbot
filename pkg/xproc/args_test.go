@@ -16,7 +16,7 @@ func TestSanitizeArgs(t *testing.T) {
 			x[i] = rune(i)
 		}
 		assert.Equal(t,
-			[]string{"#%+,-./0123456789:=@abcdefghijklmnopqrstuvwxyz^_abcdefghijklmnopqrstuvwxyz{}~"},
+			[]string{"#%+,-.0123456789:=@abcdefghijklmnopqrstuvwxyz^_abcdefghijklmnopqrstuvwxyz{}~"},
 			xproc.SanitizeArgs([]string{string(x)}))
 	})
 	t.Run("strings", func(t *testing.T) {

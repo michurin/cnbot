@@ -21,7 +21,8 @@ func SanitizeArgs(a []string) []string {
 			switch c {
 			case '*', '?', '[', ']', // systemd: GLOB_CHARS
 				'"', '\\', '`', '$', // systemd: SHELL_NEED_ESCAPE
-				'\'', '(', ')', '<', '>', '|', '&', ';', '!': // systemd: SHELL_NEED_QUOTES
+				'\'', '(', ')', '<', '>', '|', '&', ';', '!', // systemd: SHELL_NEED_QUOTES
+				'/': // extra protection to disable relative and paths, however we keep '.' for IP addresses
 				continue
 			}
 			p = append(p, c)
