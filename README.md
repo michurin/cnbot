@@ -604,7 +604,16 @@ Arguments prepared from messages, captions and callback's data. Strings are cast
 
 For example the message `$Hello world!` will be represented as two arguments `hello` and `world`.
 
-Following characters will be removed from the arguments: ``!"#$&'()*+-./:;<=>?@[\]`|``.
+The following characters will be removed from the arguments: ``!"$&'()*/;<>?[\]`|``.
+
+In addition the number or arguments is limited to 32. The length of each argument is limited by 256 characters.
+
+Multibyte symbols are not allowed.
+
+> [!TIP]
+> The raw message is still available in `$tg_message_text`.
+
+All this restrictions are applied to arguments of regular scripts. Long-running scripts obtain arguments as is.
 
 ### Environment details
 
