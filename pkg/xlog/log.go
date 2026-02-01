@@ -50,6 +50,6 @@ func log(ctx context.Context, a any, normalLogLevel slog.Level) {
 	}
 	h := defaultLogger.Load().Handler()
 	if h.Enabled(ctx, r.Level) { // it seems it is reason to use high level slog.Logger
-		h.Handle(ctx, r)
+		_ = h.Handle(ctx, r)
 	}
 }
