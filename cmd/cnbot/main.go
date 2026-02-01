@@ -13,7 +13,8 @@ import (
 var Build = "development"
 
 func main() {
-	vFlag := flag.Bool("v", false, "show version")
+	vFlag := flag.Bool("v", false, "show version and exit")
+	dFlag := flag.Bool("d", false, "turn on debugging")
 	flag.Parse()
 	if vFlag != nil && *vFlag {
 		app.ShowVersionInfo()
@@ -23,7 +24,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	app.SetupLogging()
+	app.SetupLogging(dFlag != nil && *dFlag)
 	cfg, tgAPIOrigin, err := app.LoadConfigs(flag.Args()...)
 	if err != nil {
 		xlog.L(ctx, err)

@@ -34,7 +34,7 @@ func (b *Bot) API(ctx context.Context, request *Request) ([]byte, error) {
 		} else {
 			msg = "ok"
 		}
-		xlog.L(xlog.Status(xlog.Request(xlog.Response(ctx, data), request.Body), respCode), msg)
+		xlog.D(xlog.Status(xlog.Request(xlog.Response(ctx, data), request.Body), respCode), msg)
 	}()
 	reqURL := b.APIOrigin + "/bot" + b.Token + "/" + request.Method
 	req, err = http.NewRequestWithContext(ctx, http.MethodPost, reqURL, bytes.NewReader(request.Body))

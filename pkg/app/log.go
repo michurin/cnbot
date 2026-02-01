@@ -13,10 +13,12 @@ import (
 
 // logHandler implements interface slog.Handler
 // it is drop-in replacement for slog.NewTextHandler, but more human friendly
-type logHandler struct{}
+type logHandler struct {
+	level slog.Level
+}
 
-func (logHandler) Enabled(context.Context, slog.Level) bool {
-	return true
+func (h logHandler) Enabled(_ context.Context, level slog.Level) bool {
+	return level >= h.level
 }
 
 func (logHandler) Handle(_ context.Context, r slog.Record) error {
@@ -59,7 +61,11 @@ func (logHandler) WithGroup(_ string) slog.Handler {
 	panic("NOT IMPLEMENTED")
 }
 
-func SetupLogging() {
-	l := slog.New(ctxlog.Handler(logHandler{}, "app/log.go"))
+func SetupLogging(debug bool) {
+	level := slog.LevelInfo
+	if debug {
+		level = slog.LevelDebug
+	}
+	l := slog.New(ctxlog.Handler(logHandler{level: level}, "app/log.go"))
 	xlog.SetDefault(l)
 }
