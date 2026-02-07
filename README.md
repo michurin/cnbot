@@ -76,6 +76,9 @@ go install github.com/michurin/cnbot/cmd/...@latest
 tb_token='4839574812:AAFD39kkdpWt3ywyRZergyOLMaJhac60qc' tb_script=echo tb_long_running_script=true tb_ctrl_addr=:9999 cnbot
 ```
 
+> [!TIP]
+> Use `-d` for extra debugging.
+
 or without installation:
 
 ```sh
