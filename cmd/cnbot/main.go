@@ -10,8 +10,6 @@ import (
 	"github.com/michurin/cnbot/pkg/xlog"
 )
 
-var Build = "development"
-
 func main() {
 	vFlag := flag.Bool("v", false, "show version and exit")
 	dFlag := flag.Bool("d", false, "turn on debugging")
@@ -30,7 +28,7 @@ func main() {
 		xlog.L(ctx, err)
 		return
 	}
-	err = app.Application(ctx, cfg, tgAPIOrigin, Build+" "+app.MainVersion())
+	err = app.Application(ctx, cfg, tgAPIOrigin, app.MainVersion())
 	if err != nil {
 		xlog.L(ctx, err)
 		return

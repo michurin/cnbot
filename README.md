@@ -864,7 +864,8 @@ exit "$code"
 ### Installation
 
 ```sh
-./build.sh
+cd /tmp
+GOBIN=/tmp go install github.com/michurin/cnbot/cmd/...@latest
 sudo install ./cnbot /usr/bin
 ```
 

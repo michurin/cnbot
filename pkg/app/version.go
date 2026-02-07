@@ -11,14 +11,22 @@ func ShowVersionInfo() {
 		fmt.Println("No build info")
 		return
 	}
-	fmt.Println(info.Main.Version)
+	fmt.Println(modInfo(info.Main))
 	fmt.Println(info.String())
 }
 
 func MainVersion() string {
 	info, ok := debug.ReadBuildInfo()
 	if !ok {
-		return "no version"
+		return "no build info"
 	}
-	return info.Main.Version
+	return modInfo(info.Main)
+}
+
+func modInfo(m debug.Module) string {
+	s := m.Path + " " + m.Version + " " + m.Sum
+	if m.Replace != nil {
+		return s + " => " + modInfo(*m.Replace)
+	}
+	return s
 }
