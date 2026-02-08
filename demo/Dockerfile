@@ -52,4 +52,4 @@ ENV TB_CTRL_ADDR=:9999 \
     TB_SCRIPT=/app/bot.sh \
     TB_LONG_RUNNING_SCRIPT=/app/bot_long.sh
 
-CMD ["/app/cnbot"]
+CMD ["/app/cnbot", "-d"]
