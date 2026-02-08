@@ -55,7 +55,7 @@ All you need is bot token ([instructions](https://core.telegram.org/bots#how-do-
 
 ```sh
 docker build -t cnbot:latest https://raw.githubusercontent.com/michurin/cnbot/master/demo/Dockerfile
-docker run -it --rm --name cnbot -e TB_TOKEN=4839574812:AAFD39kkdpWt3ywyRZergyOLMaJhac60qc cnbot:latest
+docker run -it --rm --name cnbot -e tb_token=4839574812:AAFD39kkdpWt3ywyRZergyOLMaJhac60qc cnbot:latest
 ```
 
 [More details](https://github.com/michurin/cnbot/tree/master/demo)

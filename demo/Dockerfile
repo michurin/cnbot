@@ -51,9 +51,9 @@ RUN apt-get update \
 USER cnbot
 WORKDIR /app
 
-# You must specify TB_TOKEN variable
-ENV TB_CTRL_ADDR=:9999 \
-    TB_SCRIPT=/app/bot.sh \
-    TB_LONG_RUNNING_SCRIPT=/app/bot_long.sh
+# You must specify tb_token variable
+ENV tb_ctrl_addr=:9999 \
+    tb_script=/app/bot.sh \
+    tb_long_running_script=/app/bot_long.sh
 
 CMD ["/app/cnbot", "-d"]

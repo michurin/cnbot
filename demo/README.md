@@ -23,7 +23,7 @@ sudo docker build -t cnbot:v2 .
 Run bot (use your own token)
 
 ```sh
-sudo docker run -it --rm --name cnbot -e 'TB_TOKEN=4839574812:AAFD39kkdpWt3ywyRZergyOLMaJhac60qc' cnbot:v2
+sudo docker run -it --rm --name cnbot -e 'tb_token=4839574812:AAFD39kkdpWt3ywyRZergyOLMaJhac60qc' cnbot:v2
 ```
 
 Now bot is ready, you can to talk to it in your Telegram client.
@@ -49,7 +49,7 @@ You can find logs in `/app/logs`, you can modify `/app/bot.sh` and `/app/bot_log
 You can turn on super verbose logging
 
 ```sh
-sudo docker run -it --rm --name cnbot -e 'TB_TOKEN=4839574812:AAFD39kkdpWt3ywyRZergyOLMaJhac60qc' -e 'TB_SCRIPT=/app/bot_debug.sh' -e 'TB_LONG_RUNNING_SCRIPT=/app/bot_long_debug.sh' cnbot:v2
+sudo docker run -it --rm --name cnbot -e 'tb_token=4839574812:AAFD39kkdpWt3ywyRZergyOLMaJhac60qc' -e 'tb_script=/app/bot_debug.sh' -e 'tb_long_running_script=/app/bot_long_debug.sh' cnbot:v2
 ```
 
 ## Calling bot's control API in container
@@ -65,7 +65,7 @@ sudo docker exec cnbot curl -qs http://localhost:9999/getMe | jq
 It is `mitmproxy` available in the container. You can run `mitmproxy` tool like this
 
 ```sh
-sudo docker run -it --rm --name cnbot -e 'TB_TOKEN=4839574812:AAFD39kkdpWt3ywyRZergyOLMaJhac60qc' -e 'TB_SCRIPT=/app/bot_debug.sh' -e 'TB_LONG_RUNNING_SCRIPT=/app/bot_long_debug.sh' -e 'TB_API_ORIGIN=http://localhost:9001' cnbot:v2 /usr/local/bin/mitmdump --set confdir=/tmp --flow-detail 4 -p 9001 --mode reverse:https://api.telegram.org
+sudo docker run -it --rm --name cnbot -e 'tb_token=4839574812:AAFD39kkdpWt3ywyRZergyOLMaJhac60qc' -e 'tb_script=/app/bot_debug.sh' -e 'tb_long_running_script=/app/bot_long_debug.sh' -e 'tb_api_origin=http://localhost:9001' cnbot:v2 /usr/local/bin/mitmdump --set confdir=/tmp --flow-detail 4 -p 9001 --mode reverse:https://api.telegram.org
 ```
 
 And than execute `cnbot` in this container:
