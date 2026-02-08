@@ -1,5 +1,9 @@
 FROM debian:trixie-slim
 
+ARG branch="master"
+
+ENV branch=$branch
+
 RUN apt-get update \
 &&  echo 'Installing packages...' \
 &&  apt-get install -y \
@@ -18,9 +22,9 @@ RUN apt-get update \
         /app \
         /app/src \
         /app/logs \
-&&  echo 'Building cnbot...' \
+&&  echo "Building cnbot (branch=${branch})..." \
 &&  cd /app/src \
-&&  git clone --depth 1 --branch master https://github.com/michurin/cnbot.git \
+&&  git clone --depth 1 --branch "${branch}" https://github.com/michurin/cnbot.git \
 &&  cd cnbot \
 &&  go mod download \
 &&  go mod verify \
