@@ -17,6 +17,9 @@ Build image
 sudo docker build -t cnbot:v2 .
 ```
 
+> [!TIP]
+> You can specify branch using `docker build --build-arg branch=experimental`.
+
 Run bot (use your own token)
 
 ```sh
