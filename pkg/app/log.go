@@ -66,6 +66,6 @@ func SetupLogging(debug bool) {
 	if debug {
 		level = slog.LevelDebug
 	}
-	l := slog.New(ctxlog.Handler(logHandler{level: level}, "app/log.go"))
+	l := slog.New(ctxlog.Handler(logHandler{level: level}, "pkg/app/log.go"))
 	xlog.SetDefault(l)
 }
