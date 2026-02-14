@@ -20,9 +20,9 @@ API_STDOUT() {
 
 (
     echo '==================='
-    echo "Args: $@"
+    echo "Args: $*"
     echo "Environment:"
-    env | grep tg_ | sort
+    env -0 | grep -z '^tg_' | sort -z | tr '\0' '\n'
     echo '...................'
 ) >>"$LOG"
 
@@ -34,12 +34,12 @@ case "$1" in
         i=0
         for a in "$@"
         do
-            i=$(($i+1))
+            i=$((i+1))
             echo "$i: $a"
         done
         echo ''
         echo "📌 Environment:"
-        env | grep tg_ | sort
+        env -0 | grep -z '^tg_' | sort -z | tr '\0' '\n'
         echo ''
         echo "📌 Configuration:"
         echo "LOG=$LOG"
@@ -61,7 +61,7 @@ case "$1" in
         bGoogle='{"text":"Google","url":"https://www.google.com/"}'
         bDuck='{"text":"DuckDuckGo","url":"https://duckduckgo.com/"}'
         API sendMessage \
-            -F chat_id=$FROM \
+            -F chat_id="$FROM" \
             -F text='Select search engine' \
             -F reply_markup='{"inline_keyboard":[['"$bGoogle,$bDuck"']]}'
         ;;
@@ -73,26 +73,26 @@ case "$1" in
         fid=''
         for x in $tg_message_photo # finding the biggest image but ignoring too big ones
         do
-            v=${x}_file_size
-            s=${!v} # trick: getting variable name from variable; we need bash for it
-            if test $s -gt 102400; then continue; fi # skipping too big files
-            v=${x}_width
-            w=${!v}
-            v=${x}_file_id
-            f=${!v}
-            if test $w -gt $wm; then wm=$w; fid=$f; fi
+            v="${x}_file_size"
+            s="${!v}" # trick: getting variable name from variable; we need bash for it
+            if test "$s" -gt 102400; then continue; fi # skipping too big files
+            v="${x}_width"
+            w="${!v}"
+            v="${x}_file_id"
+            f="${!v}"
+            if test "$w" -gt "$wm"; then wm="$w"; fid="$f"; fi
         done
         if test -n "$fid"
         then
-            API_STDOUT '' -G --data-urlencode "file_id=$fid" -o - | mogrify -flip -flop -format png -
+            API_STDOUT '' -G --data-urlencode file_id="$fid" -o - | mogrify -flip -flop -format png -
         else
             echo "attache not found (maybe it was skipped due to enormous size)"
         fi
         ;;
     reaction)
         API setMessageReaction \
-            -F chat_id=$FROM \
-            -F message_id=$tg_message_message_id \
+            -F chat_id="$FROM" \
+            -F message_id="$tg_message_message_id" \
             -F reaction='[{"type":"emoji","emoji":"👾"}]'
         echo 'Bot reacted to your message☝️'
         ;;
@@ -103,16 +103,16 @@ case "$1" in
             -F longitude='-3.712184'
         ;;
     menu)
-        mShowEnv='{"text":"show environment","callback_data":"ment_debug"}'
-        mShowNotification='{"text":"show notification","callback_data":"ment_notification"}'
-        mShowAlert='{"text":"show alert","callback_data":"ment_alert"}'
-        mLikeIt='{"text":"like it","callback_data":"ment_like"}'
-        mUnlikeIt='{"text":"unlike it","callback_data":"ment_unlike"}'
+        mShowEnv='{"text":"show environment","callback_data":"menu_item_debug"}'
+        mShowNotification='{"text":"show notification","callback_data":"menu_item_notification"}'
+        mShowAlert='{"text":"show alert","callback_data":"menu_item_alert"}'
+        mLikeIt='{"text":"like it","callback_data":"menu_item_like"}'
+        mUnlikeIt='{"text":"unlike it","callback_data":"menu_item_unlike"}'
         mCopy='{"text":"copy \"MAGIC\" to clipboard","copy_text":{"text":"MAGIC"}}'
-        mDelete='{"text":"delete this message","callback_data":"ment_delete"}'
+        mDelete='{"text":"delete this message","callback_data":"menu_item_delete"}'
         mLayout="[[$mShowEnv],[$mShowAlert,$mShowNotification],[$mLikeIt,$mUnlikeIt],[$mCopy],[$mDelete]]"
         API sendMessage \
-            -F chat_id=$FROM \
+            -F chat_id="$FROM" \
             -F text='Actions' \
             -F reply_markup='{"inline_keyboard":'"$mLayout"'}'
         ;;
@@ -139,7 +139,7 @@ case "$1" in
         hostname 2>&1
         ;;
     help)
-        API sendMessage -F chat_id=$FROM -F parse_mode=Markdown -F text='
+        API sendMessage -F chat_id="$FROM" -F parse_mode=Markdown -F text='
 Known commands:
 
 - `debug` — show args, environment and vars
@@ -163,7 +163,7 @@ Known commands:
 '
         ;;
     start)
-        API sendMessage -F chat_id=$FROM -F parse_mode=Markdown -F text='
+        API sendMessage -F chat_id="$FROM" -F parse_mode=Markdown -F text='
 Hi there!👋
 It is demo bot to show an example of usage [cnbot](https://github.com/michurin/cnbot) bot engine.
 You can use `help` command to see all available commands.'
@@ -175,38 +175,41 @@ You can use `help` command to see all available commands.'
         if test -n "$tg_callback_query_data"
         then
             case "$1" in
-                ment_debug)
+                menu_item_debug)
                     API answerCallbackQuery -F callback_query_id="$tg_callback_query_id"
                     echo '%!PRE'
                     echo "Environment:"
-                    env | grep tg_ | sort
+                    env -0 | grep -z '^tg_' | sort -z | tr '\0' '\n'
                     ;;
-                ment_like)
-                    API answerCallbackQuery -F callback_query_id="$tg_callback_query_id" -F "text=Like it"
-                    API setMessageReaction -F chat_id=$tg_callback_query_message_chat_id \
-                        -F message_id=$tg_callback_query_message_message_id \
+                menu_item_like)
+                    API answerCallbackQuery -F callback_query_id="$tg_callback_query_id" -F text="Like it"
+                    API setMessageReaction \
+                        -F chat_id="$tg_callback_query_message_chat_id" \
+                        -F message_id="$tg_callback_query_message_message_id" \
                         -F reaction='[{"type":"emoji","emoji":"👾"}]'
                     ;;
-                ment_unlike)
-                    API answerCallbackQuery -F callback_query_id="$tg_callback_query_id" -F "text=Don't like it"
-                    API setMessageReaction -F chat_id=$tg_callback_query_message_chat_id \
-                        -F message_id=$tg_callback_query_message_message_id \
+                menu_item_unlike)
+                    API answerCallbackQuery -F callback_query_id="$tg_callback_query_id" -F text="Don't like it"
+                    API setMessageReaction \
+                        -F chat_id="$tg_callback_query_message_chat_id" \
+                        -F message_id="$tg_callback_query_message_message_id" \
                         -F reaction='[]'
                     ;;
-                ment_delete)
+                menu_item_delete)
                     API answerCallbackQuery -F callback_query_id="$tg_callback_query_id"
-                    API deleteMessage -F chat_id=$tg_callback_query_message_chat_id \
-                        -F message_id=$tg_callback_query_message_message_id
+                    API deleteMessage \
+                        -F chat_id="$tg_callback_query_message_chat_id" \
+                        -F message_id="$tg_callback_query_message_message_id"
                     ;;
-                ment_notification)
+                menu_item_notification)
                     API answerCallbackQuery -F callback_query_id="$tg_callback_query_id" -F text="Notification text (200 chars maximum)"
                     ;;
-                ment_alert)
+                menu_item_alert)
                     API answerCallbackQuery -F callback_query_id="$tg_callback_query_id" -F text="Notification text shown as alert" -F show_alert=true
                     ;;
             esac
         else
-            API sendMessage -F chat_id=$FROM -F text='Invalid command. Say `help`.' -F parse_mode=Markdown
+            API sendMessage -F chat_id="$FROM" -F text='Invalid command. Say `help`.' -F parse_mode=Markdown
         fi
         ;;
 esac
