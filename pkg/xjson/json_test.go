@@ -44,6 +44,8 @@ func TestJSONToEnv(t *testing.T) {
 			// not appears: empty nested structures
 			"r": map[string]any{"a": nil, "b": []any{}, "c": map[string]any{}},
 			"s": []any{nil, []any{}, map[string]any{}},
+			"t": "line1\nline2",
+			"u": "\n\x20line\t\n",
 		}
 		env, err := xjson.JSONToEnv(x)
 		require.NoError(t, err)
@@ -70,6 +72,8 @@ func TestJSONToEnv(t *testing.T) {
 			"tg_n_2=3",
 			"tg_o_a=1",
 			"tg_o_c=3",
+			"tg_t=line1\nline2",
+			"tg_u=\n\x20line\t\n",
 		}, env)
 	})
 	t.Run("invalidType", func(t *testing.T) {
