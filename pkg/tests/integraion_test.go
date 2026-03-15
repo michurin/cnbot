@@ -593,7 +593,7 @@ func buildBot(origin string) *xbot.Bot {
 func runCurl(t *testing.T, args ...string) (string, string) {
 	t.Helper()
 	t.Logf("Run curl %s", strings.Join(args, " "))
-	cmd := exec.CommandContext(t.Context(), "curl", args...)
+	cmd := exec.CommandContext(t.Context(), "curl", args...) //nolint:gosec
 	var stdOut, stdErr bytes.Buffer
 	cmd.Stdout = &stdOut
 	cmd.Stderr = &stdErr

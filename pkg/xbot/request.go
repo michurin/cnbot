@@ -105,7 +105,7 @@ func fext(ctype string) string {
 		prefExt = "." + prefExt[idx+1:]
 	}
 	exts, _ := mime.ExtensionsByType(ctype)
-	if len(exts) == 0 {
+	if len(exts) == 0 { // go1.25
 		return ".dat"
 	}
 	for _, e := range exts { // find preferable extension, if any
@@ -116,6 +116,9 @@ func fext(ctype string) string {
 	e := exts[0]
 	if e == ".asc" {
 		return ".txt" // looks more reasonable for text/plain
+	}
+	if e == ".bin" { // since go1.26 it returns bin, however dat looks more reasonable
+		return ".dat"
 	}
 	return e
 }
