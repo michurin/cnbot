@@ -82,7 +82,8 @@ func buildOrigin(pairs []string) string {
 }
 
 func buildConfigs(pairs []string) (map[string]BotConfig, error) {
-	configMaps := map[string][5]string{} // TODO: 5 hardcoded
+	ctx := xlog.Comp(context.Background(), "configloader") // TODO: context.Background
+	configMaps := map[string][5]string{}                   // TODO: 5 hardcoded
 	// TODO minor code duplication in this loop
 	for _, pair := range pairs {
 		ek, ev, ok := strings.Cut(pair, "=")
@@ -105,6 +106,7 @@ func buildConfigs(pairs []string) (map[string]BotConfig, error) {
 				v := configMaps[k]
 				v[i] = ev
 				configMaps[k] = v
+				xlog.L(xlog.Bot(ctx, k), fmt.Sprintf("envvar=%q value=%q (%q)", ek, ev, sfx))
 				break
 			}
 		}
