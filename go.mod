@@ -3,7 +3,7 @@ module github.com/michurin/cnbot
 go 1.25.0
 
 require (
-	github.com/michurin/systemd-env-file v0.0.0-20251116092800-59c2928ec73e
+	github.com/michurin/systemd-env-file v0.0.0-20260523003226-528b1275508b
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/sync v0.20.0
 )
