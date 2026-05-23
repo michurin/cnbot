@@ -7,6 +7,7 @@ linters:
     - gochecknoglobals
     - godot
     - godox
+    - gomodguard # deprecated since v2.12.0
     - mnd
     - modernize # nice to be turned on in future
     - nlreturn
@@ -30,6 +31,9 @@ linters:
             - github.com/michurin/systemd-env-file
             - github.com/stretchr/testify
             - golang.org/x/sync/errgroup
+    goconst:
+      ignore-tests: true
+      ignore-string-values: [text, chat_id]
     lll:
       line-length: 160
     testifylint:

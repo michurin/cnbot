@@ -15,8 +15,8 @@ jobs:
           - "1.25"
           - "1.26"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
         with:
           go-version: "${{ matrix.go }}"
       - run: "go version"
@@ -26,18 +26,18 @@ jobs:
     timeout-minutes: 10
     name: "Unit tests and linting"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
         with:
           go-version: "1.26"
-      - uses: golangci/golangci-lint-action@v7
+      - uses: golangci/golangci-lint-action@v9
         with:
-          version: "v2.11.3"
+          version: "v2.12.2"
       - run: "go test -v -coverprofile=coverage.tmp -covermode=atomic -coverpkg=./pkg/... ./pkg/..."
       - run: "grep -v /pkg/app/ coverage.tmp >coverage.txt"
       - run: "diff coverage.tmp coverage.txt || true" # just to see what has been excluded
       - run: "rm coverage.tmp" # otherwise it will be taken into account
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v6
         with:
           files: ./coverage.txt
           verbose: true
