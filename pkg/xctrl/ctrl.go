@@ -27,6 +27,7 @@ func Handler(bot *xbot.Bot, cmd *xproc.Cmd, loggingPatch ctxlog.PatchAttrs) http
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			xlog.L(ctx, fmt.Errorf("body reading: %w", err))
+			return
 		}
 		method := r.URL.Path[strings.LastIndex(r.URL.Path, "/")+1:]
 		data := []byte(nil)
