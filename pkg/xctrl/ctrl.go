@@ -95,7 +95,7 @@ func Handler(bot *xbot.Bot, cmd *xproc.Cmd, loggingPatch ctxlog.PatchAttrs) http
 				var req *xbot.Request // TODO refactor
 				to, err = strconv.ParseInt(r.URL.Query().Get("to"), 10, 64)
 				if err != nil {
-					xlog.L(ctx, err) // TODO response!
+					xlog.L(ctx, fmt.Errorf("parse query argument 'to': %w", err)) // TODO response!
 					return
 				}
 				// TODO add `to` to log context
@@ -114,7 +114,7 @@ func Handler(bot *xbot.Bot, cmd *xproc.Cmd, loggingPatch ctxlog.PatchAttrs) http
 			q := r.URL.Query()
 			to, err := strconv.ParseInt(r.URL.Query().Get("to"), 10, 64)
 			if err != nil {
-				xlog.L(ctx, err) // TODO response!
+				xlog.L(ctx, fmt.Errorf("parse query argument 'to': %w", err)) // TODO response!
 				return
 			}
 			ctx := xlog.User(ctx, to)
