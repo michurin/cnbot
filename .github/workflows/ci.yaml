@@ -13,9 +13,10 @@ jobs:
         go:
           - "1.25"
           - "1.26"
+          - "1.27"
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version: "${{ matrix.go }}"
       - run: "go version"
@@ -25,19 +26,32 @@ jobs:
     timeout-minutes: 10
     name: "Unit tests and linting"
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
-          go-version: "1.26"
+          go-version: "1.27"
       - uses: golangci/golangci-lint-action@v9
         with:
-          version: "v2.12.2"
+          version: "v2.14.0"
       - run: "go test -v -coverprofile=coverage.tmp -covermode=atomic -coverpkg=./pkg/... ./pkg/..."
       - run: "grep -v /pkg/app/ coverage.tmp >coverage.txt"
       - run: "diff coverage.tmp coverage.txt || true" # just to see what has been excluded
       - run: "rm coverage.tmp" # otherwise it will be taken into account
-      - uses: codecov/codecov-action@v6
+      - uses: codecov/codecov-action@v7
         with:
           files: ./coverage.txt
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }} # required
+
+  vulncheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    name: "govulncheck"
+    steps:
+      - uses: actions/checkout@v7
+      - id: govulncheck
+        uses: golang/govulncheck-action@v1
+        with:
+          repo-checkout: false
+          go-version-input: "1.27"
+          go-package: "./..."

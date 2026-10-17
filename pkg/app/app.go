@@ -59,8 +59,8 @@ func bot(ctx context.Context, eg *errgroup.Group, cfg BotConfig, tgAPIOrigin, bu
 	}
 
 	eg.Go(func() error {
-		err := xloop.Loop(xlog.Comp(ctx, "loop"), bot, command)
-		if err != nil {
+		err := xloop.Loop(xlog.Comp(ctx, "loop"), bot, command) //nolint:staticcheck // it is ok in this case
+		if err != nil {                                         //nolint:staticcheck // that the err!=nil is always true
 			return ctxlog.Errorfx(ctx, "polling loop: %w", err)
 		}
 		return nil

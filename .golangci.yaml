@@ -4,6 +4,7 @@ linters:
   disable:
     - err113
     - exhaustruct
+    - exhaustruct_v5
     - gochecknoglobals
     - godot
     - godox
